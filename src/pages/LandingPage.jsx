@@ -24,9 +24,11 @@ export function LandingPage() {
               <h1>{heroContent.title}</h1>
               <p>{heroContent.description}</p>
               <div className="hero-actions">
-                <button type="button" className="btn btn-primary">
-                  Empezar a donar
-                </button>
+                <Link to="/registro" style={{ textDecoration: 'none' }}>
+                  <button type="button" className="btn btn-primary">
+                    Empezar a donar
+                  </button>
+                </Link>
                 <Link to="/explorar-donaciones" className="btn btn-outline hero-link-button">
                   {heroContent.ctaLabel} <ArrowRight size={16} />
                 </Link>
@@ -116,12 +118,16 @@ export function LandingPage() {
                 colaborativa y centrada en el impacto social.
               </p>
               <div className="cta-actions">
-                <button type="button" className="btn btn-outline">
-                  Registrarme como donante
-                </button>
-                <button type="button" className="btn btn-outline">
-                  Registrarme como beneficiario
-                </button>
+                <Link to="/registro" style={{ textDecoration: 'none' }}>
+                  <button type="button" className="btn btn-outline">
+                    Registrarme como donante
+                  </button>
+                </Link>
+                <Link to="/registro/entidad-beneficiaria" style={{ textDecoration: 'none' }}>
+                  <button type="button" className="btn btn-outline">
+                    Registrarme como beneficiario
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
