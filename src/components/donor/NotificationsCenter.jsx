@@ -1,19 +1,66 @@
 import { useState } from 'react'
-import { generateBeneficiaryNotifications } from '../data/beneficiary-notifications'
 import { Bell, Check, Trash2 } from 'lucide-react'
-import '../styles/pages/beneficiary-notifications.css'
+import '../../styles/pages/notifications-center.css'
 
-export function BeneficiaryNotifications() {
-  const [notifications, setNotifications] = useState(generateBeneficiaryNotifications())
+export function NotificationsCenter() {
+  const [notifications, setNotifications] = useState(getNotifications())
   const [filter, setFilter] = useState('all')
+
+  function getNotifications() {
+    return [
+      {
+        id: 'notif-1',
+        type: 'donation_assigned',
+        title: 'Donación Asignada',
+        message: 'Tu donación de alimentos ha sido asignada a Fundación Despierta',
+        timestamp: '2025-10-15T14:30:00',
+        read: false,
+        icon: '📦'
+      },
+      {
+        id: 'notif-2',
+        type: 'mission_completed',
+        title: 'Misión Completada',
+        message: 'Felicidades, completaste la misión "Donante Generoso"',
+        timestamp: '2025-10-14T10:15:00',
+        read: false,
+        icon: '🎉'
+      },
+      {
+        id: 'notif-3',
+        type: 'category_upgraded',
+        title: 'Cambio de Categoría',
+        message: 'Subiste a la categoría Platino',
+        timestamp: '2025-10-13T16:45:00',
+        read: true,
+        icon: '👑'
+      },
+      {
+        id: 'notif-4',
+        type: 'donation_received',
+        title: 'Donación Recibida',
+        message: 'Red Solidaria Norte confirmó la recepción de tu donación de abrigo',
+        timestamp: '2025-10-12T09:20:00',
+        read: true,
+        icon: '✅'
+      },
+      {
+        id: 'notif-5',
+        type: 'delivery_update',
+        title: 'Actualización de Entrega',
+        message: 'El camión de tu donación está a 2.5 km de distancia',
+        timestamp: '2025-10-15T15:00:00',
+        read: false,
+        icon: '🚚'
+      }
+    ]
+  }
 
   const filteredNotifications = filter === 'all' 
     ? notifications
     : filter === 'unread'
     ? notifications.filter(n => !n.read)
     : notifications.filter(n => n.read)
-
-  const unreadCount = notifications.filter(n => !n.read).length
 
   const handleMarkAsRead = (id) => {
     setNotifications(notifications.map(n => 
@@ -29,19 +76,21 @@ export function BeneficiaryNotifications() {
     setNotifications(notifications.map(n => ({ ...n, read: true })))
   }
 
+  const unreadCount = notifications.filter(n => !n.read).length
+
   const getNotificationColor = (type) => {
     const colors = {
       donation_assigned: '#3498db',
-      delivery_in_transit: '#f39c12',
-      delivery_arrived: '#e74c3c',
-      delivery_confirmed: '#2ecc71',
-      need_matched: '#9b59b6'
+      mission_completed: '#2ecc71',
+      category_upgraded: '#f39c12',
+      donation_received: '#27ae60',
+      delivery_update: '#e74c3c'
     }
     return colors[type] || '#95a5a6'
   }
 
   return (
-    <div className="beneficiary-notifications">
+    <div className="notifications-center">
       <div className="notifications-header">
         <div className="header-title">
           <Bell size={24} />

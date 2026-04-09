@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { pendingDonations, donationStatuses, donationConditions, priorityLevels } from '../../data/donations-pending'
-import { Package, Edit2, Trash2, AlertCircle } from 'lucide-react'
+import { pendingDonations, donationStatuses } from '../../data/donations-pending'
+import { AlertCircle } from 'lucide-react'
 import '../../styles/pages/manage-donations.css'
 
 export function ManageDonations() {

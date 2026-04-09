@@ -1,6 +1,6 @@
-import { missions, badges, donorCategories } from '../data/incentives'
-import { CheckCircle2, Circle, Zap, Award, Target } from 'lucide-react'
-import '../styles/pages/incentives-section.css'
+import { missions, badges, donorCategories } from '../../data/incentives'
+import { CheckCircle2, Zap, Award } from 'lucide-react'
+import '../../styles/pages/incentives-section.css'
 
 export function IncentivesSection() {
   const completedMissions = missions.filter(m => m.completed)

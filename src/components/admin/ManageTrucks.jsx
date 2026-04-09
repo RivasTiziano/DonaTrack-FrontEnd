@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { availableTrucks, truckStatuses } from '../../data/trucks'
-import { Truck, Edit2, AlertCircle, CheckCircle } from 'lucide-react'
+import { Truck, AlertCircle, CheckCircle } from 'lucide-react'
 import '../../styles/pages/manage-trucks.css'
 
 export function ManageTrucks() {
-  const [trucks, setTrucks] = useState(availableTrucks)
+  const [trucks] = useState(availableTrucks)
   const [selectedTruck, setSelectedTruck] = useState(null)
   const [filter, setFilter] = useState('all')
 

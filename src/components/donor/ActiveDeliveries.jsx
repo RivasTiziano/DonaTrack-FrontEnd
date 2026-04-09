@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { MapPin, TrendingUp, Clock, Phone } from 'lucide-react'
-import { activeDeliveries } from '../data/deliveries'
-import '../styles/pages/active-deliveries.css'
+import { MapPin, Clock, Phone } from 'lucide-react'
+import { activeDeliveries } from '../../data/deliveries'
+import '../../styles/pages/active-deliveries.css'
 
 export function ActiveDeliveries() {
   const [selectedDelivery, setSelectedDelivery] = useState(null)

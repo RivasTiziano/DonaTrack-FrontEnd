@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { Heart, Package, Users, Zap, Bell, Map, LogOut } from 'lucide-react'
 import { donations } from '../data/donations'
 import { missions, donorCategories, badges } from '../data/incentives'
 import { generateUserNotifications } from '../data/notifications'
+import { DonorDonations } from '../components/donor/DonorDonations'
+import { BeneficiaryExplorer } from '../components/donor/BeneficiaryExplorer'
+import { IncentivesSection } from '../components/donor/IncentivesSection'
+import { ActiveDeliveries } from '../components/donor/ActiveDeliveries'
+import { NotificationsCenter } from '../components/donor/NotificationsCenter'
 import '../styles/pages/donor-dashboard.css'
 
 export function DonorDashboard() {
@@ -189,40 +194,12 @@ export function DonorDashboard() {
           </div>
         )}
 
-        {activeTab === 'donations' && <DonorDonationsView />}
-        {activeTab === 'beneficiaries' && <BeneficiariesExplorerView />}
-        {activeTab === 'incentives' && <IncentivesSectionView />}
-        {activeTab === 'deliveries' && <DeliveriesTrackerView />}
-        {activeTab === 'notifications' && <NotificationsCenterView />}
+        {activeTab === 'donations' && <DonorDonations />}
+        {activeTab === 'beneficiaries' && <BeneficiaryExplorer />}
+        {activeTab === 'incentives' && <IncentivesSection />}
+        {activeTab === 'deliveries' && <ActiveDeliveries />}
+        {activeTab === 'notifications' && <NotificationsCenter />}
       </main>
     </div>
   )
-}
-
-// Import the actual components
-import { DonorDonations } from './DonorDonations'
-import { BeneficiaryExplorer } from './BeneficiaryExplorer'
-import { IncentivesSection } from './IncentivesSection'
-import { ActiveDeliveries } from './ActiveDeliveries'
-import { NotificationsCenter } from './NotificationsCenter'
-
-// Component Views
-function DonorDonationsView() {
-  return <DonorDonations />
-}
-
-function BeneficiariesExplorerView() {
-  return <BeneficiaryExplorer />
-}
-
-function IncentivesSectionView() {
-  return <IncentivesSection />
-}
-
-function DeliveriesTrackerView() {
-  return <ActiveDeliveries />
-}
-
-function NotificationsCenterView() {
-  return <NotificationsCenter />
 }

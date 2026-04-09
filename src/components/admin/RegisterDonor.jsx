@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { registeredDonors, donorCategories, donorStatuses } from '../../data/donors-list'
-import { Plus, Edit2, Trash2, X, Check } from 'lucide-react'
+import { registeredDonors, donorCategories } from '../../data/donors-list'
+import { Plus, Edit2, Trash2, X } from 'lucide-react'
 import '../../styles/pages/register-donor.css'
 
 export function RegisterDonor() {

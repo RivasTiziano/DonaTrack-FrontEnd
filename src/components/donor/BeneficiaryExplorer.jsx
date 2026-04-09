@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { beneficiaryEntities } from '../data/beneficiaries'
+import { beneficiaryEntities } from '../../data/beneficiaries'
 import { MapPin, Users, Star, ExternalLink } from 'lucide-react'
-import '../styles/pages/beneficiary-explorer.css'
+import '../../styles/pages/beneficiary-explorer.css'
 
 export function BeneficiaryExplorer() {
   const [selectedCategory, setSelectedCategory] = useState('')

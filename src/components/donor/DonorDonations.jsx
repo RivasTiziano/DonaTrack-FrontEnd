@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { donations } from '../data/donations'
-import { donationCategories, donationStatuses } from '../data/beneficiaries'
+import { donations } from '../../data/donations'
+import { donationCategories, donationStatuses } from '../../data/beneficiaries'
 import { Package, Search, Download } from 'lucide-react'
-import '../styles/pages/donor-donations.css'
+import '../../styles/pages/donor-donations.css'
 
 const normalizeText = (value = '') =>
   value
