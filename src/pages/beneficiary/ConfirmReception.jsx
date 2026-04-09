@@ -18,18 +18,21 @@ export function ConfirmReception() {
     files.forEach(file => {
       const reader = new FileReader()
       reader.onload = (event) => {
-        setUploadedPhotos([...uploadedPhotos, {
-          id: Date.now() + Math.random(),
-          preview: event.target.result,
-          name: file.name
-        }])
+        setUploadedPhotos(prev => ([
+          ...prev,
+          {
+            id: Date.now() + Math.random(),
+            preview: event.target.result,
+            name: file.name
+          }
+        ]))
       }
       reader.readAsDataURL(file)
     })
   }
 
   const handleRemovePhoto = (id) => {
-    setUploadedPhotos(uploadedPhotos.filter(p => p.id !== id))
+    setUploadedPhotos(prev => prev.filter(p => p.id !== id))
   }
 
   const handleConfirmReception = () => {
@@ -42,7 +45,7 @@ export function ConfirmReception() {
       return
     }
 
-    setConfirmedDonations([...confirmedDonations, selectedDonation.id])
+    setConfirmedDonations(prev => [...prev, selectedDonation.id])
     setUploadedPhotos([])
     setNotes('')
     setSelectedDonation(null)

@@ -1,8 +1,15 @@
 import { useState } from 'react'
 import { donations } from '../data/donations'
 import { donationCategories, donationStatuses } from '../data/beneficiaries'
-import { Package, Search, Filter, Download } from 'lucide-react'
+import { Package, Search, Download } from 'lucide-react'
 import '../styles/pages/donor-donations.css'
+
+const normalizeText = (value = '') =>
+  value
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 
 export function DonorDonations() {
   const [selectedStatus, setSelectedStatus] = useState('')
@@ -10,15 +17,29 @@ export function DonorDonations() {
   const [selectedSubcategory, setSelectedSubcategory] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredDonations = donations.filter(donation => {
-    const matchesStatus = !selectedStatus || donation.status === selectedStatus
-    const matchesSearch = !searchTerm || donation.title.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
-
-  const selectedCategoryData = selectedCategory 
+  const selectedCategoryData = selectedCategory
     ? donationCategories.find(cat => cat.id === selectedCategory)
     : null
+
+  const filteredDonations = donations.filter(donation => {
+    const searchableText = normalizeText([
+      donation.title,
+      donation.description,
+      donation.entity_name,
+      ...donation.items.map(item => `${item.name} ${item.quantity}`)
+    ].join(' '))
+
+    const normalizedSearchTerm = normalizeText(searchTerm)
+    const normalizedCategoryName = normalizeText(selectedCategoryData?.name || '')
+    const normalizedSubcategory = normalizeText(selectedSubcategory)
+
+    const matchesStatus = !selectedStatus || donation.status === selectedStatus
+    const matchesSearch = !normalizedSearchTerm || searchableText.includes(normalizedSearchTerm)
+    const matchesCategory = !selectedCategory || searchableText.includes(normalizedCategoryName)
+    const matchesSubcategory = !selectedSubcategory || searchableText.includes(normalizedSubcategory)
+
+    return matchesStatus && matchesSearch && matchesCategory && matchesSubcategory
+  })
 
   return (
     <div className="donor-donations-view">

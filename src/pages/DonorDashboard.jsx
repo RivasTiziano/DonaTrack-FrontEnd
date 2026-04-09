@@ -193,7 +193,7 @@ export function DonorDashboard() {
         {activeTab === 'beneficiaries' && <BeneficiariesExplorerView />}
         {activeTab === 'incentives' && <IncentivesSectionView />}
         {activeTab === 'deliveries' && <DeliveriesTrackerView />}
-        {activeTab === 'notifications' && <NotificationsCenterView notifications={notifications} />}
+        {activeTab === 'notifications' && <NotificationsCenterView />}
       </main>
     </div>
   )
