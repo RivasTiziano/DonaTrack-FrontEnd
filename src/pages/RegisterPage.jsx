@@ -1,33 +1,10 @@
-import { Heart, Users, Building2, ArrowRight } from 'lucide-react'
+import { Heart, ArrowRight } from 'lucide-react'
 import { createElement } from 'react'
 import { Link } from 'react-router-dom'
+import { registrationOptions } from '../data/registration-options'
 import '../styles/registration.css'
 
 export function RegisterPage() {
-  const registrationOptions = [
-    {
-      id: 'donor-human',
-      title: 'Soy una persona donante',
-      description: 'Registro como persona humana para realizar donaciones',
-      icon: Heart,
-      path: '/registro/donante-humano'
-    },
-    {
-      id: 'donor-organization',
-      title: 'Soy una organización donante',
-      description: 'Registro como empresa, ONG u otra institución',
-      icon: Building2,
-      path: '/registro/donante-organizacion'
-    },
-    {
-      id: 'beneficiary',
-      title: 'Soy una entidad beneficiaria',
-      description: 'Registro como institución para recibir donaciones',
-      icon: Users,
-      path: '/registro/entidad-beneficiaria'
-    }
-  ]
-
   return (
     <div className="registration-container">
       <div className="registration-wrapper">

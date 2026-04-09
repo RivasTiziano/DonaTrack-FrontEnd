@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { donorOrganizationTypes } from '../data/registration-options'
 import '../styles/registration.css'
 
 export function RegisterDonorOrganizationPage() {
@@ -89,13 +90,6 @@ export function RegisterDonorOrganizationPage() {
     navigate('/')
   }
 
-  const tiposOrganizacion = [
-    { value: 'gubernamental', label: 'Gubernamental' },
-    { value: 'ong', label: 'ONG' },
-    { value: 'empresa', label: 'Empresa' },
-    { value: 'institucion', label: 'Institución' }
-  ]
-
   return (
     <div className="registration-container">
       <div className="registration-wrapper">
@@ -136,7 +130,7 @@ export function RegisterDonorOrganizationPage() {
                   onChange={handleInputChange}
                 >
                   <option value="">Selecciona un tipo</option>
-                  {tiposOrganizacion.map(tipo => (
+                  {donorOrganizationTypes.map(tipo => (
                     <option key={tipo.value} value={tipo.value}>
                       {tipo.label}
                     </option>
