@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Heart, Mail, Lock } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import '../styles/registration.css'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -12,6 +14,72 @@ export function LoginPage() {
 
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  // Datos de prueba para donantes
+  const testDonors = [
+    {
+      id: 'donor-1',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: 'juan@example.com',
+      password: '123456',
+      role: 'donor',
+      phone: '+549123456789',
+      category: 'Platino',
+      joinDate: '2025-06-15'
+    },
+    {
+      id: 'donor-2',
+      nombre: 'María',
+      apellido: 'García',
+      email: 'maria@example.com',
+      password: '123456',
+      role: 'donor',
+      phone: '+549987654321',
+      category: 'Oro',
+      joinDate: '2025-08-20'
+    }
+  ]
+
+  // Datos de prueba para entidades beneficiarias
+  const testBeneficiaries = [
+    {
+      id: 'entity-1',
+      nombre: 'Fundación Despierta',
+      email: 'info@fundaciondespierta.org',
+      password: '123456',
+      role: 'beneficiary',
+      phone: '+541123456789',
+      contact: 'María López',
+      location: 'Villa Crespo, CABA',
+      joinDate: '2025-01-10'
+    },
+    {
+      id: 'entity-2',
+      nombre: 'Red Solidaria Norte',
+      email: 'contacto@redsolitaria.org',
+      password: '123456',
+      role: 'beneficiary',
+      phone: '+541198765432',
+      contact: 'Carlos Mendez',
+      location: 'Belgrano, CABA',
+      joinDate: '2025-03-15'
+    }
+  ]
+
+  // Datos de prueba para administradores
+  const testAdmins = [
+    {
+      id: 'admin-1',
+      nombre: 'Admin',
+      apellido: 'Sistema',
+      email: 'admin@donatrack.com',
+      password: 'admin123',
+      role: 'admin',
+      phone: '+541100000000',
+      joinDate: '2025-01-01'
+    }
+  ]
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -30,9 +98,12 @@ export function LoginPage() {
   const validateForm = () => {
     const newErrors = {}
 
-    if (!formData.email.trim() || !formData.email.includes('@')) {
-      newErrors.email = 'Email válido es requerido'
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es requerido'
+    } else if (!formData.email.includes('@')) {
+      newErrors.email = 'Email inválido'
     }
+
     if (!formData.password.trim()) {
       newErrors.password = 'La contraseña es requerida'
     }
@@ -50,13 +121,29 @@ export function LoginPage() {
     }
 
     setLoading(true)
-    
+
     // Simulamos la llamada a la API
     setTimeout(() => {
-      console.log('Datos de login:', formData)
+      const donor = testDonors.find(d => d.email === formData.email && d.password === formData.password)
+      const beneficiary = testBeneficiaries.find(b => b.email === formData.email && b.password === formData.password)
+      const admin = testAdmins.find(a => a.email === formData.email && a.password === formData.password)
+
+      if (donor) {
+        const { password, ...userWithoutPassword } = donor
+        login(userWithoutPassword)
+        navigate('/donante/dashboard')
+      } else if (beneficiary) {
+        const { password, ...userWithoutPassword } = beneficiary
+        login(userWithoutPassword)
+        navigate('/entidad/dashboard')
+      } else if (admin) {
+        const { password, ...userWithoutPassword } = admin
+        login(userWithoutPassword)
+        navigate('/admin/dashboard')
+      } else {
+        setErrors({ email: 'Email o contraseña incorrectos' })
+      }
       setLoading(false)
-      alert('¡Iniciaste sesión correctamente!')
-      navigate('/')
     }, 1000)
   }
 

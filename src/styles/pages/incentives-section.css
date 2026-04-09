@@ -1,0 +1,370 @@
+/* Incentives Section */
+.incentives-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Categories Section */
+.categories-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.categories-section h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.category-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f5f7fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.category-bar:hover {
+  background: #e8ecf4;
+}
+
+.category-indicator {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-info strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.category-info small {
+  display: block;
+  color: #999;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Missions Tabs */
+.missions-tabs {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.tab-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.tab-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-badge {
+  padding: 0.5rem 1rem;
+  background: #f5f7fa;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.stat-badge.active {
+  background: linear-gradient(135deg, #667EEA, #764BA2);
+  color: white;
+}
+
+/* Mission Cards */
+.missions-section {
+  margin-bottom: 2rem;
+}
+
+.missions-section h4 {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.missions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.mission-card {
+  background: #f9fafb;
+  border: 2px solid #e0e6ed;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.mission-card.active:hover {
+  border-color: #667EEA;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.mission-card.completed {
+  background: #f0f8f4;
+  border-color: #2E7D32;
+}
+
+.mission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.mission-icon {
+  font-size: 2rem;
+}
+
+.mission-reward {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #FFF3E0;
+  color: #E65100;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.mission-card h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.description {
+  margin: 0.5rem 0 1rem 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.requirement {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: white;
+  border-left: 3px solid #667EEA;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.requirement strong {
+  display: block;
+  color: #333;
+}
+
+/* Progress Section */
+.progress-section {
+  margin: 1rem 0;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #e0e6ed;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667EEA, #764BA2);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.btn-mission-track {
+  width: 100%;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #667EEA;
+  color: #667EEA;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.btn-mission-track:hover {
+  background: #667EEA;
+  color: white;
+}
+
+/* Badges Section */
+.badges-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.badges-section h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.5rem;
+}
+
+.badge-display-card {
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f0f3ff, #f9fafb);
+  border: 2px solid #e0e6ed;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.badge-display-card:hover {
+  transform: translateY(-4px);
+  border-color: #667EEA;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.badge-display-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge-display-card h4 {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.badge-display-card p {
+  margin: 0.25rem 0;
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.3;
+}
+
+.badge-display-card small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Statistics Section */
+.statistics-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.statistics-section h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.stats-boxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f0f3ff, #f9fafb);
+  border-radius: 12px;
+  border: 1px solid #e0e6ed;
+}
+
+.stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667EEA;
+  margin-bottom: 0.5rem;
+}
+
+.stat-box p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .missions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .badges-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .stats-boxes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

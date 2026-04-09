@@ -7,6 +7,10 @@ import { RegisterDonorHumanPage } from './pages/RegisterDonorHumanPage.jsx'
 import { RegisterDonorOrganizationPage } from './pages/RegisterDonorOrganizationPage.jsx'
 import { RegisterBeneficiaryPage } from './pages/RegisterBeneficiaryPage.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
+import { DonorDashboard } from './pages/DonorDashboard.jsx'
+import { BeneficiaryDashboard } from './pages/BeneficiaryDashboard.jsx'
+import { AdminDashboard } from './pages/AdminDashboard.jsx'
+import { ProtectedRoute } from './components/ProtectedRoute.jsx'
 
 function App() {
   return (
@@ -19,6 +23,30 @@ function App() {
       <Route path="/registro/donante-organizacion" element={<RegisterDonorOrganizationPage />} />
       <Route path="/registro/entidad-beneficiaria" element={<RegisterBeneficiaryPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route 
+        path="/donante/dashboard" 
+        element={
+          <ProtectedRoute requiredRole="donor">
+            <DonorDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/entidad/dashboard" 
+        element={
+          <ProtectedRoute requiredRole="beneficiary">
+            <BeneficiaryDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/dashboard" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
