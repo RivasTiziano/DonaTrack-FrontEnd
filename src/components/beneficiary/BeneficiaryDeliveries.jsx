@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { beneficiaryAssignedDonations } from '../../data/beneficiary-donations'
+import { donations as allDonations } from '../../data/donations.js'
 import { MapPin, TrendingUp, Clock, Phone } from 'lucide-react'
+import { InteractiveMap } from '../../components/map/InteractiveMap.jsx'
 import '../../styles/pages/beneficiary-deliveries.css'
 
 export function BeneficiaryDeliveries() {
@@ -9,6 +11,28 @@ export function BeneficiaryDeliveries() {
   const activeDeliveries = beneficiaryAssignedDonations.filter(d => 
     d.status === 'En tránsito' || d.status === 'Confirmada'
   )
+
+  const mapViewport = {
+    lat: -34.6037,
+    lng: -58.3816,
+    zoom: 12,
+  }
+
+  const mapDonations = activeDeliveries.map(delivery => {
+    const matchingDonation = allDonations.find(d => d.id === delivery.donation_id)
+    return {
+      ...matchingDonation,
+      id: delivery.id,
+      title: delivery.title,
+      location: delivery.location,
+      status: delivery.status,
+    }
+  })
+
+  const handleSelectDonation = (deliveryId) => {
+    const delivery = activeDeliveries.find(d => d.id === deliveryId)
+    setSelectedDelivery(delivery)
+  }
 
   const calculateDistance = (truck, destination) => {
     // Validar que existan los datos necesarios
@@ -38,11 +62,12 @@ export function BeneficiaryDeliveries() {
       <div className="deliveries-layout">
         {/* Map Section */}
         <div className="map-section">
-          <div className="map-header">
-            <h3>Mapa de Entregas Activas</h3>
-          </div>
           <div className="map-container">
-            <p>📍 Integrará Google Maps para mostrar ubicaciones en tiempo real</p>
+            <InteractiveMap
+              donations={mapDonations}
+              viewport={mapViewport}
+              onSelectDonation={handleSelectDonation}
+            />
           </div>
         </div>
 

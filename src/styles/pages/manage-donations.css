@@ -7,7 +7,14 @@
 }
 
 .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 30px;
+}
+
+.section-header > div {
+  flex: 1;
 }
 
 .section-header h2 {
@@ -19,6 +26,25 @@
 .section-header p {
   color: #666;
   margin: 0;
+}
+
+.btn-add-donation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+}
+
+.btn-add-donation:hover {
+  background-color: #1976D2;
 }
 
 /* Filter Tabs */
@@ -118,14 +144,56 @@
 .item-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
+  gap: 10px;
+}
+
+.item-header > div {
+  flex: 1;
 }
 
 .item-header h4 {
   margin: 0;
   font-size: 15px;
   color: #333;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit {
+  background-color: #f0f0f0;
+  color: #2196F3;
+}
+
+.btn-edit:hover {
+  background-color: #e0e0e0;
+  color: #1976D2;
+}
+
+.btn-delete {
+  background-color: #f0f0f0;
+  color: #f44336;
+}
+
+.btn-delete:hover {
+  background-color: #e0e0e0;
+  color: #d32f2f;
 }
 
 .status-badge {
@@ -304,6 +372,136 @@
 
 .btn-mark-expired:hover {
   background-color: #f57c00;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.3s;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.form-body {
+  padding: 30px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-save {
+  background-color: #2196F3;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #1976D2;
 }
 
 @media (max-width: 1024px) {

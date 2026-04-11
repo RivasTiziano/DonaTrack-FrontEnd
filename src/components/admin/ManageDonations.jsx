@@ -1,12 +1,22 @@
 import { useState } from 'react'
-import { pendingDonations, donationStatuses } from '../../data/donations-pending'
-import { AlertCircle } from 'lucide-react'
+import { pendingDonations, donationStatuses, donationConditions, priorityLevels } from '../../data/donations-pending'
+import { Package, Edit2, Trash2, AlertCircle, Plus, X } from 'lucide-react'
 import '../../styles/pages/manage-donations.css'
 
 export function ManageDonations() {
   const [donations, setDonations] = useState(pendingDonations)
   const [selectedDonation, setSelectedDonation] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [formData, setFormData] = useState({
+    donor_name: '',
+    title: '',
+    condition: '',
+    priority_level: '',
+    storage_location: '',
+    received_date: new Date().toISOString().split('T')[0]
+  })
 
   const filteredDonations = filter === 'all' 
     ? donations
@@ -23,6 +33,59 @@ export function ManageDonations() {
     setDonations(donations.map(d => 
       d.id === id ? { ...d, status: 'Vencida' } : d
     ))
+  }
+
+  const handleAddDonation = () => {
+    setFormData({
+      donor_name: '',
+      title: '',
+      condition: '',
+      priority_level: '',
+      storage_location: '',
+      received_date: new Date().toISOString().split('T')[0]
+    })
+    setEditingId(null)
+    setShowForm(true)
+  }
+
+  const handleEditDonation = (donation) => {
+    setFormData({
+      donor_name: donation.donor_name,
+      title: donation.title,
+      condition: donation.condition,
+      priority_level: donation.priority_level,
+      storage_location: donation.storage_location,
+      received_date: donation.received_date
+    })
+    setEditingId(donation.id)
+    setShowForm(true)
+  }
+
+  const handleDeleteDonation = (id) => {
+    setDonations(donations.filter(d => d.id !== id))
+  }
+
+  const handleSaveDonation = () => {
+    if (!formData.donor_name || !formData.title || !formData.condition || !formData.priority_level) {
+      alert('Por favor completa los campos requeridos')
+      return
+    }
+
+    if (editingId) {
+      setDonations(donations.map(d => d.id === editingId ? { ...d, ...formData } : d))
+    } else {
+      const newDonation = {
+        id: `pending-${Date.now()}`,
+        donation_id: `donation-${Date.now()}`,
+        donor_id: `donor-${Date.now()}`,
+        ...formData,
+        items: [],
+        expiration_date: null,
+        status: 'Pendiente'
+      }
+      setDonations([newDonation, ...donations])
+    }
+    setShowForm(false)
   }
 
   const getStatusColor = (status) => {
@@ -46,11 +109,107 @@ export function ManageDonations() {
   return (
     <div className="manage-donations-view">
       <div className="section-header">
-        <h2>Gestionar Donaciones</h2>
-        <p>Control de donaciones en depósito y actualizaciones de estado</p>
+        <div>
+          <h2>Gestionar Donaciones</h2>
+          <p>Control de donaciones en depósito y actualizaciones de estado</p>
+        </div>
+        <button className="btn-add-donation" onClick={handleAddDonation}>
+          <Plus size={20} />
+          Nueva Donación
+        </button>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Modal Form */}
+      {showForm && (
+        <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{editingId ? 'Editar Donación' : 'Registrar Nueva Donación'}</h3>
+              <button className="close-btn" onClick={() => setShowForm(false)}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="form-body">
+              <div className="form-group">
+                <label>Nombre del Donante *</label>
+                <input
+                  type="text"
+                  value={formData.donor_name}
+                  onChange={(e) => setFormData({ ...formData, donor_name: e.target.value })}
+                  placeholder="Ej: Juan Pérez"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Título de la Donación *</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Ej: Alimentos no perecederos"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Condición *</label>
+                  <select
+                    value={formData.condition}
+                    onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                  >
+                    <option value="">Selecciona una condición</option>
+                    {donationConditions.map(cond => (
+                      <option key={cond} value={cond}>{cond}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Prioridad *</label>
+                  <select
+                    value={formData.priority_level}
+                    onChange={(e) => setFormData({ ...formData, priority_level: e.target.value })}
+                  >
+                    <option value="">Selecciona una prioridad</option>
+                    {priorityLevels.map(level => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Ubicación de Almacenamiento</label>
+                <input
+                  type="text"
+                  value={formData.storage_location}
+                  onChange={(e) => setFormData({ ...formData, storage_location: e.target.value })}
+                  placeholder="Ej: Estantería A-12"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Fecha de Recepción</label>
+                <input
+                  type="date"
+                  value={formData.received_date}
+                  onChange={(e) => setFormData({ ...formData, received_date: e.target.value })}
+                />
+              </div>
+
+              <div className="form-actions">
+                <button className="btn-cancel" onClick={() => setShowForm(false)}>Cancelar</button>
+                <button className="btn-save" onClick={handleSaveDonation}>
+                  {editingId ? 'Guardar Cambios' : 'Registrar Donación'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      
       <div className="filter-tabs">
         <button className={`filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
           Todas ({donations.length})
@@ -86,10 +245,20 @@ export function ManageDonations() {
                   </div>
                 )}
                 <div className="item-header">
-                  <h4>{donation.title}</h4>
-                  <span className="status-badge" style={{ backgroundColor: getStatusColor(donation.status) }}>
-                    {donation.status}
-                  </span>
+                  <div>
+                    <h4>{donation.title}</h4>
+                    <span className="status-badge" style={{ backgroundColor: getStatusColor(donation.status) }}>
+                      {donation.status}
+                    </span>
+                  </div>
+                  <div className="item-actions" onClick={(e) => e.stopPropagation()}>
+                    <button className="btn-edit" onClick={() => handleEditDonation(donation)} title="Editar">
+                      <Edit2 size={16} />
+                    </button>
+                    <button className="btn-delete" onClick={() => handleDeleteDonation(donation.id)} title="Eliminar">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
                 <div className="item-meta">
                   <span>{donation.donor_name}</span>

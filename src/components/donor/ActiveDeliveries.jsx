@@ -1,11 +1,35 @@
 import { useState } from 'react'
-import { MapPin, Clock, Phone } from 'lucide-react'
-import { activeDeliveries } from '../../data/deliveries'
+import { MapPin, TrendingUp, Clock, Phone } from 'lucide-react'
+import { InteractiveMap } from '../components/map/InteractiveMap.jsx'
+import { activeDeliveries } from '../data/deliveries'
+import { donations as allDonations } from '../data/donations.js'
 import '../../styles/pages/active-deliveries.css'
 
 export function ActiveDeliveries() {
   const [selectedDelivery, setSelectedDelivery] = useState(null)
-  const [mapZoom, setMapZoom] = useState(13)
+
+  const mapViewport = {
+    lat: -34.6037,
+    lng: -58.3816,
+    zoom: 12,
+  }
+
+  const mapDonations = activeDeliveries.map(delivery => {
+    const matchingDonation = allDonations.find(d => d.id === delivery.donationId)
+    return {
+      ...matchingDonation,
+      id: delivery.id, // Use delivery ID to navigate to delivery details if desired
+      title: delivery.donationTitle,
+      location: delivery.destination,
+      status: delivery.status,
+      // Other fields can be mapped as needed for the InteractiveMap component
+    }
+  })
+
+  const handleSelectDonation = (deliveryId) => {
+    const delivery = activeDeliveries.find(d => d.id === deliveryId)
+    setSelectedDelivery(delivery)
+  }
 
   const calculateDistance = (truck, destination) => {
     // Fórmula simplificada para calcular distancia (haversine)
@@ -32,37 +56,11 @@ export function ActiveDeliveries() {
         {/* Map Section */}
         <div className="map-section">
           <div className="map-container">
-            {/* Mapa interactivo simulado */}
-            <div className="map-placeholder">
-              <div className="map-header">
-                <h4>Mapa de Entregas Activas</h4>
-                <div className="map-controls">
-                  <button onClick={() => setMapZoom(Math.min(mapZoom + 1, 20))}>+</button>
-                  <span>{mapZoom}</span>
-                  <button onClick={() => setMapZoom(Math.max(mapZoom - 1, 5))}>−</button>
-                </div>
-              </div>
-              <div className="map-content" style={{ background: '#f0f4f8' }}>
-                <div className="map-legend">
-                  <h5>Leyenda</h5>
-                  <div className="legend-item">
-                    <div className="legend-icon" style={{ background: '#E74C3C' }}></div>
-                    <span>Camión activo</span>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-icon" style={{ background: '#F39C12' }}></div>
-                    <span>Punto de entrega</span>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-icon" style={{ background: '#2ECC71' }}></div>
-                    <span>Destino</span>
-                  </div>
-                </div>
-                <p style={{ textAlign: 'center', color: '#999', marginTop: '50px' }}>
-                  Integrará Google Maps o Leaflet para mostrar ubicaciones en tiempo real
-                </p>
-              </div>
-            </div>
+            <InteractiveMap
+              donations={mapDonations}
+              viewport={mapViewport}
+              onSelectDonation={handleSelectDonation}
+            />
           </div>
         </div>
 
