@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Detalle de Donación</title>
+</head>
+<body>
+    <main class="detail-page" style="max-width: 900px; margin: 2rem auto; padding: 0 1.5rem;" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/explorar-donaciones}">Mapa de Donaciones</a>
+            <span class="separator">/</span>
+            <span class="current" th:text="${donation.title}">Detalle</span>
+        </nav>
+
+        <section class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2rem; box-shadow: var(--shadow-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+                <a th:href="@{/explorar-donaciones}" class="btn btn-outline btn-sm">
+                    <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                    <span>Volver al mapa</span>
+                </a>
+                <span class="status-badge badge-entregada">
+                    <i data-lucide="badge-check" style="width: 14px; height: 14px;"></i>
+                    <span>Entrega Verificada con Fotos</span>
+                </span>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Registro Público de Transparencia</span>
+                <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); margin-top: 4px;" th:text="${donation.title}">Título</h1>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-xs);">
+                        <img th:src="${donation.image_url}" th:alt="${donation.title}" style="width: 100%; height: 260px; object-fit: cover;" />
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--color-muted); text-align: center; margin-top: 6px;">
+                        Fotografía tomada por la entidad receptora durante la entrega.
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #e0e7ff; color: #4338ca; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="building-2" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--color-muted); text-transform: uppercase; font-weight: 600;">Entidad Receptora</span>
+                            <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-ink);" th:text="${donation.entity_name}">Nombre</h4>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #ecfeff; color: #0891b2; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--color-muted); text-transform: uppercase; font-weight: 600;">Ubicación de Entrega</span>
+                            <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-ink);" th:text="${donation.location.address}">Ubicación</h4>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #ecfdf5; color: #059669; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--color-muted); text-transform: uppercase; font-weight: 600;">Fecha de Entrega</span>
+                            <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-ink);" th:text="${donation.delivery_date}">Fecha</h4>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #fef3c7; color: #d97706; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--color-muted); text-transform: uppercase; font-weight: 600;">Volumen Total</span>
+                            <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--color-ink);"><span th:text="${donation.total_units}">0</span> unidades</h4>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--color-border); margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Detalle de Artículos</span>
+                        <ul style="list-style: disc; margin: 0.5rem 0 0 1.25rem; font-size: 0.875rem; color: var(--color-ink-light);">
+                            <li th:each="item : ${donation.items}">
+                                <strong th:text="${item.name}">Nombre</strong>: <span th:text="${item.quantity}">Cantidad</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--color-border); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <p style="font-size: 0.875rem; color: var(--color-muted);" th:text="${donation.description}">Descripción</p>
+                <a th:href="@{/explorar-donaciones}" class="btn btn-primary">
+                    <i data-lucide="map" style="width: 18px; height: 18px;"></i>
+                    <span>Ver Otras Donaciones en el Mapa</span>
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

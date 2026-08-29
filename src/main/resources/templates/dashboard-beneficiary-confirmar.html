@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-beneficiary-layout :: layout(~{::title}, ~{::main}, 'confirm')}">
+<head>
+    <title>DonaTrack - Confirmar Recepción</title>
+</head>
+<body>
+    <main class="beneficiary-confirm-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/entidad/dashboard}">Panel Entidad</a>
+            <span class="separator">/</span>
+            <span class="current">Confirmar Recepción</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="margin-bottom: 1.5rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Confirmación de Recepción de Donaciones</h1>
+            <p style="color: var(--color-muted); font-size: 0.9375rem;">Sube fotografías de los bienes recibidos para certificar la entrega en la galería pública de DonaTrack.</p>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10 y Requerimiento de Dominio) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de confirmación con fotos">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="camera" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Verificación de Entrega y Carga de Evidencia</div>
+                <p class="onboarding-hint-text">
+                    La carga de al menos una fotografía de los bienes recepcionados es el paso que permite dar por <strong>Entregada</strong> la donación, notificar al donante y habilitar la consulta pública en el mapa interactivo sin requerir inicio de sesión.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Layout Grid: List of pending items + Confirmation Form -->
+        <div class="dt-grid-1-1-3">
+            <!-- Pending Donations to Confirm -->
+            <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.15rem; font-weight: 700;">Entregas Pendientes</h2>
+                    <span class="status-badge badge-traslado" th:text="${assignedDonations.size()} + ' pendientes'">2 pendientes</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="confirm-item-card" th:each="donation, iter : ${assignedDonations}" 
+                         style="padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; transition: all 0.2s ease;"
+                         th:styleappend="${iter.index == 0 ? 'border-color: var(--color-primary); background: #fff8f8;' : 'background: #f8fafc;'}"
+                         onclick="document.querySelectorAll('.confirm-item-card').forEach(c => { c.style.borderColor = 'var(--color-border)'; c.style.background = '#f8fafc'; }); this.style.borderColor = 'var(--color-primary)'; this.style.background = '#fff8f8';">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-ink);" th:text="${donation.title}">Donación</h4>
+                            <span class="status-badge badge-traslado" th:text="${donation.status}">En camino</span>
+                        </div>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);">
+                            Donante: <strong th:text="${donation.donor_name}">Donante</strong> • <span th:text="${donation.items_count}">50</span> unidades
+                        </p>
+                        <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-top: 4px;">
+                            Camión <span th:text="${donation.truck_plate}">AB 123 CD</span> • Chofer: <span th:text="${donation.driver}">Miguel Ángel</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation & Photo Upload Form -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs);">
+                <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Cargar Evidencia Fotográfica</h2>
+                <p style="font-size: 0.875rem; color: var(--color-muted); margin-bottom: 1.5rem;">
+                    Confirmando: <strong>Donación de Fideos y Arroz (Supermercados Dia)</strong>
+                </p>
+
+                <form id="form-confirm-reception" onsubmit="event.preventDefault(); openModal('modal-confirm-submission');">
+                    <!-- Photo Dropzone -->
+                    <div class="form-group">
+                        <label class="form-label">Fotografías de los bienes recibidos <span class="required">*</span></label>
+                        <div id="dropzone" style="border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 2rem; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s ease;"
+                             onclick="document.getElementById('file-photo-input').click();">
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background: #ffe4e6; color: var(--color-primary); display: grid; place-items: center; margin: 0 auto 0.75rem auto;">
+                                <i data-lucide="upload-cloud" style="width: 26px; height: 26px;"></i>
+                            </div>
+                            <strong style="font-size: 0.9375rem; color: var(--color-ink);">Haz clic para seleccionar fotos</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted); margin-top: 2px;">o arrastra las imágenes aquí (PNG, JPG hasta 10MB)</p>
+                            <input type="file" id="file-photo-input" multiple accept="image/*" style="display: none;" onchange="handlePhotoUpload(this)" />
+                        </div>
+                        <div id="photo-preview-container" style="display: flex; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Observaciones o comentarios de recepción (Opcional)</label>
+                        <textarea class="form-control" rows="3" placeholder="Ej. Los alimentos fueron recibidos en perfectas condiciones de empaque y fecha de vencimiento..."></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn btn-outline">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                            <span>Confirmar Recepción</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Accessible Confirmation Modal -->
+        <div id="modal-confirm-submission" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-confirm-submission')"></div>
+            <div class="dt-modal-content">
+                <div class="dt-modal-header">
+                    <h3 id="modal-confirm-title" class="dt-modal-title">¿Confirmar recepción de donación?</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-confirm-submission')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <div class="dt-modal-body">
+                    <p style="font-size: 0.9375rem; color: var(--color-ink); margin-bottom: 0.75rem;">
+                        Estás a punto de confirmar la entrega de <strong>50 unidades de alimentos</strong> desde <strong>Supermercados Dia</strong>.
+                    </p>
+                    <p style="font-size: 0.875rem; color: var(--color-muted);">
+                        Esta acción cambiará el estado de la donación a <strong>Entregada</strong>, notificará al donante y publicará las fotos en la galería comunitaria verificada.
+                    </p>
+                </div>
+                <div class="dt-modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-confirm-submission')">Volver</button>
+                    <button type="button" class="btn btn-primary" onclick="simulateAsyncAction(this, 700, function() { closeModal('modal-confirm-submission'); showToast('¡Recepción Confirmada!', 'La donación quedó registrada como entregada y las fotos están publicadas en el mapa.', 'success'); });">
+                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                        <span>Sí, Confirmar Entrega</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function handlePhotoUpload(input) {
+                const container = document.getElementById('photo-preview-container');
+                if (!container || !input.files || input.files.length === 0) return;
+                container.innerHTML = '';
+                Array.from(input.files).forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '70px';
+                        img.style.height = '70px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '8px';
+                        img.style.border = '2px solid var(--color-border)';
+                        container.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                showToast('Foto cargada', `${input.files.length} archivo(s) listo(s) para confirmación.`, 'info');
+            }
+        </script>
+    </main>
+</body>
+</html>

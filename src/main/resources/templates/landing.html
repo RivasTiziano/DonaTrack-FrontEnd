@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Inicio</title>
+</head>
+<body>
+    <main id="inicio">
+        <section class="hero">
+            <div class="container hero-grid">
+                <div>
+                    <span class="kicker" th:text="${heroContent.kicker}">Kicker</span>
+                    <h1 th:text="${heroContent.title}">Title</h1>
+                    <p th:text="${heroContent.description}">Description</p>
+                    <div class="hero-actions">
+                        <a th:href="@{/registro}" style="text-decoration: none;">
+                            <button type="button" class="btn btn-primary">Empezar a donar</button>
+                        </a>
+                        <a href="#como-funciona" class="btn btn-outline hero-link-button">
+                            <span>Ver cómo funciona</span> 
+                            <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                        </a>
+                    </div>
+                    <div class="stats" aria-label="Estadisticas destacadas">
+                        <div class="stat" th:each="stat : ${heroStats}">
+                            <strong th:text="${stat.value}">0</strong>
+                            <span th:text="${stat.label}">Label</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <img th:src="${heroContent.heroImage}" alt="Voluntarios preparando donaciones" />
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section: Cómo Funciona en 4 Pasos -->
+        <section class="section" id="como-funciona" style="background: #ffffff; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+            <div class="container">
+                <span class="kicker">Proceso Transparente</span>
+                <h2 style="margin-top: 0.5rem;">¿Cómo Funciona DonaTrack?</h2>
+                <p class="section-copy">
+                    Garantizamos la trazabilidad integral de cada aporte desde el ingreso físico hasta la entrega final verificada.
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2.5rem;">
+                    <!-- Paso 1 -->
+                    <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary); display: grid; place-items: center;">
+                                <i data-lucide="package-plus" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-muted);">01</span>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Recepción en Depósito</h3>
+                        <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.5;">
+                            Las donaciones son recibidas, inventariadas y clasificadas por categoría y subcategoría por el equipo de administración.
+                        </p>
+                    </div>
+
+                    <!-- Paso 2 -->
+                    <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #e0e7ff; color: #4338ca; display: grid; place-items: center;">
+                                <i data-lucide="git-merge" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-muted);">02</span>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Asignación Semántica</h3>
+                        <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.5;">
+                            El algoritmo evalúa las necesidades publicadas por comedores y escuelas, emparejando los bienes según urgencia y compatibilidad.
+                        </p>
+                    </div>
+
+                    <!-- Paso 3 -->
+                    <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #ecfeff; color: #0891b2; display: grid; place-items: center;">
+                                <i data-lucide="truck" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-muted);">03</span>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Traslado con GPS</h3>
+                        <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.5;">
+                            La flota logística transporta la donación con monitoreo de ubicación en tiempo real visible para el donante y la entidad.
+                        </p>
+                    </div>
+
+                    <!-- Paso 4 -->
+                    <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #ecfdf5; color: #059669; display: grid; place-items: center;">
+                                <i data-lucide="camera" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-muted);">04</span>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Evidencia Fotográfica</h3>
+                        <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.5;">
+                            Al recibir los bienes, la entidad sube fotos que se publican de inmediato en el mapa de transparencia sin requerir login.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="about">
+            <div class="container">
+                <h2>Nuestro proposito</h2>
+                <p class="section-copy">
+                    Hacemos que la solidaridad sea medible y visible para fortalecer la confianza.
+                </p>
+                <div class="feature-grid">
+                    <article class="feature-card" th:each="feature : ${landingFeatures}">
+                        <div class="feature-icon" aria-hidden="true">
+                            <i th:attr="data-lucide=${feature.icon}" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <h3 th:text="${feature.title}">Title</h3>
+                        <p th:text="${feature.description}">Description</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="donations">
+            <div class="container">
+                <h2>Donaciones destacadas del mes</h2>
+                <p class="section-copy">Ejemplos de entregas recientes con su trazabilidad.</p>
+                <div class="donation-grid">
+                    <article class="donation-card" th:each="donation : ${featuredDonations}">
+                        <img th:src="${donation.image}" th:alt="${donation.item}" />
+                        <h3 th:text="${donation.item}">Item</h3>
+                        <p>
+                            <strong>Donante:</strong> <span th:text="${donation.donorName}">Donor</span>
+                        </p>
+                        <p class="meta" th:text="${donation.date}">Date</p>
+                        <p class="meta">Beneficiario: <span th:text="${donation.beneficiary}">Beneficiary</span></p>
+                        <button type="button" class="btn btn-outline">Ver detalles</button>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="gallery">
+            <div class="container">
+                <h2>Galeria de donaciones</h2>
+                <p class="section-copy">Consulta entregas reales sin necesidad de iniciar sesion.</p>
+                <div class="gallery-grid">
+                    <figure class="gallery-item" th:each="item : ${recentDeliveries}">
+                        <img th:src="${item.image}" th:alt="${item.title}" />
+                        <figcaption th:text="${item.title}">Title</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta">
+            <div class="container">
+                <div class="cta-box">
+                    <h2>Sumate a una red de ayuda con evidencia real</h2>
+                    <p>
+                        Registra tus donaciones o solicita apoyo en una plataforma clara,
+                        colaborativa y centrada en el impacto social.
+                    </p>
+                    <div class="cta-actions">
+                        <a th:href="@{/registro}" style="text-decoration: none;">
+                            <button type="button" class="btn btn-outline">Registrarme como donante</button>
+                        </a>
+                        <a th:href="@{/registro/entidad-beneficiaria}" style="text-decoration: none;">
+                            <button type="button" class="btn btn-outline">Registrarme como beneficiario</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer" id="contact">
+            <div class="container">
+                <div class="footer-grid">
+                    <div>
+                        <div class="brand">
+                            <span class="brand-mark" aria-hidden="true">
+                                <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+                            </span>
+                            DonaTrack
+                        </div>
+                        <p>Transparencia para transformar la confianza en ayuda concreta.</p>
+                    </div>
+
+                    <div>
+                        <h4>Enlaces rapidos</h4>
+                        <ul>
+                            <li th:each="link : ${footerQuickLinks}">
+                                <a th:href="${link.href}" th:text="${link.label}">Label</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4>Acceso</h4>
+                        <ul>
+                            <li th:each="link : ${footerAccessLinks}">
+                                <a th:href="${link.href}" th:text="${link.label}">Label</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4>Contacto</h4>
+                        <ul>
+                            <li><i data-lucide="mail" style="width: 14px; height: 14px;"></i> info@donatrack.org</li>
+                            <li><i data-lucide="phone" style="width: 14px; height: 14px;"></i> +52 55 1234 5678</li>
+                            <li><i data-lucide="map-pin" style="width: 14px; height: 14px;"></i> Buenos Aires, Argentina</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="legal">
+                    <a th:each="link : ${footerLegalLinks}" th:href="${link.href}" th:text="${link.label}">Label</a>
+                </div>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>

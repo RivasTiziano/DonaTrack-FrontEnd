@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-donor-layout :: layout(~{::title}, ~{::main}, 'notificaciones')}">
+<head>
+    <title>DonaTrack - Notificaciones</title>
+</head>
+<body>
+    <main class="donor-notifications-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/donante/dashboard}">Panel Donante</a>
+            <span class="separator">/</span>
+            <span class="current">Centro de Notificaciones</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Centro de Notificaciones</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Mantente al día con los cambios de estado de tus donaciones y recompensas.</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Notificaciones actualizadas', 'Todas las notificaciones fueron marcadas como leídas.', 'success')">
+                <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
+                <span>Marcar todas como leídas</span>
+            </button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <button type="button" class="btn btn-outline btn-sm filter-tab active">Todas</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">No leídas (2)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Entregas</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Incentivos</button>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
+            <article class="notification-card" th:each="notif : ${notifications}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;"
+                     th:styleappend="${notif.type == 'success' ? 'background: #ecfdf5; color: #059669;' : (notif.type == 'info' ? 'background: #eff6ff; color: #2563eb;' : 'background: #fef3c7; color: #d97706;')}">
+                    <i th:attr="data-lucide=${notif.type == 'success' ? 'package-check' : (notif.type == 'info' ? 'truck' : 'award')}" style="width: 22px; height: 22px;"></i>
+                </div>
+
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink);" th:text="${notif.title}">Título</h3>
+                        <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${notif.date}">Fecha</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--color-ink-light); line-height: 1.45;" th:text="${notif.message}">Mensaje de notificación</p>
+                </div>
+
+                <span th:if="${notif.unread}" style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; margin-top: 6px;" title="No leída"></span>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

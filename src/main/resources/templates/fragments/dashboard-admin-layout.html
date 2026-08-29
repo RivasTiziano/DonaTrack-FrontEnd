@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content, activeTab)">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:replace="${title}">DonaTrack - Panel Administrador</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" />
+    <!-- Local Leaflet & CSS -->
+    <link rel="stylesheet" th:href="@{/vendor/leaflet/leaflet.css}" />
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <!-- Local Vendor Scripts -->
+    <script th:src="@{/vendor/lucide/lucide.min.js}"></script>
+    <script th:src="@{/vendor/leaflet/leaflet.js}"></script>
+</head>
+<body class="dashboard-shell">
+    <!-- Header -->
+    <header class="dashboard-header" role="banner">
+        <div class="dashboard-header-left">
+            <a class="brand" th:href="@{/}" aria-label="DonaTrack - Inicio">
+                <span class="brand-mark" aria-hidden="true">
+                    <i data-lucide="heart" style="width: 22px; height: 22px;"></i>
+                </span>
+                <span>DonaTrack</span>
+            </a>
+            <span class="role-badge" style="background: #fef3c7; color: #b45309;">
+                <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
+                Administración
+            </span>
+        </div>
+
+        <div class="dashboard-header-right">
+            <div class="user-profile-summary">
+                <span class="user-profile-name" th:text="${user != null ? user.name : 'Administrador'}">Administrador</span>
+                <span class="user-profile-role">Depósito Central</span>
+            </div>
+
+            <a th:href="@{/}" style="text-decoration: none;" data-tooltip="Cerrar sesión">
+                <button type="button" class="btn btn-outline btn-sm" style="color: var(--color-ink-light);">
+                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                    <span>Salir</span>
+                </button>
+            </a>
+        </div>
+    </header>
+
+    <div class="dashboard-body">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar" aria-label="Navegación del panel de administración">
+            <nav class="sidebar-nav">
+                <a th:href="@{/admin/dashboard}" th:classappend="${activeTab == 'inicio'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="layout-dashboard" style="width: 20px; height: 20px;"></i>
+                    <span>Resumen</span>
+                </a>
+                <a th:href="@{/admin/dashboard/donantes}" th:classappend="${activeTab == 'donors'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+                    <span>Donantes</span>
+                </a>
+                <a th:href="@{/admin/dashboard/donaciones}" th:classappend="${activeTab == 'donations'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+                    <span>Donaciones en Depósito</span>
+                </a>
+                <a th:href="@{/admin/dashboard/asignar}" th:classappend="${activeTab == 'assign'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="git-merge" style="width: 20px; height: 20px;"></i>
+                    <span>Asignar Beneficiarios</span>
+                </a>
+                <a th:href="@{/admin/dashboard/camiones}" th:classappend="${activeTab == 'trucks'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="truck" style="width: 20px; height: 20px;"></i>
+                    <span>Flota de Camiones</span>
+                </a>
+                <a th:href="@{/admin/dashboard/rankings}" th:classappend="${activeTab == 'rankings'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="trophy" style="width: 20px; height: 20px;"></i>
+                    <span>Rankings Mensuales</span>
+                </a>
+                <a th:href="@{/admin/dashboard/importar}" th:classappend="${activeTab == 'import'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="file-up" style="width: 20px; height: 20px;"></i>
+                    <span>Importar CSV</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a th:href="@{/explorar-donaciones}" class="btn btn-outline" style="width: 100%; font-size: 0.8125rem; min-height: 40px;">
+                    <i data-lucide="map" style="width: 16px; height: 16px;"></i>
+                    <span>Mapa Público</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content View -->
+        <main class="dashboard-main-content" role="main">
+            <div th:replace="${content}"></div>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="dashboard-bottom-nav" aria-label="Navegación móvil">
+        <a th:href="@{/admin/dashboard}" th:classappend="${activeTab == 'inicio'} ? 'active' : ''" class="bottom-nav-item">
+            <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+            <span>Inicio</span>
+        </a>
+        <a th:href="@{/admin/dashboard/donantes}" th:classappend="${activeTab == 'donors'} ? 'active' : ''" class="bottom-nav-item">
+            <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+            <span>Donantes</span>
+        </a>
+        <a th:href="@{/admin/dashboard/donaciones}" th:classappend="${activeTab == 'donations'} ? 'active' : ''" class="bottom-nav-item">
+            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+            <span>Depósito</span>
+        </a>
+        <a th:href="@{/admin/dashboard/asignar}" th:classappend="${activeTab == 'assign'} ? 'active' : ''" class="bottom-nav-item">
+            <i data-lucide="git-merge" style="width: 18px; height: 18px;"></i>
+            <span>Asignar</span>
+        </a>
+        <a th:href="@{/admin/dashboard/importar}" th:classappend="${activeTab == 'import'} ? 'active' : ''" class="bottom-nav-item">
+            <i data-lucide="file-up" style="width: 18px; height: 18px;"></i>
+            <span>CSV</span>
+        </a>
+    </nav>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/app-usability.js}"></script>
+    <script>
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-beneficiary-layout :: layout(~{::title}, ~{::main}, 'inicio')}">
+<head>
+    <title>DonaTrack - Panel Entidad Beneficiaria</title>
+</head>
+<body>
+    <main class="overview-section" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <span class="current">Panel Entidad Beneficiaria</span>
+        </nav>
+
+        <!-- Onboarding Hint (Heurística #10) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía para entidades beneficiarias">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="building-2" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Bienvenido, <span th:text="${user.name}">Fundación Vida</span></div>
+                <p class="onboarding-hint-text">
+                    Desde este panel puedes publicar las <strong>necesidades materiales</strong> de tu institución (recurrentes o extraordinarias), recibir asignaciones automáticas del sistema, monitorear los camiones en camino y <strong>confirmar la recepción subiendo fotos</strong> para la galería pública.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Quick Stats Grid -->
+        <div class="dt-stats-grid">
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+                <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #e0e7ff; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="clipboard-list" style="width: 26px; height: 26px; color: #4338ca;"></i>
+                </div>
+                <div class="stat-content">
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Necesidades Activas</span>
+                    <p class="stat-value" style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;" th:text="${needs.size()}">3</p>
+                    <small style="color: #4338ca; font-weight: 600; font-size: 0.8125rem;">1 extraordinaria urgente</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+                <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #ecfeff; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="truck" style="width: 26px; height: 26px; color: #0891b2;"></i>
+                </div>
+                <div class="stat-content">
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Envíos en Camino</span>
+                    <p class="stat-value" style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;">1</p>
+                    <small style="color: #0891b2; font-weight: 600; font-size: 0.8125rem;">Arribo hoy 15:30</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+                <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #ecfdf5; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="package-check" style="width: 26px; height: 26px; color: #059669;"></i>
+                </div>
+                <div class="stat-content">
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Donaciones Recibidas</span>
+                    <p class="stat-value" style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;">18</p>
+                    <small style="color: #059669; font-weight: 600; font-size: 0.8125rem;">Todas verificadas</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Needs & Pending Confirmations Layout -->
+        <div class="dt-grid-2-1">
+            <!-- Active Needs List -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Necesidades en Curso</h2>
+                    <a th:href="@{/entidad/dashboard/necesidades}" class="btn btn-primary btn-sm">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                        <span>Publicar Necesidad</span>
+                    </a>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div th:each="need : ${needs}" style="padding: 1rem; background: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${need.type} + ' • ' + ${need.category}">Tipo</span>
+                                <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${need.title}">Título</h4>
+                            </div>
+                            <span class="status-badge badge-asignada" th:text="${need.status}">Activa</span>
+                        </div>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);" th:text="${need.description}">Descripción</p>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color: var(--color-muted); margin-bottom: 4px;">
+                                <span>Progreso cubierto: <strong style="color: var(--color-ink);" th:text="${need.progress} + '%'">60%</strong></span>
+                                <span>Meta: <strong th:text="${need.quantity} + ' ' + ${need.unit}">100 kg</strong></span>
+                            </div>
+                            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                                <div style="height: 100%; background: #2563eb; border-radius: 999px;" th:style="'width: ' + ${need.progress} + '%;'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incoming Shipments & Actions -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1.25rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 700;">Próximas Llegadas</h2>
+
+                <div th:each="delivery : ${assignedDonations}" style="padding: 1rem; background: #fff8f8; border-radius: var(--radius-md); border: 1px solid #fee2e2; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 0.9375rem; color: var(--color-ink);" th:text="${delivery.title}">Donación</strong>
+                        <span class="status-badge badge-traslado" th:text="${delivery.status}">En camino</span>
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted);">
+                        Donante: <strong style="color: var(--color-ink);" th:text="${delivery.donor_name}">Donante</strong><br/>
+                        Camión: <span th:text="${delivery.truck_plate}">AB 123 CD</span> • Chofer: <span th:text="${delivery.driver}">Miguel Ángel</span>
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--color-primary); font-weight: 700;">
+                        Llegada estimada: <span th:text="${delivery.expected_delivery}">Hoy 15:30</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary" style="width: 100%;">
+                        <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+                        <span>Confirmar Recepción con Fotos</span>
+                    </a>
+                    <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline" style="width: 100%;">
+                        <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                        <span>Ver Camión en Mapa</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

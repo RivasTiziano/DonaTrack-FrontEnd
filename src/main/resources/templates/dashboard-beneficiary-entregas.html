@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-beneficiary-layout :: layout(~{::title}, ~{::main}, 'deliveries')}">
+<head>
+    <title>DonaTrack - Seguimiento de Envíos</title>
+</head>
+<body>
+    <main class="beneficiary-deliveries-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/entidad/dashboard}">Panel Entidad</a>
+            <span class="separator">/</span>
+            <span class="current">Seguimiento de Envíos</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="margin-bottom: 1.5rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Seguimiento de Camiones en Camino</h1>
+            <p style="color: var(--color-muted); font-size: 0.9375rem;">Monitorea la ubicación en tiempo real de los camiones que transportan donaciones hacia tu sede.</p>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #1) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de seguimiento logístico">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="truck" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Recepción de Camiones de la Red</div>
+                <p class="onboarding-hint-text">
+                    La ubicación GPS del camión asignado se sincroniza automáticamente cada 60 segundos. Cuando el camión arribe a tu sede, recuerda tener a mano un dispositivo para tomar fotografías y confirmar la entrega.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Live Map and Shipment Panel Grid -->
+        <div class="dt-grid-1-8-1">
+            <!-- Real Leaflet Map Container -->
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; min-height: 440px;">
+                <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite;"></span>
+                        <strong style="font-size: 0.9375rem; color: var(--color-ink);">Camión AB 123 CD aproximándose</strong>
+                    </div>
+                    <span style="font-size: 0.8125rem; color: var(--color-muted);">Actualizado: Hace 30 seg</span>
+                </div>
+                
+                <div id="beneficiary-tracking-map" style="flex: 1; min-height: 380px; width: 100%; z-index: 1;"></div>
+            </div>
+
+            <!-- Shipment Details Card -->
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1.25rem;">
+                <div>
+                    <span class="status-badge badge-traslado">En camino</span>
+                    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-ink); margin-top: 6px;">Donación de Fideos y Arroz (50 kg)</h3>
+                    <p style="font-size: 0.875rem; color: var(--color-muted);">Donante: Supermercados Dia</p>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Camión / Placa:</span>
+                        <strong>AB 123 CD (Mercedes Sprinter)</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Conductor:</span>
+                        <strong>Miguel Ángel</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Teléfono:</span>
+                        <a href="tel:+541112345678" style="color: var(--color-primary); font-weight: 600;">+54 11 1234-5678</a>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Arribo Estimado:</span>
+                        <strong style="color: var(--color-primary);">Hoy, 15:30 (15 mins restantes)</strong>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary" style="width: 100%;">
+                        <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+                        <span>Confirmar Recepción de Esta Donación</span>
+                    </a>
+                    <button type="button" class="btn btn-outline" style="width: 100%;" onclick="simulateAsyncAction(this, 500, function() { showToast('GPS Actualizado', 'Señal de GPS del camión sincronizada con éxito.', 'info'); })">
+                        <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                        <span>Actualizar Posición</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script for Leaflet Interactive Delivery Map -->
+        <script th:inline="javascript">
+            function initBeneficiaryTrackingMap() {
+                var mapContainer = document.getElementById('beneficiary-tracking-map');
+                if (typeof L !== 'undefined' && mapContainer) {
+                    var map = L.map('beneficiary-tracking-map').setView([-34.6050, -58.4250], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(map);
+
+                    // Icons
+                    var depIcon = L.divIcon({
+                        className: 'dep-map-marker',
+                        html: '<div style="background: #0f172a; color: white; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(15,23,42,0.45); border: 2px solid white;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>',
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
+                    });
+
+                    var truckIcon = L.divIcon({
+                        className: 'truck-map-marker',
+                        html: '<div style="background: #2563eb; color: white; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 14px rgba(37,99,235,0.5); border: 2.5px solid white;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></div>',
+                        iconSize: [38, 38],
+                        iconAnchor: [19, 19]
+                    });
+
+                    var sedeIcon = L.divIcon({
+                        className: 'sede-map-marker',
+                        html: '<div style="background: #10b981; color: white; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(16,185,129,0.45); border: 2px solid white;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>',
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
+                    });
+
+                    // Depósito Origin Marker
+                    var depMarker = L.marker([-34.6179, -58.4471], { icon: depIcon }).addTo(map)
+                        .bindPopup('<strong>Depósito Central UTN</strong><br/>Salida: 14:30');
+
+                    // Camión Live Marker
+                    var truckMarker = L.marker([-34.6050, -58.4250], { icon: truckIcon }).addTo(map)
+                        .bindPopup('<strong>Camión AB 123 CD</strong><br/>Chofer: Miguel Ángel<br/>Arribo estimado: 15:30');
+
+                    // Beneficiary Sede Marker
+                    var sedeMarker = L.marker([-34.5989, -58.4395], { icon: sedeIcon }).addTo(map)
+                        .bindPopup('<strong>Tu Sede: Fundación Vida</strong><br/>Av. San Martín 1234');
+
+                    // Route Polyline
+                    var latlngs = [
+                        [-34.6179, -58.4471],
+                        [-34.6050, -58.4250],
+                        [-34.5989, -58.4395]
+                    ];
+                    var polyline = L.polyline(latlngs, { color: '#2563eb', weight: 4, dashArray: '6, 8' }).addTo(map);
+                    map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+                    setTimeout(function() { map.invalidateSize(); }, 150);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initBeneficiaryTrackingMap);
+            } else {
+                initBeneficiaryTrackingMap();
+            }
+        </script>
+    </main>
+</body>
+</html>

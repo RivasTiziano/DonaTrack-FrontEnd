@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'rankings')}">
+<head>
+    <title>DonaTrack - Rankings de Donantes</title>
+</head>
+<body>
+    <main class="admin-rankings-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/admin/dashboard}">Panel Administración</a>
+            <span class="separator">/</span>
+            <span class="current">Rankings de Donantes</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Ranking Mensual de Donantes</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Métricas de analítica y actividad procesadas por el Servicio de Incentivos.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <label style="font-size: 0.875rem; color: var(--color-muted); font-weight: 600;">Mes:</label>
+                <select class="form-control" style="width: auto; min-height: 40px; padding: 0.35rem 0.75rem;">
+                    <option value="marzo-2026">Marzo 2026 (Actual)</option>
+                    <option value="febrero-2026">Febrero 2026</option>
+                    <option value="enero-2026">Enero 2026</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de rankings">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="trophy" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Analítica y Reconocimiento a la Comunidad</div>
+                <p class="onboarding-hint-text">
+                    El sistema calcula la posición en base al volumen de unidades verificadas y la frecuencia de donación. Los donantes más activos reciben ascensos de categoría y reconocimiento en la plataforma.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Podium Highlights Card -->
+        <div class="dt-cards-grid-3">
+            <!-- Rank 1 -->
+            <div class="podium-card" style="background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%); border: 2px solid #fde047; border-radius: var(--radius-xl); padding: 1.75rem; text-align: center; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #eab308; color: white; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(234,179,8,0.4);">
+                    <i data-lucide="crown" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-ink); margin-top: 4px;">Arcos Plateados S.A.</h3>
+                <span style="font-size: 0.75rem; font-weight: 700; background: #fef08a; color: #854d0e; padding: 0.2rem 0.6rem; border-radius: 999px;">Persona Jurídica</span>
+                <p style="font-size: 1.4rem; font-weight: 800; color: #ca8a04; margin-top: 4px;">540 <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted);">unidades donadas</span></p>
+            </div>
+
+            <!-- Rank 2 -->
+            <div class="podium-card" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #cbd5e1; border-radius: var(--radius-xl); padding: 1.75rem; text-align: center; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #94a3b8; color: white; display: grid; place-items: center;">
+                    <i data-lucide="award" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-ink); margin-top: 4px;">Molinos del Río</h3>
+                <span style="font-size: 0.75rem; font-weight: 700; background: #e2e8f0; color: #475569; padding: 0.2rem 0.6rem; border-radius: 999px;">Persona Jurídica</span>
+                <p style="font-size: 1.4rem; font-weight: 800; color: #64748b; margin-top: 4px;">420 <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted);">unidades donadas</span></p>
+            </div>
+
+            <!-- Rank 3 -->
+            <div class="podium-card" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #fdba74; border-radius: var(--radius-xl); padding: 1.75rem; text-align: center; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #f97316; color: white; display: grid; place-items: center;">
+                    <i data-lucide="medal" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-ink); margin-top: 4px;">Juan Pérez</h3>
+                <span style="font-size: 0.75rem; font-weight: 700; background: #fed7aa; color: #9a3412; padding: 0.2rem 0.6rem; border-radius: 999px;">Persona Humana</span>
+                <p style="font-size: 1.4rem; font-weight: 800; color: #ea580c; margin-top: 4px;">180 <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted);">unidades donadas</span></p>
+            </div>
+        </div>
+
+        <!-- Full Ranking Table -->
+        <div class="card" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs);">
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border);">
+                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-ink);">Tabla Completa de Posiciones</h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 1px solid var(--color-border); color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase;">
+                            <th style="padding: 1rem 1.5rem; width: 80px;">Posición</th>
+                            <th style="padding: 1rem;">Donante</th>
+                            <th style="padding: 1rem;">Tipo</th>
+                            <th style="padding: 1rem; text-align: center;">Total Unidades</th>
+                            <th style="padding: 1rem; text-align: center;">Entregas</th>
+                            <th style="padding: 1rem;">Reconocimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${monthlyRankings}" style="border-bottom: 1px solid var(--color-border);">
+                            <td style="padding: 1rem 1.5rem; font-weight: 800; font-size: 1rem;" th:text="'#' + ${r.rank}">#1</td>
+                            <td style="padding: 1rem;">
+                                <strong style="color: var(--color-ink);" th:text="${r.name}">Nombre</strong>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <span class="status-badge" th:classappend="${r.type == 'Jurídica' ? 'badge-asignada' : 'badge-deposito'}" th:text="${r.type}">Tipo</span>
+                            </td>
+                            <td style="padding: 1rem; text-align: center; font-weight: 800;" th:text="${r.totalUnits}">540</td>
+                            <td style="padding: 1rem; text-align: center;" th:text="${r.donationsCount}">8</td>
+                            <td style="padding: 1rem;">
+                                <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-primary);" th:text="${r.badge}">Insignia</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

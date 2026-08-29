@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-donor-layout :: layout(~{::title}, ~{::main}, 'incentivos')}">
+<head>
+    <title>DonaTrack - Zona de Incentivos</title>
+</head>
+<body>
+    <main class="donor-incentives-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/donante/dashboard}">Panel Donante</a>
+            <span class="separator">/</span>
+            <span class="current">Incentivos y Misiones</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="margin-bottom: 1.5rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Zona de Incentivos y Reconocimientos</h1>
+            <p style="color: var(--color-muted); font-size: 0.9375rem;">Completa misiones solidarias, desbloquea insignias y escala en las categorías de donantes.</p>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía del sistema de incentivos">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="award" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">¿Cómo funciona el sistema de incentivos?</div>
+                <p class="onboarding-hint-text">
+                    El Servicio de Incentivos analiza automáticamente tus donaciones verificadas y entregadas. Al cumplir metas (como realizar tu primera entrega o apoyar en campañas de invierno), desbloquearás insignias y ascenderás en el ranking de donantes de DonaTrack.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Tier Banner Card -->
+        <div class="tier-banner" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: var(--radius-xl); color: #ffffff; padding: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; box-shadow: var(--shadow-lg);">
+            <div>
+                <span style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: #a5b4fc; letter-spacing: 0.05em;">Tu Categoría Actual</span>
+                <h2 style="font-size: 2rem; font-weight: 800; margin: 4px 0 8px 0;" th:text="${user.category}">Sostenedor</h2>
+                <p style="color: #c7d2fe; font-size: 0.9375rem; max-width: 500px;">
+                    Has realizado 4 donaciones verificadas. ¡Estás a solo 1 donación de alcanzar el siguiente nivel de reconocimiento social!
+                </p>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); padding: 1.25rem 1.75rem; border-radius: var(--radius-lg); text-align: center;">
+                <span style="font-size: 0.75rem; text-transform: uppercase; color: #e0e7ff; font-weight: 700;">Progreso de Nivel</span>
+                <div style="font-size: 1.75rem; font-weight: 800; color: #ffffff; margin: 4px 0;">80%</div>
+                <div style="width: 140px; height: 8px; background: rgba(255, 255, 255, 0.2); border-radius: 999px; overflow: hidden; margin: 0 auto;">
+                    <div style="width: 80%; height: 100%; background: #38bdf8; border-radius: 999px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Missions Section -->
+        <div style="margin-bottom: 2.5rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-ink);">Misiones Activas y Desafíos</h2>
+            
+            <div class="dt-cards-grid-3">
+                <!-- Mission 1 -->
+                <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #ffe4e6; display: grid; place-items: center; color: var(--color-primary);">
+                            <i data-lucide="package-check" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <span style="font-size: 0.75rem; font-weight: 700; background: #ecfdf5; color: #059669; padding: 0.25rem 0.6rem; border-radius: 999px;">+ Insignia Solidaria</span>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink);">Alcanza 5 Donaciones Totales</h3>
+                        <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.4;">Realiza una entrega más en el depósito para completar la misión del mes.</p>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">
+                            <span>4 de 5 donaciones</span>
+                            <span style="color: var(--color-primary);">80%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 80%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 999px;"></div>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 1rem;" onclick="simulateAsyncAction(this, 600, function() { showToast('Progreso verificado', 'Estás a 1 donación de completar este logro.', 'info'); })">
+                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                            <span>Verificar Estado</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mission 2 -->
+                <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #e0f2fe; display: grid; place-items: center; color: #0284c7;">
+                            <i data-lucide="snowflake" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <span style="font-size: 0.75rem; font-weight: 700; background: #f0fdf4; color: #15803d; padding: 0.25rem 0.6rem; border-radius: 999px;">Campaña Activa</span>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink);">Campaña Abrigo de Invierno</h3>
+                        <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.4;">Aporta ropa de abrigo o frazadas para comedores y escuelas rurales.</p>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">
+                            <span>25 camperas entregadas</span>
+                            <span style="color: #0284c7;">¡Completada!</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 100%; height: 100%; background: #0284c7; border-radius: 999px;"></div>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 1rem; color: #059669; border-color: #a7f3d0;" disabled>
+                            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                            <span>Insignia Otorgada</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Badges Display Grid -->
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-ink);">Insignias Obtenidas</h2>
+            <div class="dt-cards-grid-3">
+                <div class="badge-card" th:each="badge : ${badges}" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #ffffff; display: grid; place-items: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(var(--color-primary-rgb), 0.3);">
+                        <i th:attr="data-lucide=${badge.icon}" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--color-ink);" th:text="${badge.name}">Insignia</h4>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);" th:text="${badge.description}">Descripción</p>
+                        <small style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;" th:text="'Ganada: ' + ${badge.earnedDate}">Fecha</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

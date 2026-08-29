@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Registro Donante Humano</title>
+</head>
+<body>
+    <main style="max-width: 680px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/registro}">Registro</a>
+            <span class="separator">/</span>
+            <span class="current">Donante Persona Humana</span>
+        </nav>
+
+        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2.25rem; box-shadow: var(--shadow-md);">
+            <div style="margin-bottom: 1.75rem;">
+                <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Persona Humana</span>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;">Crea tu Cuenta de Donante</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem;">Completa tus datos personales para sumarte a la red de donantes de DonaTrack.</p>
+            </div>
+
+            <form th:action="@{/registro/donante-humano}" method="POST" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { showToast('¡Cuenta Creada!', 'Registro completado con éxito. Redirigiendo a tu panel...', 'success'); setTimeout(function(){ window.location.href='/donante/dashboard'; }, 1000); });">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="human-name">Nombre <span class="required">*</span></label>
+                        <input type="text" id="human-name" class="form-control" placeholder="Ej. Juan" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="human-lastname">Apellido <span class="required">*</span></label>
+                        <input type="text" id="human-lastname" class="form-control" placeholder="Ej. Pérez" required />
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="human-doc">DNI / Documento <span class="required">*</span></label>
+                        <input type="text" id="human-doc" class="form-control" placeholder="12345678" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="human-age">Edad <span class="required">*</span></label>
+                        <input type="number" id="human-age" class="form-control" placeholder="25" min="18" required />
+                        <span class="form-hint">Debes ser mayor de 18 años.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="human-email">Correo Electrónico <span class="required">*</span></label>
+                    <input type="email" id="human-email" class="form-control" placeholder="tu@email.com" required />
+                    <span class="form-hint">Medio de contacto principal obligatorio según la normativa de DonaTrack.</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="human-phone">Teléfono / WhatsApp (Opcional)</label>
+                        <input type="tel" id="human-phone" class="form-control" placeholder="+54 11 1234-5678" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="human-gender">Género</label>
+                        <select id="human-gender" class="form-control">
+                            <option value="femenino">Femenino</option>
+                            <option value="masculino">Masculino</option>
+                            <option value="no-binario">No binario</option>
+                            <option value="otro">Otro / Prefiero no decir</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="human-address">Dirección / Localidad</label>
+                    <input type="text" id="human-address" class="form-control" placeholder="Av. Corrientes 1234, CABA" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 1rem;">
+                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                    <span>Crear Mi Cuenta de Donante</span>
+                </button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

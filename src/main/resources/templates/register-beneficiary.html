@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Registro Entidad Beneficiaria</title>
+</head>
+<body>
+    <main style="max-width: 680px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/registro}">Registro</a>
+            <span class="separator">/</span>
+            <span class="current">Entidad Beneficiaria</span>
+        </nav>
+
+        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2.25rem; box-shadow: var(--shadow-md);">
+            <div style="margin-bottom: 1.75rem;">
+                <span style="font-size: 0.8125rem; font-weight: 700; color: #4338ca; text-transform: uppercase;">Institución / Comedor / Escuela</span>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;">Registro de Entidad Receptora</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem;">Registra tu entidad para publicar necesidades y recibir donaciones de la red.</p>
+            </div>
+
+            <form th:action="@{/registro/beneficiario}" method="POST" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { showToast('¡Solicitud de Entidad Enviada!', 'Tu entidad fue registrada y está en proceso de validación.', 'success'); setTimeout(function(){ window.location.href='/entidad/dashboard'; }, 1000); });">
+                <div class="form-group">
+                    <label class="form-label" for="ben-name">Nombre de la Institución <span class="required">*</span></label>
+                    <input type="text" id="ben-name" class="form-control" placeholder="Ej. Comedor Los Niños Felices" required />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="ben-type">Tipo de Entidad <span class="required">*</span></label>
+                        <select id="ben-type" class="form-control" required>
+                            <option value="Comedor">Comedor Comunitario</option>
+                            <option value="Escuela">Escuela Rural / Pública</option>
+                            <option value="Hogar">Hogar de Niños / Ancianos</option>
+                            <option value="Centro">Centro Cultural Barrial</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ben-cuit">CUIT / Matrícula</label>
+                        <input type="text" id="ben-cuit" class="form-control" placeholder="30-87654321-9" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="ben-email">Correo Electrónico de Contacto <span class="required">*</span></label>
+                    <input type="email" id="ben-email" class="form-control" placeholder="contacto@institucion.org" required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="ben-address">Dirección de Sede / Recepción de Donaciones <span class="required">*</span></label>
+                    <input type="text" id="ben-address" class="form-control" placeholder="Av. Rivadavia 4500, CABA" required />
+                    <span class="form-hint">Aquí llegarán los camiones de logística con las donaciones asignadas.</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 1rem;">
+                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                    <span>Completar Registro de Entidad</span>
+                </button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

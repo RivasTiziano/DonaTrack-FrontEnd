@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-donor-layout :: layout(~{::title}, ~{::main}, 'donaciones')}">
+<head>
+    <title>DonaTrack - Mis Donaciones</title>
+</head>
+<body>
+    <main class="donor-donations-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/donante/dashboard}">Panel Donante</a>
+            <span class="separator">/</span>
+            <span class="current">Mis Donaciones</span>
+        </nav>
+
+        <!-- Header Title -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Historial y Trazabilidad de Donaciones</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Consulta el estado, destino y evidencia de cada donación que realizaste.</p>
+            </div>
+            <a th:href="@{/donante/dashboard/entidades}" class="btn btn-outline">
+                <i data-lucide="heart" style="width: 18px; height: 18px; color: var(--color-primary);"></i>
+                <span>Ver Entidades que Necesitan Ayuda</span>
+            </a>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10) -->
+        <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de estados de donación">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="info" style="width: 20px; height: 20px; color: #d97706;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Estados del ciclo de vida de una donación</div>
+                <p class="onboarding-hint-text">
+                    Tus donaciones pasan por: <strong>En depósito</strong> (recepción y clasificación) → <strong>Asignación realizada</strong> (match con una necesidad) → <strong>Lista para entregar</strong> (ruta planificada) → <strong>En traslado</strong> (camión en viaje) → <strong>Entregada</strong> (recepción con fotos verificadas).
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm filter-tab active">Todas (<span th:text="${userDonations.size()}">4</span>)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">En Depósito</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Asignadas</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">En Traslado</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Entregadas</button>
+        </div>
+
+        <!-- Donations Grid -->
+        <div class="dt-cards-grid-3">
+            <article class="donation-card-box" th:each="donation : ${userDonations}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                <div style="position: relative; height: 180px; overflow: hidden;">
+                    <img th:src="${donation.image_url}" th:alt="${donation.title}" style="width: 100%; height: 100%; object-fit: cover;" />
+                    <span class="status-badge" th:classappend="'badge-' + ${#strings.toLowerCase(#strings.replace(donation.status, ' ', '-'))}" style="position: absolute; top: 12px; right: 12px; box-shadow: var(--shadow-sm);" th:text="${donation.status}">Estado</span>
+                </div>
+
+                <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${donation.category} + ' • ' + ${donation.subcategory}">Categoría</span>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${donation.title}">Título</h3>
+                    </div>
+
+                    <div style="font-size: 0.875rem; color: var(--color-muted); display: flex; flex-direction: column; gap: 0.35rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
+                            <span>Destino: <strong style="color: var(--color-ink);" th:text="${donation.entity_name}">Entidad</strong></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                            <span>Fecha: <strong th:text="${donation.delivery_date}">Fecha</strong></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="package" style="width: 16px; height: 16px;"></i>
+                            <span>Cantidad: <strong th:text="${donation.total_units} + ' unidades'">25 unidades</strong></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem;">
+                        <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" onclick="openModal('modal-donation-detail')">
+                            <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                            <span>Trazabilidad</span>
+                        </button>
+                        <a th:href="@{/donante/dashboard/entregas}" class="btn btn-primary btn-sm" th:if="${donation.status == 'En traslado'}" style="flex: 1;">
+                            <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
+                            <span>Seguir Camión</span>
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Accessible Modal for Donation Timeline Details -->
+        <div id="modal-donation-detail" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-detail-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-donation-detail')"></div>
+            <div class="dt-modal-content">
+                <div class="dt-modal-header">
+                    <h3 id="modal-detail-title" class="dt-modal-title">Trazabilidad de Donación #101</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-donation-detail')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <div class="dt-modal-body">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+                        <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=200&h=150&fit=crop" alt="Foto donación" style="width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover;" />
+                        <div>
+                            <h4 style="font-size: 1.05rem; font-weight: 700;">Camperas y Ropa de Invierno</h4>
+                            <p style="font-size: 0.875rem; color: var(--color-muted);">Entidad: Comedor Los Niños • 25 unidades</p>
+                            <span class="status-badge badge-entregada" style="margin-top: 4px;">Entregada con éxito</span>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem;">Línea de Tiempo de Auditoría</h4>
+                    <div class="status-timeline" style="display: flex; flex-direction: column; gap: 1rem; padding-left: 1.5rem; position: relative; border-left: 2px solid var(--color-border);">
+                        <div style="position: relative;">
+                            <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Recepción confirmada con fotos</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">10 Mar 2026, 16:15 • Por Laura Domínguez (Comedor Los Niños)</p>
+                        </div>
+                        <div style="position: relative;">
+                            <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Entrega completada por Camión AB 123 CD</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">10 Mar 2026, 16:00 • Conductor Miguel Ángel</p>
+                        </div>
+                        <div style="position: relative;">
+                            <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Asignación realizada por Algoritmo Semántico</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">08 Mar 2026, 09:30 • Score 95% de compatibilidad</p>
+                        </div>
+                        <div style="position: relative;">
+                            <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Ingreso y segmentación en Depósito Central</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">07 Mar 2026, 14:00 • Subcategoría: Camperas de abrigo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dt-modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="closeModal('modal-donation-detail')">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

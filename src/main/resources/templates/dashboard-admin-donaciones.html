@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donations')}">
+<head>
+    <title>DonaTrack - Donaciones en Depósito</title>
+</head>
+<body>
+    <main class="admin-donations-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/admin/dashboard}">Panel Administración</a>
+            <span class="separator">/</span>
+            <span class="current">Donaciones en Depósito</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Donaciones e Inventario en Depósito</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Control de stock, segmentación por subcategoría, vencimientos y auditoría de estados.</p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="openModal('modal-register-donation')">
+                <i data-lucide="package-plus" style="width: 18px; height: 18px;"></i>
+                <span>Registrar Donación en Depósito</span>
+            </button>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10 y Dominio) -->
+        <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de segmentación de donaciones">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="layers" style="width: 20px; height: 20px; color: #d97706;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Segmentación Obligatoria por Subcategoría</div>
+                <p class="onboarding-hint-text">
+                    La subcategoría (ej. <em>Fideos secos, Arroz, Camperas, Sillas</em>) constituye la <strong>unidad mínima de asignación</strong>. Si un donante trae bienes mixtos (ej. fideos y tomates), el sistema los segmenta en donaciones independientes para permitir su vinculación automática con necesidades específicas.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <button type="button" class="btn btn-outline btn-sm filter-tab active">En Depósito (<span th:text="${warehouseDonations.size()}">3</span>)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Perecederos con Vencimiento</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Mobiliario / Vestimenta</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab">Asignadas</button>
+        </div>
+
+        <!-- Warehouse Donations Grid -->
+        <div class="dt-cards-grid-3">
+            <article class="donation-card" th:each="item : ${warehouseDonations}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${item.category} + ' • ' + ${item.subcategory}">Categoría</span>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${item.title}">Título</h3>
+                    </div>
+                    <span class="status-badge" th:classappend="${item.status == 'En depósito' ? 'badge-deposito' : 'badge-asignada'}" th:text="${item.status}">Estado</span>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem; font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Donante:</span>
+                        <strong style="color: var(--color-ink);" th:text="${item.donor}">Donante</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Cantidad:</span>
+                        <strong th:text="${item.quantity} + ' ' + ${item.unit}">100 paquetes</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Condición:</span>
+                        <span th:text="${item.condition}">Nuevo</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Vencimiento:</span>
+                        <strong th:style="${item.perishable ? 'color: #dc2626;' : 'color: var(--color-muted);'}" th:text="${item.expirationDate}">01/01/2027</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Ubicación física:</span>
+                        <span th:text="${item.storageLocation}">Estantería A-12</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; gap: 0.5rem;">
+                    <a th:href="@{/admin/dashboard/asignar}" class="btn btn-primary btn-sm" style="flex: 1;">
+                        <i data-lucide="git-merge" style="width: 14px; height: 14px;"></i>
+                        <span>Asignar</span>
+                    </a>
+                    <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fee2e2;" onclick="openModal('modal-expire-donation')" data-tooltip="Marcar como Vencida si caducó">
+                        <i data-lucide="alert-triangle" style="width: 14px; height: 14px;"></i>
+                        <span>Vencida</span>
+                    </button>
+                </div>
+            </article>
+        </div>
+
+        <!-- Accessible Modal: Registrar Donación en Depósito -->
+        <div id="modal-register-donation" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-reg-don-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-register-donation')"></div>
+            <div class="dt-modal-content">
+                <div class="dt-modal-header">
+                    <h3 id="modal-reg-don-title" class="dt-modal-title">Registrar y Segmentar Donación</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-register-donation')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <form onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { closeModal('modal-register-donation'); showToast('¡Donación Registrada!', 'Bienes ingresados al depósito y segmentados por subcategoría.', 'success'); });">
+                    <div class="dt-modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Donante Asociado <span class="required">*</span></label>
+                            <select class="form-control" required>
+                                <option value="">Selecciona un donante registrado...</option>
+                                <option value="1">Juan Pérez (DNI: 38450123)</option>
+                                <option value="2">María García (DNI: 34987654)</option>
+                                <option value="3">Arcos Plateados S.A. (CUIT: 30-12345678-9)</option>
+                                <option value="4">Molinos del Río (CUIT: 30-98765432-1)</option>
+                            </select>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Categoría <span class="required">*</span></label>
+                                <select class="form-control" id="donation-category" required>
+                                    <option value="Alimentos">Alimentos</option>
+                                    <option value="Vestimenta">Vestimenta</option>
+                                    <option value="Mobiliario">Mobiliario</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Subcategoría (Mínima de Asignación) <span class="required">*</span></label>
+                                <input type="text" class="form-control" placeholder="Ej. Fideos secos, Arroz, Sillas" required />
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Cantidad y Unidad <span class="required">*</span></label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="number" class="form-control" placeholder="100" min="1" required style="width: 50%;" />
+                                    <select class="form-control" style="width: 50%;">
+                                        <option value="kg">kg</option>
+                                        <option value="paquetes">paquetes</option>
+                                        <option value="unidades">unidades</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Condición del Bien</label>
+                                <select class="form-control">
+                                    <option value="Nuevo">Nuevo</option>
+                                    <option value="Usado - Excelente">Usado (Excelente estado)</option>
+                                    <option value="Usado - Bueno">Usado (Bueno)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Fecha de Vencimiento (Si aplica)</label>
+                                <input type="date" class="form-control" />
+                                <span class="form-hint">Obligatorio para alimentos perecederos.</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ubicación en Depósito <span class="required">*</span></label>
+                                <input type="text" class="form-control" placeholder="Ej. Estantería A-12, Sector C" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dt-modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('modal-register-donation')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                            <span>Registrar en Depósito</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Accessible Modal: Marcar Donación como Vencida -->
+        <div id="modal-expire-donation" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-expire-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-expire-donation')"></div>
+            <div class="dt-modal-content">
+                <div class="dt-modal-header">
+                    <h3 id="modal-expire-title" class="dt-modal-title">¿Marcar donación como Vencida?</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-expire-donation')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <div class="dt-modal-body">
+                    <p style="font-size: 0.9375rem; color: var(--color-ink); margin-bottom: 0.75rem;">
+                        Esta acción cambiará el estado de la donación a <strong>Vencida</strong> y la retirará del conjunto elegible para algoritmos de asignación y matchmaking.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">Motivo o Justificación de Auditoría <span class="required">*</span></label>
+                        <textarea class="form-control" rows="2" placeholder="Ej. Fecha de caducidad superada según inspección visual..."></textarea>
+                    </div>
+                </div>
+                <div class="dt-modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-expire-donation')">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="simulateAsyncAction(this, 600, function() { closeModal('modal-expire-donation'); showToast('Estado Actualizado', 'La donación fue marcada como Vencida y retirada del stock activo.', 'warning'); });">
+                        <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
+                        <span>Marcar como Vencida</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

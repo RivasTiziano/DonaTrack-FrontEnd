@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Mapa de Transparencia de Donaciones</title>
+</head>
+<body>
+    <main class="map-page" th:fragment="main">
+        <div class="container" style="padding-top: 1.5rem;">
+            <!-- Breadcrumbs -->
+            <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+                <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+                <span class="separator">/</span>
+                <span class="current">Mapa de Donaciones</span>
+            </nav>
+
+            <!-- Onboarding Hint (Heurística #10 y Transparencia) -->
+            <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de mapa público">
+                <div class="onboarding-hint-icon">
+                    <i data-lucide="map" style="width: 20px; height: 20px; color: #4338ca;"></i>
+                </div>
+                <div class="onboarding-hint-content">
+                    <div class="onboarding-hint-title">Mapa Público de Transparencia Comunitaria</div>
+                    <p class="onboarding-hint-text">
+                        Cualquier persona puede explorar este mapa sin necesidad de registrarse ni iniciar sesión. Cada punto representa una donación real entregada o en camino a escuelas, comedores y hogares, con evidencia fotográfica verificada.
+                    </p>
+                </div>
+                <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <section class="map-stats-bar" aria-label="Resumen de donaciones">
+            <div class="container map-stats-grid">
+                <div class="map-stat-item">
+                    <span class="map-stat-icon map-stat-icon-green" aria-hidden="true">
+                        <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+                    </span>
+                    <div>
+                        <p>Donaciones</p>
+                        <strong th:text="${donationsCount}">0</strong>
+                    </div>
+                </div>
+                <div class="map-stat-item">
+                    <span class="map-stat-icon map-stat-icon-blue" aria-hidden="true">
+                        <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+                    </span>
+                    <div>
+                        <p>Beneficiarios</p>
+                        <strong th:text="${beneficiariesCount}">0</strong>
+                    </div>
+                </div>
+                <div class="map-stat-item">
+                    <span class="map-stat-icon map-stat-icon-purple" aria-hidden="true">
+                        <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                    </span>
+                    <div>
+                        <p>Artículos</p>
+                        <strong th:text="${itemsCount}">0</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="map-page__content" style="padding: 0 1.5rem 2.5rem 1.5rem; max-width: 1280px; margin: 0 auto; width: 100%;">
+            <div class="map-canvas" style="border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-md); position: relative; height: 560px; min-height: 560px; width: 100%;">
+                <div id="map-leaflet" style="height: 560px; min-height: 560px; width: 100%; z-index: 1;"></div>
+            </div>
+        </section>
+
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var donations = /*[[${donations}]]*/ [];
+            
+            function initPublicDonationsMap() {
+                var mapContainer = document.getElementById('map-leaflet');
+                if (!mapContainer) return;
+                
+                if (typeof L === 'undefined') {
+                    setTimeout(initPublicDonationsMap, 200);
+                    return;
+                }
+
+                // Prevent double initialization
+                if (mapContainer._leaflet_id) {
+                    return;
+                }
+
+                var mapViewport = { lat: -34.6037, lng: -58.4200, zoom: 12 };
+                var map = L.map('map-leaflet').setView([mapViewport.lat, mapViewport.lng], mapViewport.zoom);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+
+                var customDonationIcon = L.divIcon({
+                    className: 'donation-map-marker',
+                    html: '<div style="background: #e11d48; color: white; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(225,29,72,0.45); border: 2.5px solid white;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18],
+                    popupAnchor: [0, -18]
+                });
+
+                if (Array.isArray(donations)) {
+                    donations.forEach(function(donation) {
+                        if (!donation.location || donation.location.lat == null) return;
+                        var imgUrl = donation.image_url || donation.image || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&h=200&fit=crop';
+                        var entityName = donation.entity_name || (donation.beneficiary ? donation.beneficiary.name : 'Entidad Beneficiaria');
+                        var detailUrl = '/explorar-donaciones/' + encodeURIComponent(donation.id);
+                        var popupHtml = '<div style="font-family: var(--font-sans); min-width: 210px; padding: 4px;">' +
+                            '<img src="' + imgUrl + '" alt="' + (donation.title || 'Donación') + '" style="width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />' +
+                            '<h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 2px;">' + (donation.title || 'Donación') + '</h4>' +
+                            '<p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;">Entidad: <strong>' + entityName + '</strong></p>' +
+                            '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                                '<span class="status-badge badge-entregada" style="font-size: 0.7rem;">Entregada</span>' +
+                                '<a href="' + detailUrl + '" style="color: #e11d48; font-weight: 700; font-size: 0.8rem;">Ver detalle &rarr;</a>' +
+                            '</div>' +
+                        '</div>';
+                        var marker = L.marker([donation.location.lat, donation.location.lng], { icon: customDonationIcon }).addTo(map);
+                        marker.bindPopup(popupHtml);
+                    });
+                }
+
+                // Invalidate size to ensure full rendering
+                setTimeout(function() {
+                    map.invalidateSize();
+                }, 150);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPublicDonationsMap);
+            } else {
+                initPublicDonationsMap();
+            }
+            /*]]>*/
+        </script>
+    </main>
+</body>
+</html>

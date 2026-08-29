@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (title, content)">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:replace="${title}">DonaTrack</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" />
+    <!-- Local Leaflet & App CSS -->
+    <link rel="stylesheet" th:href="@{/vendor/leaflet/leaflet.css}" />
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <!-- Local Vendor Scripts -->
+    <script th:src="@{/vendor/lucide/lucide.min.js}"></script>
+    <script th:src="@{/vendor/leaflet/leaflet.js}"></script>
+</head>
+<body>
+    <!-- Header Fragment -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Contenido Dinámico de la Página -->
+    <div th:replace="${content}"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Script de Usabilidad Global -->
+    <script th:src="@{/js/app-usability.js}"></script>
+    <script>
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    </script>
+</body>
+</html>

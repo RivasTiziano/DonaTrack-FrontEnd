@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'import')}">
+<head>
+    <title>DonaTrack - Importar Donantes CSV</title>
+</head>
+<body>
+    <main class="admin-import-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/admin/dashboard}">Panel Administración</a>
+            <span class="separator">/</span>
+            <span class="current">Importar Donantes CSV</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Importación Masiva de Donantes desde CSV</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Procesa archivos de más de 10.000 filas para migrar el padrón histórico de donantes.</p>
+            </div>
+            <button type="button" class="btn btn-outline" onclick="showToast('Plantilla Descargada', 'Se descargó el archivo plantilla_donantes_donatrack.csv', 'success')">
+                <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+                <span>Descargar Plantilla CSV</span>
+            </button>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10 y Consigna TP) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de importación CSV">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="file-spreadsheet" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Reglas de Negocio de la Importación Masiva</div>
+                <p class="onboarding-hint-text">
+                    Si el correo electrónico ya existe en el sistema, sus datos se actualizan automáticamente. Si no existe, se crea un nuevo usuario y se despacha el correo de bienvenida con credenciales iniciales. El archivo soporta +10.000 filas por lote.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Two Column Layout: Upload area vs Format Specification -->
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.75rem; margin-bottom: 2rem;">
+            <!-- Upload Box -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1.25rem;">
+                <h2 style="font-size: 1.2rem; font-weight: 700;">Subir Archivo .CSV</h2>
+
+                <div id="csv-dropzone" style="border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 2.5rem 1.5rem; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s ease;"
+                     onclick="document.getElementById('file-csv-input').click();">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: #ecfdf5; color: #059669; display: grid; place-items: center; margin: 0 auto 1rem auto;">
+                        <i data-lucide="upload-cloud" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <strong style="font-size: 1rem; color: var(--color-ink);">Haz clic para seleccionar el archivo CSV</strong>
+                    <p style="font-size: 0.8125rem; color: var(--color-muted); margin-top: 4px;">o arrastra tu archivo aquí (hasta 50MB, UTF-8)</p>
+                    <input type="file" id="file-csv-input" accept=".csv" style="display: none;" onchange="handleCsvSelected(this)" />
+                </div>
+
+                <div id="csv-file-info" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: var(--radius-md); align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i data-lucide="file-check" style="width: 24px; height: 24px; color: #15803d;"></i>
+                        <div>
+                            <strong id="csv-filename" style="font-size: 0.9375rem; color: #166534;">donantes_padron_2026.csv</strong>
+                            <div id="csv-filesize" style="font-size: 0.75rem; color: #15803d;">1.24 MB • 10.500 filas estimadas</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="clearCsvFile()">Cambiar</button>
+                </div>
+
+                <!-- Animated Progress Bar during processing -->
+                <div id="import-progress-box" style="display: none; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; font-weight: 600;">
+                        <span>Procesando filas...</span>
+                        <span id="import-progress-percent" style="color: var(--color-primary);">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden;">
+                        <div id="import-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); border-radius: 999px; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <button type="button" id="btn-start-import" class="btn btn-primary" style="width: 100%; min-height: 48px;" onclick="startCsvImportSimulation()">
+                    <i data-lucide="play" style="width: 18px; height: 18px;"></i>
+                    <span>Iniciar Procesamiento de Importación</span>
+                </button>
+            </div>
+
+            <!-- Official Format Guide from TP Specification -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <h2 style="font-size: 1.2rem; font-weight: 700;">Formato Oficial del CSV Requerido</h2>
+                <p style="font-size: 0.8125rem; color: var(--color-muted);">
+                    El archivo debe cumplir exactamente con las siguientes 6 columnas en el encabezado:
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8125rem;">
+                    <div style="padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                        <strong>1. TipoPersona:</strong> <code>HUMANA</code> o <code>JURIDICA</code>
+                    </div>
+                    <div style="padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                        <strong>2. TipoDoc:</strong> <code>DNI</code>, <code>CUIT</code> o <code>PASAPORTE</code>
+                    </div>
+                    <div style="padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                        <strong>3. Documento:</strong> Número de documento o CUIT sin guiones
+                    </div>
+                    <div style="padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                        <strong>4. Nombre/Razón Social:</strong> Nombre completo o denominación legal
+                    </div>
+                    <div style="padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                        <strong>5. Email:</strong> Correo electrónico único obligatorio
+                    </div>
+                    <div style="padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 3px solid var(--color-primary);">
+                        <strong>6. Teléfono:</strong> Teléfono / WhatsApp con código de país
+                    </div>
+                </div>
+
+                <div style="background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: var(--radius-md); font-family: monospace; font-size: 0.75rem; line-height: 1.5; overflow-x: auto;">
+                    TipoPersona,TipoDoc,Documento,Nombre/Razón Social,Email,Teléfono<br/>
+                    HUMANA,DNI,12345678,Ana Pérez,ana@mail.com,+54 11 5555-5555<br/>
+                    JURIDICA,CUIT,30123456789,Arcos Plateados S.A.,contacto@empresa.com,+54 11 4444-4444
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Result Box (Simulated Output) -->
+        <div id="import-result-summary" style="display: none; background: #ffffff; border: 2px solid #10b981; border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #ecfdf5; color: #059669; display: grid; place-items: center;">
+                    <i data-lucide="check-circle-2" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #065f46;">¡Importación Masiva Completada con Éxito!</h3>
+                    <p style="font-size: 0.8125rem; color: var(--color-muted);">El lote fue procesado y validado en su totalidad.</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); font-size: 0.875rem;">
+                <div>
+                    <span style="color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase;">Filas Procesadas</span>
+                    <p style="font-size: 1.4rem; font-weight: 800; color: var(--color-ink);">10.500</p>
+                </div>
+                <div>
+                    <span style="color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase;">Nuevos Creados</span>
+                    <p style="font-size: 1.4rem; font-weight: 800; color: #059669;">9.820</p>
+                </div>
+                <div>
+                    <span style="color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase;">Actualizados</span>
+                    <p style="font-size: 1.4rem; font-weight: 800; color: #2563eb;">680</p>
+                </div>
+                <div>
+                    <span style="color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase;">Errores de Sintaxis</span>
+                    <p style="font-size: 1.4rem; font-weight: 800; color: #059669;">0</p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function handleCsvSelected(input) {
+                if (input.files && input.files[0]) {
+                    const file = input.files[0];
+                    document.getElementById('csv-filename').textContent = file.name;
+                    document.getElementById('csv-filesize').textContent = (file.size / 1024).toFixed(1) + ' KB • Procesamiento listo';
+                    document.getElementById('csv-dropzone').style.display = 'none';
+                    document.getElementById('csv-file-info').style.display = 'flex';
+                    showToast('Archivo Seleccionado', `${file.name} listo para procesar.`, 'info');
+                }
+            }
+
+            function clearCsvFile() {
+                document.getElementById('file-csv-input').value = '';
+                document.getElementById('csv-dropzone').style.display = 'block';
+                document.getElementById('csv-file-info').style.display = 'none';
+                document.getElementById('import-result-summary').style.display = 'none';
+            }
+
+            function startCsvImportSimulation() {
+                const btn = document.getElementById('btn-start-import');
+                const progBox = document.getElementById('import-progress-box');
+                const progBar = document.getElementById('import-progress-bar');
+                const progPercent = document.getElementById('import-progress-percent');
+                const resultBox = document.getElementById('import-result-summary');
+
+                btn.disabled = true;
+                progBox.style.display = 'flex';
+                resultBox.style.display = 'none';
+
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 25;
+                    progBar.style.width = progress + '%';
+                    progPercent.textContent = progress + '%';
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            progBox.style.display = 'none';
+                            btn.disabled = false;
+                            resultBox.style.display = 'block';
+                            if (window.lucide) window.lucide.createIcons();
+                            showToast('Importación Exitosa', 'Se procesaron 10.500 registros de donantes correctamente.', 'success');
+                        }, 400);
+                    }
+                }, 300);
+            }
+        </script>
+    </main>
+</body>
+</html>

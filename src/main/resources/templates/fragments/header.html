@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+    <header th:fragment="header" class="dt-header" role="banner">
+        <div class="dt-header-row">
+            <a class="brand" th:href="@{/}" aria-label="DonaTrack - Inicio">
+                <span class="brand-mark" aria-hidden="true">
+                    <i data-lucide="heart" style="width: 22px; height: 22px;"></i>
+                </span>
+                <span>DonaTrack</span>
+            </a>
+
+            <nav class="dt-nav" aria-label="Navegación principal">
+                <a th:href="@{/#about}">Acerca de</a>
+                <a th:href="@{/#donations}">Donaciones</a>
+                <a th:href="@{/#gallery}">Galería</a>
+                <a th:href="@{/explorar-donaciones}">Explorar donaciones</a>
+            </nav>
+
+            <div class="auth-actions">
+                <a th:href="@{/login}" class="nav-auth-link">
+                    <button type="button" class="btn btn-ghost-primary">Iniciar sesión</button>
+                </a>
+                <a th:href="@{/registro}" class="nav-auth-link">
+                    <button type="button" class="btn btn-primary">Registrarse</button>
+                </a>
+            </div>
+
+            <!-- Mobile Hamburger Toggle -->
+            <button type="button" class="mobile-menu-toggle" aria-label="Abrir menú de navegación">
+                <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Drawer -->
+        <div class="mobile-nav-backdrop" aria-hidden="true"></div>
+        <div class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menú móvil">
+            <div class="mobile-drawer-header">
+                <div class="brand">
+                    <span class="brand-mark" aria-hidden="true">
+                        <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+                    </span>
+                    <span>DonaTrack</span>
+                </div>
+                <button type="button" class="mobile-drawer-close btn-icon" aria-label="Cerrar menú" style="background: none; border: none; cursor: pointer;">
+                    <i data-lucide="x" style="width: 22px; height: 22px;"></i>
+                </button>
+            </div>
+            
+            <div class="mobile-drawer-links">
+                <a th:href="@{/#about}"><i data-lucide="info" style="width: 18px; height: 18px;"></i> Acerca de</a>
+                <a th:href="@{/#donations}"><i data-lucide="package" style="width: 18px; height: 18px;"></i> Donaciones</a>
+                <a th:href="@{/#gallery}"><i data-lucide="image" style="width: 18px; height: 18px;"></i> Galería</a>
+                <a th:href="@{/explorar-donaciones}"><i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> Explorar en Mapa</a>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 2rem;">
+                <a th:href="@{/login}" style="width: 100%;">
+                    <button type="button" class="btn btn-outline" style="width: 100%;">Iniciar sesión</button>
+                </a>
+                <a th:href="@{/registro}" style="width: 100%;">
+                    <button type="button" class="btn btn-primary" style="width: 100%;">Registrarse</button>
+                </a>
+            </div>
+        </div>
+    </header>
+</body>
+</html>
+

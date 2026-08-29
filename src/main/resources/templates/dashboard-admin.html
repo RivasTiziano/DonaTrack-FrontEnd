@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'inicio')}">
+<head>
+    <title>DonaTrack - Panel Administrador</title>
+</head>
+<body>
+    <main class="admin-dashboard-section" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <span class="current">Panel Administrador</span>
+        </nav>
+
+        <!-- Onboarding Hint (Heurística #10) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de administración">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="shield-check" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Centro de Control de Operaciones y Depósito</div>
+                <p class="onboarding-hint-text">
+                    Como administrador, registras las donaciones recibidas en el depósito, ejecutas el algoritmo de asignación semántica para emparejarlas con necesidades reales, gestionas los camiones y coordinas la logística integral.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="dt-stats-grid">
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: var(--radius-md); background: #e0e7ff; color: #4338ca; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="users" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Donantes Registrados</span>
+                    <p style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;" th:text="${donorsList.size()}">4</p>
+                    <small style="color: #4338ca; font-weight: 600; font-size: 0.75rem;">+10.000 vía CSV</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: var(--radius-md); background: #fef3c7; color: #d97706; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="package" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Donaciones en Depósito</span>
+                    <p style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;" th:text="${warehouseDonations.size()}">3</p>
+                    <small style="color: #d97706; font-weight: 600; font-size: 0.75rem;">Listas para asignar</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: var(--radius-md); background: #ecfeff; color: #0891b2; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="truck" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Flota de Camiones</span>
+                    <p style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;" th:text="${truckFleet.size()}">3</p>
+                    <small style="color: #059669; font-weight: 600; font-size: 0.75rem;">1 en ruta activa</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: var(--radius-md); background: #ffe4e6; color: var(--color-primary); display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="trophy" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Top Donante del Mes</span>
+                    <p style="font-size: 1.1rem; font-weight: 800; color: var(--color-ink); line-height: 1.2;">Arcos Plateados</p>
+                    <small style="color: var(--color-primary); font-weight: 600; font-size: 0.75rem;">540 unidades aportadas</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operational Shortcuts Grid -->
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-ink);">Accesos Directos de Administración</h2>
+            <div class="dt-cards-grid-2">
+                <a th:href="@{/admin/dashboard/donaciones}" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #fef3c7; color: #d97706; display: grid; place-items: center; flex-shrink: 0;">
+                        <i data-lucide="package-plus" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink); margin-bottom: 2px;">Ingresar Donación</h3>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);">Registrar bienes en depósito y segmentar por subcategoría.</p>
+                    </div>
+                </a>
+
+                <a th:href="@{/admin/dashboard/asignar}" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #e0e7ff; color: #4338ca; display: grid; place-items: center; flex-shrink: 0;">
+                        <i data-lucide="git-merge" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink); margin-bottom: 2px;">Matchmaking y Asignación</h3>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);">Vincular donaciones con necesidades según compatibilidad semántica.</p>
+                    </div>
+                </a>
+
+                <a th:href="@{/admin/dashboard/importar}" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #ecfdf5; color: #059669; display: grid; place-items: center; flex-shrink: 0;">
+                        <i data-lucide="file-up" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink); margin-bottom: 2px;">Importación Masiva CSV</h3>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);">Migrar +10.000 donantes históricos con credenciales automáticas.</p>
+                    </div>
+                </a>
+
+                <a th:href="@{/admin/dashboard/camiones}" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;">
+                    <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #ecfeff; color: #0891b2; display: grid; place-items: center; flex-shrink: 0;">
+                        <i data-lucide="truck" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink); margin-bottom: 2px;">Gestión de Camiones</h3>
+                        <p style="font-size: 0.8125rem; color: var(--color-muted);">Supervisar capacidad, combustible y estado de la flota.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

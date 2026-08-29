@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Registro</title>
+</head>
+<body>
+    <main style="max-width: 900px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <span class="current">Registro de Cuenta</span>
+        </nav>
+
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em;">Únete a la Red</span>
+            <h1 style="font-size: 2rem; font-weight: 800; color: var(--color-ink); margin-top: 4px;">Selecciona tu Tipo de Perfil</h1>
+            <p style="color: var(--color-muted); font-size: 1rem; max-width: 540px; margin: 8px auto 0 auto;">
+                Elige cómo deseas participar en DonaTrack para personalizar tu experiencia en la plataforma.
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+            <a th:each="option : ${registrationOptions}" th:href="@{${option.path}}" style="background: #ffffff; border: 2px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);"
+               onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';"
+               onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='none'; this.style.boxShadow='var(--shadow-xs)';">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); display: grid; place-items: center;">
+                    <i th:attr="data-lucide=${option.icon}" style="width: 32px; height: 32px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-ink);" th:text="${option.title}">Título</h3>
+                    <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.4; margin-top: 6px;" th:text="${option.description}">Descripción</p>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" style="margin-top: auto; pointer-events: none;">
+                    <span>Comenzar registro</span>
+                    <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                </button>
+            </a>
+        </div>
+
+        <div style="text-align: center; font-size: 0.9375rem; color: var(--color-muted);">
+            ¿Ya tienes una cuenta registrada? 
+            <a th:href="@{/login}" style="color: var(--color-primary); font-weight: 700;">Inicia sesión aquí</a>
+        </div>
+    </main>
+</body>
+</html>

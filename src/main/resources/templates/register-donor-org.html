@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Registro Donante Jurídico</title>
+</head>
+<body>
+    <main style="max-width: 680px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/registro}">Registro</a>
+            <span class="separator">/</span>
+            <span class="current">Donante Persona Jurídica</span>
+        </nav>
+
+        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2.25rem; box-shadow: var(--shadow-md);">
+            <div style="margin-bottom: 1.75rem;">
+                <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Persona Jurídica / Institucional</span>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;">Registro de Empresa o Institución</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem;">Suma a tu empresa, ONG o fundación a la red corporativa de donaciones.</p>
+            </div>
+
+            <form th:action="@{/registro/donante-organizacion}" method="POST" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { showToast('¡Registro Institucional Creado!', 'Cuenta generada con éxito.', 'success'); setTimeout(function(){ window.location.href='/donante/dashboard'; }, 1000); });">
+                <div class="form-group">
+                    <label class="form-label" for="org-name">Razón Social <span class="required">*</span></label>
+                    <input type="text" id="org-name" class="form-control" placeholder="Ej. Arcos Plateados S.A." required />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="org-cuit">CUIT <span class="required">*</span></label>
+                        <input type="text" id="org-cuit" class="form-control" placeholder="30-12345678-9" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="org-type">Tipo de Organización <span class="required">*</span></label>
+                        <select id="org-type" class="form-control" required>
+                            <option value="Empresa">Empresa</option>
+                            <option value="ONG">ONG</option>
+                            <option value="Gubernamental">Gubernamental</option>
+                            <option value="Institución">Institución Educativa/Religiosa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="org-email">Correo Electrónico Institucional (Obligatorio) <span class="required">*</span></label>
+                    <input type="email" id="org-email" class="form-control" placeholder="contacto@empresa.com" required />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="org-rep">Nombre del Representante Designado</label>
+                        <input type="text" id="org-rep" class="form-control" placeholder="Ej. Roberto Gómez" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="org-phone">Teléfono de Contacto</label>
+                        <input type="tel" id="org-phone" class="form-control" placeholder="+54 11 4444-4444" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 1rem;">
+                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                    <span>Completar Registro Corporativo</span>
+                </button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

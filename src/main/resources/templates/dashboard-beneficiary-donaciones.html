@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-beneficiary-layout :: layout(~{::title}, ~{::main}, 'donations')}">
+<head>
+    <title>DonaTrack - Donaciones Asignadas</title>
+</head>
+<body>
+    <main class="beneficiary-donations-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/entidad/dashboard}">Panel Entidad</a>
+            <span class="separator">/</span>
+            <span class="current">Donaciones Asignadas</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Donaciones Asignadas a Tu Entidad</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Revisa las donaciones asignadas por el algoritmo y su estado en el proceso de logística.</p>
+            </div>
+            <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary">
+                <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+                <span>Confirmar Recepciones Pendientes</span>
+            </a>
+        </div>
+
+        <!-- Onboarding Hint -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de asignaciones">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="package-check" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Proceso de Asignación y Traslado</div>
+                <p class="onboarding-hint-text">
+                    Cuando una donación coincide con tus necesidades publicadas, el sistema la reserva y programa la ruta del camión. Una vez que el camión arriba a tu sede, puedes confirmar la recepción directamente subiendo fotografías.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Assigned Donations Grid -->
+        <div class="dt-cards-grid-3">
+            <article class="donation-card" th:each="don : ${assignedDonations}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Donación Asignada</span>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${don.title}">Título</h3>
+                    </div>
+                    <span class="status-badge" th:classappend="${don.status == 'En camino' ? 'badge-traslado' : 'badge-lista'}" th:text="${don.status}">Estado</span>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem; font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Donante:</span>
+                        <strong style="color: var(--color-ink);" th:text="${don.donor_name}">Donante</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Unidades:</span>
+                        <strong th:text="${don.items_count} + ' unidades'">50 unidades</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-muted);">Entrega estimada:</span>
+                        <span style="color: var(--color-primary); font-weight: 600;" th:text="${don.expected_delivery}">Hoy, 15:30</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; gap: 0.5rem;">
+                    <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm" style="flex: 1;">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                        <span>Ver Camión</span>
+                    </a>
+                    <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm" style="flex: 1;">
+                        <i data-lucide="camera" style="width: 14px; height: 14px;"></i>
+                        <span>Confirmar</span>
+                    </a>
+                </div>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

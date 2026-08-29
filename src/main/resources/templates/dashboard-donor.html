@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-donor-layout :: layout(~{::title}, ~{::main}, 'inicio')}">
+<head>
+    <title>DonaTrack - Panel Donante</title>
+</head>
+<body>
+    <main class="overview-section" th:fragment="main">
+        <!-- Breadcrumbs (Profundidad <= 3 niveles) -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <span class="current">Panel Donante</span>
+        </nav>
+
+        <!-- Onboarding Contextual Hint (Heurística #10 y #6) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía rápida para donantes">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="sparkles" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">¡Bienvenido a tu panel de Donante, <span th:text="${user.name}">Juan</span>!</div>
+                <p class="onboarding-hint-text">
+                    Aquí puedes dar trazabilidad completa a tus donaciones. Cada entrega que realices es segmentada por subcategoría en el depósito, transportada por nuestra flota y verificada públicamente con fotografías tomadas por la entidad receptora.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Quick Stats Grid -->
+        <div class="dt-stats-grid">
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+                <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: var(--color-primary-soft); display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="package" style="width: 26px; height: 26px; color: var(--color-primary);"></i>
+                </div>
+                <div class="stat-content">
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Donaciones</span>
+                    <p class="stat-value" style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;" th:text="${userDonations.size()}">4</p>
+                    <small style="color: #10b981; font-weight: 600; font-size: 0.8125rem;">1 en traslado activo</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+                <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #fef3c7; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="award" style="width: 26px; height: 26px; color: #d97706;"></i>
+                </div>
+                <div class="stat-content">
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Nivel de Donante</span>
+                    <p class="stat-value" style="font-size: 1.4rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;" th:text="${user.category}">Sostenedor</p>
+                    <small style="color: var(--color-muted); font-size: 0.8125rem;">3 insignias ganadas</small>
+                </div>
+            </div>
+
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+                <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #ecfdf5; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="heart" style="width: 26px; height: 26px; color: #059669;"></i>
+                </div>
+                <div class="stat-content">
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); text-transform: uppercase;">Impacto Estimado</span>
+                    <p class="stat-value" style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink); line-height: 1.1;">100+</p>
+                    <small style="color: var(--color-muted); font-size: 0.8125rem;">Personas beneficiadas</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Donations & Badges Layout -->
+        <div class="dt-grid-2-1">
+            <!-- Recent Donations -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Mis Donaciones Recientes</h2>
+                    <a th:href="@{/donante/dashboard/donaciones}" class="btn btn-outline btn-sm">Ver todas</a>
+                </div>
+
+                <div class="recent-donations-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="donation-item-row" th:each="donation : ${userDonations}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                        <img th:src="${donation.image_url}" th:alt="${donation.title}" style="width: 64px; height: 64px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0;" />
+                        <div style="flex: 1;">
+                            <h4 style="font-size: 0.975rem; font-weight: 700; color: var(--color-ink); margin-bottom: 2px;" th:text="${donation.title}">Título</h4>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted); margin-bottom: 4px;">
+                                Destino: <strong th:text="${donation.entity_name}">Entidad</strong> • Subcategoría: <span th:text="${donation.subcategory}">Subcategoría</span>
+                            </p>
+                            <span class="status-badge" th:classappend="'badge-' + ${#strings.toLowerCase(#strings.replace(donation.status, ' ', '-'))}" th:text="${donation.status}">Estado</span>
+                        </div>
+                        <div style="text-align: right; flex-shrink: 0;">
+                            <strong style="font-size: 1.1rem; color: var(--color-ink);" th:text="${donation.total_units}">25</strong>
+                            <div style="font-size: 0.75rem; color: var(--color-muted);">unidades</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Badges & Missions Summary -->
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Insignias</h2>
+                    <a th:href="@{/donante/dashboard/incentivos}" class="btn btn-outline btn-sm">Misiones</a>
+                </div>
+
+                <div class="badges-list" style="display: flex; flex-direction: column; gap: 0.875rem; flex: 1;">
+                    <div class="badge-item-card" th:each="badge : ${badges}" style="display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem; background: #fff8f8; border-radius: var(--radius-md); border: 1px solid #fee2e2;">
+                        <div class="badge-icon-box" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: white; display: grid; place-items: center; flex-shrink: 0;">
+                            <i th:attr="data-lucide=${badge.icon}" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.875rem; font-weight: 700; color: var(--color-ink);" th:text="${badge.name}">Insignia</h4>
+                            <p style="font-size: 0.75rem; color: var(--color-muted);" th:text="${badge.description}">Descripción</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+                    <a th:href="@{/donante/dashboard/entregas}" class="btn btn-primary" style="width: 100%;">
+                        <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                        <span>Seguir Entrega Activa</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

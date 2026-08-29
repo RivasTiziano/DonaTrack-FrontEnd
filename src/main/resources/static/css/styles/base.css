@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
+
+:root {
+  /* Brand Palette */
+  --color-primary: #e11d48;
+  --color-primary-hover: #be123c;
+  --color-primary-dark: #9f1239;
+  --color-primary-soft: #ffe4e6;
+  --color-primary-rgb: 225, 29, 72;
+  
+  --color-secondary: #f97316;
+  --color-secondary-hover: #ea580c;
+  --color-secondary-soft: #ffedd5;
+  
+  --color-accent: #6366f1;
+  --color-accent-soft: #e0e7ff;
+
+  /* Neutrals & Surfaces */
+  --color-ink: #0f172a;
+  --color-ink-light: #334155;
+  --color-muted: #64748b;
+  --color-muted-light: #94a3b8;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+
+  /* Semantic Status Tokens */
+  --status-deposito: #d97706;
+  --status-deposito-bg: #fef3c7;
+  --status-deposito-border: #fde68a;
+
+  --status-asignada: #2563eb;
+  --status-asignada-bg: #eff6ff;
+  --status-asignada-border: #bfdbfe;
+
+  --status-lista: #7c3aed;
+  --status-lista-bg: #f5f3ff;
+  --status-lista-border: #ddd6fe;
+
+  --status-traslado: #0891b2;
+  --status-traslado-bg: #ecfeff;
+  --status-traslado-border: #a5f3fc;
+
+  --status-entregada: #059669;
+  --status-entregada-bg: #ecfdf5;
+  --status-entregada-border: #a7f3d0;
+
+  --status-vencida: #dc2626;
+  --status-vencida-bg: #fef2f2;
+  --status-vencida-border: #fecaca;
+
+  --status-fallida: #475569;
+  --status-fallida-bg: #f1f5f9;
+  --status-fallida-border: #cbd5e1;
+
+  /* Elevation & Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 10px 25px -5px rgba(225, 29, 72, 0.35);
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --container: 1200px;
+  --header-height: 72px;
+  --sidebar-width: 260px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Sora', system-ui, -apple-system, sans-serif;
+  color: var(--color-ink);
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+img, svg, picture, video {
+  display: block;
+  max-width: 100%;
+}
+
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+/* WCAG AA Visible Focus Ring */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Touch targets WCAG minimum */
+button, a, select, input[type="button"], input[type="submit"], .clickable-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

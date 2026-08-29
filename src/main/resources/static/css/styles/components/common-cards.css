@@ -1,0 +1,106 @@
+.common-card {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.common-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.common-card-img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background-color: #f3f4f6;
+}
+
+.common-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.common-card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--color-ink);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.common-card-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 1rem;
+}
+
+.common-card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-ink);
+}
+
+.common-card-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.common-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.common-tag {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--color-border);
+}
+
+.common-card-details {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+.common-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.common-card-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.common-card-actions button,
+.common-card-actions a {
+    flex: 1;
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-beneficiary-layout :: layout(~{::title}, ~{::main}, 'notifications')}">
+<head>
+    <title>DonaTrack - Notificaciones Entidad</title>
+</head>
+<body>
+    <main class="beneficiary-notifications-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/entidad/dashboard}">Panel Entidad</a>
+            <span class="separator">/</span>
+            <span class="current">Notificaciones</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Centro de Notificaciones de la Entidad</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Avisos sobre asignación de donaciones, despacho de camiones y recordatorios de recepción.</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Notificaciones leídas', 'Todas las notificaciones se marcaron como leídas.', 'success')">
+                <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
+                <span>Marcar todas como leídas</span>
+            </button>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
+            <article class="notification-card" th:each="notif : ${beneficiaryNotifications}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs);">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: grid; place-items: center; flex-shrink: 0;">
+                    <i data-lucide="bell" style="width: 22px; height: 22px;"></i>
+                </div>
+
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink);" th:text="${notif.title}">Título</h3>
+                        <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${notif.date}">Fecha</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--color-ink-light); line-height: 1.45;" th:text="${notif.message}">Mensaje</p>
+                </div>
+
+                <span th:if="${notif.unread}" style="width: 8px; height: 8px; border-radius: 50%; background: #4338ca; flex-shrink: 0; margin-top: 6px;" title="No leída"></span>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

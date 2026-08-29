@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'DonaTrack - ' + ${title}">DonaTrack - Registro</title>
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="registration-container">
+        <div class="registration-wrapper">
+            <a th:href="@{/registro}" style="text-decoration: none; margin-bottom: 1.5rem; display: inline-flex;">
+                <div class="back-link">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+                    Volver a opciones
+                </div>
+            </a>
+
+            <div class="form-container">
+                <div class="form-header">
+                    <h2 th:text="${title}">Registro</h2>
+                    <p>Completa tus datos para crear una cuenta.</p>
+                </div>
+
+                <form action="#" th:action="@{/login}" method="GET">
+                    <div class="form-group">
+                        <label>
+                            Nombre Completo o Entidad <span class="required">*</span>
+                        </label>
+                        <div style="position: relative;">
+                            <i data-lucide="user" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; width: 18px; height: 18px;"></i>
+                            <input type="text" name="name" placeholder="Tu nombre" style="padding-left: 42px;" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Email <span class="required">*</span>
+                        </label>
+                        <div style="position: relative;">
+                            <i data-lucide="mail" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; width: 18px; height: 18px;"></i>
+                            <input type="email" name="email" placeholder="tu@email.com" style="padding-left: 42px;" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Contraseña <span class="required">*</span>
+                        </label>
+                        <div style="position: relative;">
+                            <i data-lucide="lock" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; width: 18px; height: 18px;"></i>
+                            <input type="password" name="password" placeholder="Tu contraseña" style="padding-left: 42px;" required />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" style="width: 100%; margin-top: 1rem;">
+                        Crear Cuenta
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+      lucide.createIcons();
+    </script>
+</body>
+</html>

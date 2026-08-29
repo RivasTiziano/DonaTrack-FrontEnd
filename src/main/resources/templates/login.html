@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DonaTrack - Iniciar Sesión</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" />
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <!-- Scripts -->
+    <script th:src="@{/vendor/lucide/lucide.min.js}"></script>
+</head>
+<body style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 10% 20%, #ffe4e6 0%, transparent 35%), radial-gradient(circle at 90% 80%, #ffedd5 0%, transparent 30%), var(--color-bg); padding: 1.5rem;">
+    <div style="width: 100%; max-width: 460px;">
+        <!-- Top Back Link -->
+        <div style="margin-bottom: 1.25rem;">
+            <a th:href="@{/}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-muted); font-weight: 600; font-size: 0.875rem;">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                <span>Volver a la página principal</span>
+            </a>
+        </div>
+
+        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2.25rem; box-shadow: var(--shadow-xl);">
+            <!-- Logo & Heading -->
+            <div style="text-align: center; margin-bottom: 1.75rem;">
+                <a class="brand" th:href="@{/}" style="justify-content: center; margin-bottom: 0.75rem;">
+                    <span class="brand-mark" aria-hidden="true">
+                        <i data-lucide="heart" style="width: 22px; height: 22px;"></i>
+                    </span>
+                    <span>DonaTrack</span>
+                </a>
+                <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--color-ink);">Iniciar Sesión</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Ingresa a tu cuenta para gestionar tus donaciones</p>
+            </div>
+
+            <!-- Demo Quick Access Helper Box (Heurística #6 - Reconocimiento antes que recuerdo) -->
+            <div style="background: #f8fafc; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">
+                    ⚡ Acceso Rápido de Prueba (1-Click)
+                </span>
+                <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-outline btn-sm" style="flex: 1; min-height: 36px;" onclick="fillDemoLogin('donante@donatrack.org')">
+                        <i data-lucide="user" style="width: 14px; height: 14px; color: var(--color-primary);"></i>
+                        <span>Donante</span>
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" style="flex: 1; min-height: 36px;" onclick="fillDemoLogin('entidad@donatrack.org')">
+                        <i data-lucide="building-2" style="width: 14px; height: 14px; color: #4338ca;"></i>
+                        <span>Entidad</span>
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" style="flex: 1; min-height: 36px;" onclick="fillDemoLogin('admin@donatrack.org')">
+                        <i data-lucide="shield" style="width: 14px; height: 14px; color: #d97706;"></i>
+                        <span>Admin</span>
+                    </button>
+                </div>
+            </div>
+
+            <form th:action="@{/login}" method="POST" id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Correo Electrónico <span class="required">*</span></label>
+                    <div style="position: relative;">
+                        <i data-lucide="mail" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--color-muted-light); pointer-events: none;"></i>
+                        <input type="email" id="login-email" name="email" class="form-control" placeholder="donante@donatrack.org" style="padding-left: 42px;" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="form-label" for="login-password">Contraseña <span class="required">*</span></label>
+                        <a href="#" style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;" onclick="showToast('Recuperación de Cuenta', 'Ingresa tu correo y te enviaremos el enlace de restablecimiento.', 'info')">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    <div style="position: relative;">
+                        <i data-lucide="lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--color-muted-light); pointer-events: none;"></i>
+                        <input type="password" id="login-password" name="password" class="form-control" placeholder="••••••••" value="demo1234" style="padding-left: 42px;" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 0.75rem;">
+                    <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+                    <span>Ingresar a DonaTrack</span>
+                </button>
+            </form>
+
+            <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); text-align: center; font-size: 0.875rem; color: var(--color-muted);">
+                ¿Aún no tienes cuenta? 
+                <a th:href="@{/registro}" style="color: var(--color-primary); font-weight: 700;">Regístrate aquí</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/app-usability.js}"></script>
+    <script>
+        function fillDemoLogin(email) {
+            document.getElementById('login-email').value = email;
+            document.getElementById('login-password').value = 'demo1234';
+            showToast('Credenciales completadas', `Listo para iniciar sesión con: ${email}`, 'info');
+        }
+
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

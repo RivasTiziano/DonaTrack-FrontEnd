@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'trucks')}">
+<head>
+    <title>DonaTrack - Flota de Camiones</title>
+</head>
+<body>
+    <main class="admin-trucks-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/admin/dashboard}">Panel Administración</a>
+            <span class="separator">/</span>
+            <span class="current">Flota de Camiones</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Administración de Flota de Camiones</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Supervisión de capacidades de carga, combustible, choferes y disponibilidad operativa.</p>
+            </div>
+            <button type="button" class="btn btn-outline" onclick="showToast('Flota Sincronizada', 'Telemetría y combustible actualizados.', 'info')">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+                <span>Sincronizar Telemetría</span>
+            </button>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10) -->
+        <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de gestión de camiones">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="truck" style="width: 20px; height: 20px; color: #d97706;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Gestión de Logística y Transporte</div>
+                <p class="onboarding-hint-text">
+                    Los camiones transportan las donaciones asignadas desde el depósito hasta las entidades beneficiarias. Cada vehículo cuenta con límites de carga (kg), seguimiento GPS y control de mantenimientos preventivos.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Trucks Grid -->
+        <div class="dt-cards-grid-3">
+            <article class="truck-card" th:each="truck : ${truckFleet}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #ecfeff; color: #0891b2; display: grid; place-items: center;">
+                            <i data-lucide="truck" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--color-ink);" th:text="${truck.plate}">AB 123 CD</h3>
+                            <span style="font-size: 0.8125rem; color: var(--color-muted);" th:text="'Chofer: ' + ${truck.driver}">Miguel Ángel</span>
+                        </div>
+                    </div>
+                    <span class="status-badge" th:classappend="${truck.status == 'Disponible' ? 'badge-entregada' : (truck.status == 'En ruta' ? 'badge-traslado' : 'badge-vencida')}" th:text="${truck.status}">Estado</span>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem; font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                            <span style="color: var(--color-muted);">Carga actual:</span>
+                            <strong><span th:text="${truck.currentLoad}">0</span> / <span th:text="${truck.capacity}">5000</span> kg</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                            <div style="height: 100%; background: #0891b2; border-radius: 999px;" th:style="'width: ' + (${truck.currentLoad} * 100 / ${truck.capacity}) + '%;'"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                            <span style="color: var(--color-muted);">Combustible:</span>
+                            <strong th:text="${truck.fuel} + '%'">80%</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                            <div style="height: 100%; background: #10b981; border-radius: 999px;" th:style="'width: ' + ${truck.fuel} + '%;'"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; padding-top: 4px; border-top: 1px solid var(--color-border);">
+                        <span style="color: var(--color-muted);">Próximo Service:</span>
+                        <span th:text="${truck.nextService}">10/06/2026</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; gap: 0.5rem;">
+                    <a th:href="'tel:' + ${truck.phone}" class="btn btn-outline btn-sm" style="flex: 1;">
+                        <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
+                        <span>Llamar Chofer</span>
+                    </a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Estado Modificado', 'El estado operativo del camión fue actualizado.', 'info')">
+                        <i data-lucide="settings" style="width: 14px; height: 14px;"></i>
+                        <span>Gestionar</span>
+                    </button>
+                </div>
+            </article>
+        </div>
+    </main>
+</body>
+</html>

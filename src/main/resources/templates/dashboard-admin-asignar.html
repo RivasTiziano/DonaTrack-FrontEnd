@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'assign')}">
+<head>
+    <title>DonaTrack - Asignar Beneficiarios</title>
+</head>
+<body>
+    <main class="admin-assign-view" th:fragment="main">
+        <!-- Breadcrumbs -->
+        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/admin/dashboard}">Panel Administración</a>
+            <span class="separator">/</span>
+            <span class="current">Asignar Beneficiarios</span>
+        </nav>
+
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Matchmaking y Asignación de Donaciones</h1>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Algoritmo de compatibilidad semántica entre donaciones en depósito y necesidades publicadas.</p>
+            </div>
+            <button type="button" class="btn btn-outline" onclick="simulateAsyncAction(this, 800, function() { showToast('Algoritmo Ejecutado', 'Se recalcularon los scores de compatibilidad para todas las donaciones en depósito.', 'info'); })">
+                <i data-lucide="sparkles" style="width: 18px; height: 18px; color: #4338ca;"></i>
+                <span>Ejecutar Matchmaking</span>
+            </button>
+        </div>
+
+        <!-- Onboarding Hint (Heurística #10 y Algoritmo de Dominio) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía del algoritmo de asignación">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="git-merge" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Funcionamiento del Algoritmo de Compatibilidad Semántica</div>
+                <p class="onboarding-hint-text">
+                    El algoritmo evalúa la correspondencia exacta de <strong>subcategoría</strong>, cercanía geográfica, urgencia de la necesidad y capacidad receptora, generando un puntaje normalizado (Score de 0 a 100%). El administrador valida la asignación final antes de que pase a planificación logística.
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Two Column Layout: Donación a Asignar vs Candidatos Propuestos -->
+        <div class="dt-grid-2-1">
+            <!-- Selected Donation Panel -->
+            <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.15rem; font-weight: 700;">Donación a Asignar</h2>
+                    <span class="status-badge badge-deposito">En depósito</span>
+                </div>
+
+                <div style="background: #fff8f8; border: 2px solid var(--color-primary-soft); border-radius: var(--radius-md); padding: 1.25rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Alimentos • Subcategoría: Fideos secos</span>
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--color-ink); margin-top: 4px;">Fideos Secos Matarazzo (100 paquetes)</h3>
+                    <p style="font-size: 0.8125rem; color: var(--color-muted); margin-top: 2px;">
+                        Donante: <strong>Molinos del Río</strong> (Persona Jurídica)
+                    </p>
+
+                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #fee2e2; font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                        <div><strong>Cantidad:</strong> 100 paquetes (50 kg)</div>
+                        <div><strong>Vencimiento:</strong> <span style="color: #059669; font-weight: 600;">01/01/2027 (Apto)</span></div>
+                        <div><strong>Ubicación:</strong> Estantería A-12</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--color-muted);">
+                    <i data-lucide="info" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+                    El algoritmo buscó todas las necesidades activas con subcategoría <em>Fideos secos</em>.
+                </div>
+            </div>
+
+            <!-- Matchmaking Results Panel -->
+            <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.15rem; font-weight: 700;">Resultados del Algoritmo (Top Ranking)</h2>
+                    <span style="font-size: 0.8125rem; color: var(--color-muted);">2 candidatos encontrados</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Candidate 1: Recommended Match -->
+                    <div class="candidate-card" style="border: 2px solid #10b981; background: #f0fdf4; border-radius: var(--radius-lg); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <span style="font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; background: #10b981; color: white; padding: 0.2rem 0.5rem; border-radius: 999px;">★ Mejor Compatibilidad</span>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 4px;">Fundación Vida - Comedor</h3>
+                                <p style="font-size: 0.8125rem; color: var(--color-muted);">Av. San Martín 1234, CABA • 250 personas asistidas</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.4rem; font-weight: 800; color: #059669;">95%</div>
+                                <span style="font-size: 0.6875rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Match Score</span>
+                            </div>
+                        </div>
+
+                        <!-- Match Factors breakdown -->
+                        <div style="background: #ffffff; padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Subcategoría solicitada:</span>
+                                <strong style="color: #059669;">✓ Fideos secos (100% match)</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Tipo de necesidad:</span>
+                                <span>Recurrente (100 kg necesarios)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Impacto social estimado:</span>
+                                <strong>250 viandas comunitarias</strong>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" style="width: 100%; margin-top: 0.25rem;" onclick="openModal('modal-confirm-assign')">
+                            <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                            <span>Confirmar Asignación a Fundación Vida</span>
+                        </button>
+                    </div>
+
+                    <!-- Candidate 2 -->
+                    <div class="candidate-card" style="border: 1px solid var(--color-border); background: #f8fafc; border-radius: var(--radius-lg); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink);">Comedor San Telmo</h3>
+                                <p style="font-size: 0.8125rem; color: var(--color-muted);">Defensa 1100, CABA • 210 personas asistidas</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.25rem; font-weight: 800; color: #d97706;">78%</div>
+                                <span style="font-size: 0.6875rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase;">Match Score</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #ffffff; padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Subcategoría solicitada:</span>
+                                <strong style="color: #059669;">✓ Fideos secos (100% match)</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Capacidad almacenamiento:</span>
+                                <span>Media (Menor rotación)</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline" style="width: 100%;" onclick="openModal('modal-confirm-assign')">
+                            <span>Asignar a Comedor San Telmo</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accessible Confirmation Modal for Assignment -->
+        <div id="modal-confirm-assign" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-assign-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-confirm-assign')"></div>
+            <div class="dt-modal-content">
+                <div class="dt-modal-header">
+                    <h3 id="modal-assign-title" class="dt-modal-title">Confirmar Asignación Definitiva</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-confirm-assign')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <div class="dt-modal-body">
+                    <p style="font-size: 0.9375rem; color: var(--color-ink); margin-bottom: 0.75rem;">
+                        ¿Deseas asignar los <strong>100 paquetes de Fideos Secos</strong> a <strong>Fundación Vida</strong>?
+                    </p>
+                    <p style="font-size: 0.875rem; color: var(--color-muted);">
+                        La donación cambiará su estado a <strong>Asignación realizada</strong> y será enviada al Servicio de Logística para su incorporación en la próxima ruta de entrega.
+                    </p>
+                </div>
+                <div class="dt-modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-confirm-assign')">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="simulateAsyncAction(this, 700, function() { closeModal('modal-confirm-assign'); showToast('¡Asignación Exitosa!', 'La donación fue vinculada con Fundación Vida y pasó a cola de logística.', 'success'); });">
+                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                        <span>Confirmar Asignación</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
