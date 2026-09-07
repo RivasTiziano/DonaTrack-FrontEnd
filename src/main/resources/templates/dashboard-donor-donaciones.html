@@ -424,6 +424,8 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 applyDonationFilters();
+                const urlModal = new URLSearchParams(window.location.search).get('modal');
+                if (urlModal) openDonationDetailModal(urlModal);
             });
         </script>
     </main>
