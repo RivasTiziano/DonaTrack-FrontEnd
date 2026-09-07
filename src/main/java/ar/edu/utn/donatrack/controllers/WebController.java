@@ -315,7 +315,7 @@ public class WebController {
             "document", "38450123"
         ));
         
-        // 1. Historial de Donaciones con Categorías, Subcategorías y Estados de Dominio
+        // 1. Historial de Donaciones con Categorías, Subcategorías y Estados
         List<Map<String, Object>> userDonations = List.of(
             mapOf(
                 "id", "101",
@@ -435,7 +435,7 @@ public class WebController {
         );
         model.addAttribute("userDonations", userDonations);
 
-        // 2. Directorio Detallado de Entidades Beneficiarias (diagramaDonaciones.puml)
+        // 2. Directorio Detallado de Entidades Beneficiarias
         List<Map<String, Object>> beneficiaryEntities = List.of(
             mapOf(
                 "id", "e1",
@@ -625,7 +625,7 @@ public class WebController {
         );
         model.addAttribute("beneficiaryEntities", beneficiaryEntities);
 
-        // 3. Sistema Completo de Incentivos (diagramaIncentivos.puml)
+        // 3. Sistema Completo de Incentivos
         // Categorías en cadena
         List<Map<String, Object>> incentiveCategories = List.of(
             mapOf("id", 1, "nombre", "Iniciador Bronce", "nivel", 1, "status", "Completada", "misionesTotal", 3, "misionesCumplidas", 3, "descripcion", "Primeros pasos en la red solidaria."),
@@ -635,7 +635,7 @@ public class WebController {
         );
         model.addAttribute("incentiveCategories", incentiveCategories);
 
-        // Misiones Concretas (MisionRacha, MisionCompletitud, MisionHabilDonador, MisionDonacionesExitosas)
+        // Misiones Concretas (Racha mensual, completitud, donaciones efectivas)
         List<Map<String, Object>> missions = List.of(
             mapOf(
                 "id", 201,
@@ -748,14 +748,14 @@ public class WebController {
         );
         model.addAttribute("badges", badges);
 
-        // Auditoría de Categorías (diagramaIncentivos.puml -> AuditoriaCategoria)
+        // Auditoría de Categorías
         List<Map<String, Object>> categoryAudits = List.of(
             mapOf("fecha", "15 Feb 2026, 11:30", "categoriaAnterior", "Iniciador Bronce", "categoriaNueva", "Sostenedor Plata", "motivo", "Completó las 3 misiones de iniciación y alcanzó 4 donaciones efectivas"),
             mapOf("fecha", "12 Ene 2026, 09:00", "categoriaAnterior", "Registro Inicial", "categoriaNueva", "Iniciador Bronce", "motivo", "Primera donación registrada y clasificada en Depósito Central")
         );
         model.addAttribute("categoryAudits", categoryAudits);
 
-        // Métricas Mensuales e Históricas (diagramaIncentivos.puml -> MetricaMensual)
+        // Métricas Mensuales e Históricas
         Map<String, Object> donorMetrics = mapOf(
             "totalDonacionesHistoricas", 8,
             "impactoAcumulado", 285,
@@ -765,7 +765,7 @@ public class WebController {
         );
         model.addAttribute("donorMetrics", donorMetrics);
 
-        // 4. Notificaciones del Donante con Variedad Completa (diagramaNotificaciones.puml)
+        // 4. Notificaciones del Donante con Variedad Completa
         List<Map<String, Object>> notifications = List.of(
             mapOf(
                 "id", "n-101",
@@ -852,7 +852,7 @@ public class WebController {
         model.addAttribute("notifications", notifications);
         model.addAttribute("unreadNotifications", 2);
 
-        // 5. Entregas Activas con Telemetría GPS y Múltiples Camiones (diagramaLogistica.puml)
+        // 5. Entregas Activas con Telemetría GPS y Múltiples Camiones
         List<Map<String, Object>> activeDonorDeliveries = List.of(
             mapOf(
                 "id", "del-102",
@@ -1072,7 +1072,7 @@ public class WebController {
         );
         model.addAttribute("assignedDonations", assignedDonations);
 
-        // 6. Notificaciones de Entidad Beneficiaria con Variedad Completa (diagramaNotificaciones.puml)
+        // 6. Notificaciones de Entidad Beneficiaria con Variedad Completa
         List<Map<String, Object>> beneficiaryNotifications = List.of(
             mapOf(
                 "id", "bn-01",
@@ -1155,7 +1155,7 @@ public class WebController {
         );
         model.addAttribute("beneficiaryNotifications", beneficiaryNotifications);
 
-        // 7. Entregas Entrantes en Tiempo Real con Múltiples Camiones (diagramaLogistica.puml)
+        // 7. Entregas Entrantes en Tiempo Real con Múltiples Camiones
         List<Map<String, Object>> incomingDeliveries = List.of(
             mapOf(
                 "id", "inc-1",
@@ -1370,7 +1370,7 @@ public class WebController {
         );
         model.addAttribute("warehouseDonations", warehouseDonations);
 
-        // 8. Flota Completa de Camiones para Administrador (diagramaLogistica.puml)
+        // 8. Flota Completa de Camiones para Administrador
         List<Map<String, Object>> truckFleet = List.of(
             mapOf(
                 "plate", "AB 123 CD",
