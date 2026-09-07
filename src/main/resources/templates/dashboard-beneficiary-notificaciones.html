@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-beneficiary-layout :: layout(~{::title}, ~{::main}, 'notifications')}">
 <head>
-    <title>DonaTrack - Notificaciones Entidad</title>
+    <title>DonaTrack - Notificaciones Entidad Beneficiaria</title>
 </head>
 <body>
     <main class="beneficiary-notifications-view" th:fragment="main">
@@ -15,35 +15,197 @@
         </nav>
 
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="dt-page-header">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Centro de Notificaciones de la Entidad</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Avisos sobre asignación de donaciones, despacho de camiones y recordatorios de recepción.</p>
+                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Centro de Notificaciones de la Entidad</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Avisos institucionales sobre asignación de donaciones, despachos logísticos y confirmación fotográfica.</p>
             </div>
-            <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Notificaciones leídas', 'Todas las notificaciones se marcaron como leídas.', 'success')">
+            <button type="button" class="btn btn-outline btn-sm" onclick="markAllBeneficiaryNotificationsRead()">
                 <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
                 <span>Marcar todas como leídas</span>
             </button>
         </div>
 
+        <!-- Onboarding Hint (Heurística #10 y Punto 7 de Consigna) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de notificaciones institucionales">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="bell" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Centro de Mensajería Institucional y Alertas Operativas</div>
+                <p class="onboarding-hint-text">
+                    Tu entidad recibe alertas automáticas ante eventos de la red: <strong>1) Asignación de Donaciones</strong> (por compatibilidad semántica o por prioridad de atención equitativa), <strong>2) Despacho y Transporte</strong> (cuando el camión inicia recorrido hacia tu sede con hora estimada de arribo), y <strong>3) Validación Fotográfica</strong> (recordatorios para cargar fotos de los bienes recibidos y acreditación pública de la entrega).
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Filter Tabs (Punto 7 de Consigna) -->
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm b-notif-tab active" onclick="filterBeneficiaryNotifications('all', this)">
+                Todas (<span th:text="${beneficiaryNotifications.size()}">6</span>)
+            </button>
+            <button type="button" class="btn btn-outline btn-sm b-notif-tab" onclick="filterBeneficiaryNotifications('unread', this)">
+                No leídas (<span id="b-unread-count">3</span>)
+            </button>
+            <button type="button" class="btn btn-outline btn-sm b-notif-tab" onclick="filterBeneficiaryNotifications('ASIGNACION', this)">
+                <i data-lucide="split" style="width: 13px; height: 13px;"></i>
+                <span>Asignación de Donaciones</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm b-notif-tab" onclick="filterBeneficiaryNotifications('RECEPCION', this)">
+                <i data-lucide="camera" style="width: 13px; height: 13px;"></i>
+                <span>Confirmación & Fotos</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm b-notif-tab" onclick="filterBeneficiaryNotifications('LOGISTICA', this)">
+                <i data-lucide="truck" style="width: 13px; height: 13px;"></i>
+                <span>Camiones en Camino</span>
+            </button>
+        </div>
+
         <!-- Notifications List -->
-        <div class="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
-            <article class="notification-card" th:each="notif : ${beneficiaryNotifications}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs);">
-                <div style="width: 44px; height: 44px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: grid; place-items: center; flex-shrink: 0;">
-                    <i data-lucide="bell" style="width: 22px; height: 22px;"></i>
+        <div class="notifications-list" id="b-notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
+            <article class="notification-card" th:each="n : ${beneficiaryNotifications}"
+                     th:attr="data-event=${n.eventType},
+                              data-unread=${n.unread},
+                              data-title=${n.title}"
+                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;"
+                     th:styleappend="${n.unread ? 'border-left: 4px solid #4338ca; background: #fafafa;' : ''}">
+                
+                <!-- Icon -->
+                <div style="width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;"
+                     th:styleappend="${n.badgeType == 'success' ? 'background: #ecfdf5; color: #059669;' : (n.badgeType == 'danger' ? 'background: #fee2e2; color: #dc2626;' : (n.badgeType == 'warning' ? 'background: #fef3c7; color: #d97706;' : 'background: #e0e7ff; color: #4338ca;'))}">
+                    <i th:if="${n.eventType == 'RECEPCION_CONFIRMADA'}" data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'PENDIENTE_FOTOS'}" data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'CAMION_DESPACHADO' or n.eventType == 'ENTREGA_PLANIFICADA'}" data-lucide="truck" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'ASIGNACION_SEMANTICA' or n.eventType == 'ASIGNACION_SUBATENDIDOS'}" data-lucide="split" style="width: 24px; height: 24px;"></i>
                 </div>
 
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink);" th:text="${notif.title}">Título</h3>
-                        <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${notif.date}">Fecha</span>
+                <!-- Text Body -->
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <!-- Category Badge -->
+                            <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 4px;"
+                                  th:styleappend="${n.badgeType == 'success' ? 'background: #ecfdf5; color: #059669;' : (n.badgeType == 'danger' ? 'background: #fee2e2; color: #dc2626;' : (n.badgeType == 'warning' ? 'background: #fef3c7; color: #d97706;' : 'background: #e0e7ff; color: #4338ca;'))}">
+                                <span th:if="${n.eventType == 'ASIGNACION_SEMANTICA'}">Algoritmo Semántico</span>
+                                <span th:if="${n.eventType == 'ASIGNACION_SUBATENDIDOS'}">Algoritmo Subatendidos</span>
+                                <span th:if="${n.eventType == 'CAMION_DESPACHADO'}">Logística en Ruta</span>
+                                <span th:if="${n.eventType == 'PENDIENTE_FOTOS'}">Acción Requerida</span>
+                                <span th:if="${n.eventType == 'RECEPCION_CONFIRMADA'}">Validación Exitosa</span>
+                                <span th:if="${n.eventType == 'ENTREGA_PLANIFICADA'}">Ruta Programada</span>
+                            </span>
+                            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink); margin: 0;" th:text="${n.title}">Título Notificación</h3>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${n.date}">Fecha</span>
                     </div>
-                    <p style="font-size: 0.875rem; color: var(--color-ink-light); line-height: 1.45;" th:text="${notif.message}">Mensaje</p>
+
+                    <p style="font-size: 0.875rem; color: var(--color-ink-light); line-height: 1.45; margin: 0.35rem 0;" th:text="${n.message}">Mensaje</p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem;">
+                        <!-- Channel & Status -->
+                        <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--color-muted);">
+                            <i th:attr="data-lucide=${n.channelIcon}" style="width: 14px; height: 14px; color: #4338ca;"></i>
+                            <span>Canal: <strong style="color: var(--color-ink);" th:text="${n.channel}">Email</strong></span>
+                            <span style="color: #cbd5e1;">|</span>
+                            <span style="color: #10b981; font-weight: 600;">Estado: COMPLETADA</span>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div>
+                            <a th:if="${n.eventType == 'PENDIENTE_FOTOS'}" th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; background: #dc2626; border-color: #dc2626;">
+                                <i data-lucide="camera" style="width: 13px; height: 13px;"></i>
+                                <span>Subir Fotos de Evidencia Ahora</span>
+                            </a>
+                            <a th:if="${n.eventType == 'CAMION_DESPACHADO' or n.eventType == 'ENTREGA_PLANIFICADA'}" th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">
+                                <i data-lucide="map-pin" style="width: 13px; height: 13px;"></i>
+                                <span>Ver Camión en Mapa</span>
+                            </a>
+                            <a th:if="${n.eventType == 'ASIGNACION_SEMANTICA' or n.eventType == 'ASIGNACION_SUBATENDIDOS'}" th:href="@{/entidad/dashboard/donaciones}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">
+                                <i data-lucide="eye" style="width: 13px; height: 13px;"></i>
+                                <span>Ver Donación Asignada</span>
+                            </a>
+                            <a th:if="${n.eventType == 'RECEPCION_CONFIRMADA'}" th:href="@{/explorar-donaciones}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">
+                                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                                <span>Ver en Registro Público</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <span th:if="${notif.unread}" style="width: 8px; height: 8px; border-radius: 50%; background: #4338ca; flex-shrink: 0; margin-top: 6px;" title="No leída"></span>
+                <!-- Unread Dot -->
+                <span th:if="${n.unread}" class="b-unread-dot" style="width: 9px; height: 9px; border-radius: 50%; background: #4338ca; flex-shrink: 0; margin-top: 6px;" title="No leída"></span>
             </article>
         </div>
+
+        <!-- Empty state when no notifications match -->
+        <div id="no-notif-found" class="dt-empty-state" style="display: none;">
+            <div class="dt-empty-state-icon">
+                <i data-lucide="bell-off" style="width: 32px; height: 32px; color: var(--color-muted);"></i>
+            </div>
+            <h3 class="dt-empty-state-title">No hay notificaciones en esta sección</h3>
+            <p class="dt-empty-state-text">No se encontraron avisos o alertas con la categoría seleccionada.</p>
+            <button type="button" class="btn btn-outline btn-sm" onclick="filterBeneficiaryNotifications('all', document.querySelector('.b-notif-tab'))">
+                <span>Ver Todas</span>
+            </button>
+        </div>
+
+        <script th:inline="javascript">
+            function filterBeneficiaryNotifications(filterType, btn) {
+                document.querySelectorAll('.b-notif-tab').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+
+                const container = document.getElementById('b-notifications-list');
+                window.simulateFilterReload(container, function() {
+                    const cards = document.querySelectorAll('#b-notifications-list .notification-card');
+                    let visible = 0;
+                    cards.forEach(card => {
+                        const ev = card.getAttribute('data-event');
+                        const isUnread = card.getAttribute('data-unread') === 'true';
+
+                        let show = false;
+                        if (filterType === 'all') {
+                            show = true;
+                        } else if (filterType === 'unread') {
+                            show = isUnread;
+                        } else if (filterType === 'ASIGNACION') {
+                            show = (ev === 'ASIGNACION_SEMANTICA' || ev === 'ASIGNACION_SUBATENDIDOS');
+                        } else if (filterType === 'RECEPCION') {
+                            show = (ev === 'PENDIENTE_FOTOS' || ev === 'RECEPCION_CONFIRMADA');
+                        } else if (filterType === 'LOGISTICA') {
+                            show = (ev === 'CAMION_DESPACHADO' || ev === 'ENTREGA_PLANIFICADA');
+                        }
+
+                        if (show) {
+                            card.style.display = 'flex';
+                            visible++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    const emptyState = document.getElementById('no-notif-found');
+                    if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+                    if (container) container.style.display = visible === 0 ? 'none' : 'flex';
+                }, 200);
+            }
+
+            function markAllBeneficiaryNotificationsRead() {
+                document.querySelectorAll('#b-notifications-list .notification-card').forEach(card => {
+                    card.setAttribute('data-unread', 'false');
+                    card.style.borderLeft = '1px solid var(--color-border)';
+                    card.style.background = '#ffffff';
+                    const dot = card.querySelector('.b-unread-dot');
+                    if (dot) dot.remove();
+                });
+
+                const countElem = document.getElementById('b-unread-count');
+                if (countElem) countElem.textContent = '0';
+
+                showToast('Notificaciones marcadas', 'Todas las notificaciones institucionales quedaron como leídas.', 'success');
+            }
+        </script>
     </main>
 </body>
 </html>

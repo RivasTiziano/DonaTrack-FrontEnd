@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>DonaTrack - Información Legal y de Privacidad</title>
+</head>
+<body>
+    <main id="legal-content" class="legal-page-container" style="background: var(--color-bg); padding: 2.5rem 0 5rem 0; min-height: 80vh;">
+        <div class="container" style="max-width: 960px; margin: 0 auto; padding: 0 1.25rem;">
+            
+            <!-- Breadcrumbs -->
+            <nav class="dt-breadcrumbs" aria-label="Migas de pan" style="margin-bottom: 1.5rem;">
+                <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+                <span class="separator">/</span>
+                <span class="current">Información Legal y de Privacidad</span>
+            </nav>
+
+            <!-- Page Header -->
+            <div style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 48px; height: 48px; border-radius: var(--radius-lg); background: var(--color-primary-soft); color: var(--color-primary); display: grid; place-items: center; flex-shrink: 0;">
+                        <i data-lucide="shield-check" style="width: 26px; height: 26px;"></i>
+                    </div>
+                    <div>
+                        <h1 style="font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 800; color: var(--color-ink); margin: 0; line-height: 1.2;">
+                            Información Legal y de Privacidad
+                        </h1>
+                        <p style="color: var(--color-muted); font-size: 0.9375rem; margin-top: 4px; margin-bottom: 0;">
+                            Marco de transparencia, protección de datos y condiciones de uso de la plataforma DonaTrack (UTN FRBA - DSI 2026).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fast Anchor Links -->
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+                    <a href="#privacidad" class="btn btn-outline btn-sm" style="font-size: 0.8125rem;">
+                        <i data-lucide="lock" style="width: 14px; height: 14px;"></i>
+                        <span>Protección de Datos</span>
+                    </a>
+                    <a href="#transparencia" class="btn btn-outline btn-sm" style="font-size: 0.8125rem;">
+                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                        <span>Transparencia y Fotos</span>
+                    </a>
+                    <a href="#terminos" class="btn btn-outline btn-sm" style="font-size: 0.8125rem;">
+                        <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
+                        <span>Términos del Servicio</span>
+                    </a>
+                    <a href="#contacto" class="btn btn-outline btn-sm" style="font-size: 0.8125rem;">
+                        <i data-lucide="mail" style="width: 14px; height: 14px;"></i>
+                        <span>Contacto Legal</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content Sections -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                <!-- 1. Política de Privacidad y Ley 25.326 -->
+                <section id="privacidad" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-xs);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #eff6ff; color: #2563eb; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="lock" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-ink); margin: 0;">
+                            1. Política de Privacidad y Protección de Datos Personales
+                        </h2>
+                    </div>
+
+                    <div style="color: var(--color-ink-light); font-size: 0.9375rem; line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
+                        <p>
+                            En <strong>DonaTrack</strong>, la protección de los datos personales de las personas donantes y de los representantes de entidades beneficiarias es una prioridad absoluta. El tratamiento de la información recabada se rige conforme a la <strong>Ley Nacional N° 25.326 de Protección de los Datos Personales de la República Argentina</strong> y su decreto reglamentario.
+                        </p>
+                        
+                        <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 1rem 1.25rem; border-radius: var(--radius-md);">
+                            <strong style="color: var(--color-ink); display: block; margin-bottom: 0.25rem;">Datos recopilados en el registro e importación:</strong>
+                            <ul style="margin: 0; padding-left: 1.25rem; color: var(--color-muted);">
+                                <li><strong>Personas Donantes (Humanas):</strong> Nombre, Apellido, Tipo y Número de Documento (DNI/Pasaporte), Correo Electrónico y Teléfono/WhatsApp de contacto.</li>
+                                <li><strong>Personas Donantes (Jurídicas):</strong> Razón Social, CUIT, Rubro empresarial, Representante Legal y datos de contacto institucional.</li>
+                                <li><strong>Entidades Beneficiarias:</strong> Denominación legal, Personería jurídica / Matrícula comunitaria, Domicilio físico verificado y Autoridades responsables.</li>
+                            </ul>
+                        </div>
+
+                        <p>
+                            Los datos de contacto (email y teléfono) son utilizados exclusivamente para despachar notificaciones relativas al estado del proceso de donación (asignación, traslado por camión, llegada a destino y otorgamiento de insignias en el programa de incentivos). No se ceden ni comercializan datos a terceros con fines publicitarios.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 2. Transparencia y Fotos Públicas Sin Login -->
+                <section id="transparencia" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-xs);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #ecfdf5; color: #059669; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-ink); margin: 0;">
+                            2. Trazabilidad Pública y Evidencia Fotográfica Sin Login
+                        </h2>
+                    </div>
+
+                    <div style="color: var(--color-ink-light); font-size: 0.9375rem; line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
+                        <p>
+                            Conforme al requerimiento de accesibilidad ciudadana de DonaTrack, la sección de <strong>Exploración en Mapa y Galería de Entregas</strong> es de acceso público irrestricto sin necesidad de autenticación ni inicio de sesión previo.
+                        </p>
+
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 1.25rem;">
+                            <strong style="color: #166534; display: block; margin-bottom: 0.5rem;">Criterios de Verificación y Resguardo de Imagen:</strong>
+                            <ul style="margin: 0; padding-left: 1.25rem; color: #15803d; font-size: 0.875rem;">
+                                <li>Las fotos subidas por las entidades receptoras al confirmar la entrega deben ilustrar los <strong>bienes materiales recibidos</strong> (mobiliario, alimentos, frazadas, útiles).</li>
+                                <li>En cumplimiento de la <strong>Ley 26.061 de Protección Integral de Niñas, Niños y Adolescentes</strong>, no se publican rostros de personas menores de edad en situación de vulnerabilidad.</li>
+                                <li>El mapa público georreferencia las sedes receptoras y camiones de logística sin revelar información sensible o de seguridad patrimonial de los donantes.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Términos y Condiciones del Servicio -->
+                <section id="terminos" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-xs);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #fef3c7; color: #d97706; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-ink); margin: 0;">
+                            3. Términos y Condiciones de Uso del Sistema
+                        </h2>
+                    </div>
+
+                    <div style="color: var(--color-ink-light); font-size: 0.9375rem; line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
+                        <p>
+                            Al utilizar la plataforma DonaTrack, tanto personas donantes como entidades beneficiarias acuerdan los siguientes compromisos:
+                        </p>
+                        <ol style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li><strong>Veracidad de las Necesidades:</strong> Las entidades se comprometen a registrar requerimientos materiales reales clasificados adecuadamente como Recurrentes o Extraordinarias.</li>
+                            <li><strong>Recepción e Inventario:</strong> Toda donación física recibida en depósito es auditada por personas administradoras antes de su asignación mediante el motor algorítmico.</li>
+                            <li><strong>Confirmación Obligatoria:</strong> Toda entidad asignada debe registrar la recepción formal de la donación con evidencia dentro de las 48 horas de arribado el transporte logístico.</li>
+                            <li><strong>Gamificación Ética:</strong> Los puntos, niveles e insignias del módulo de incentivos constituyen reconocimientos simbólicos y sociales sin valor monetario de cambio.</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- 4. Contacto y Ejercicio de Derechos ARCO -->
+                <section id="contacto" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-xs);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: #f3e8ff; color: #7c3aed; display: grid; place-items: center; flex-shrink: 0;">
+                            <i data-lucide="mail" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-ink); margin: 0;">
+                            4. Canales de Contacto y Derechos ARCO
+                        </h2>
+                    </div>
+
+                    <div style="color: var(--color-ink-light); font-size: 0.9375rem; line-height: 1.7; display: flex; flex-direction: column; gap: 1rem;">
+                        <p>
+                            Toda persona titular de datos personales tiene la facultad de ejercer el derecho de acceso, rectificación, actualización y supresión de sus datos de conformidad con el Art. 14 de la Ley N° 25.326.
+                        </p>
+                        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                            <div>
+                                <strong style="color: var(--color-ink); display: block;">Área de Asuntos Legales y Privacidad:</strong>
+                                <span style="color: var(--color-muted);">legal@donatrack.org</span>
+                            </div>
+                            <div>
+                                <strong style="color: var(--color-ink); display: block;">Institución Académica:</strong>
+                                <span style="color: var(--color-muted);">UTN Facultad Regional Buenos Aires</span>
+                            </div>
+                            <div>
+                                <strong style="color: var(--color-ink); display: block;">Cátedra:</strong>
+                                <span style="color: var(--color-muted);">Diseño de Sistemas de Información (2026)</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem;">
+                            <a th:href="@{/}" class="btn btn-primary">
+                                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                                <span>Volver a la Página Principal</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>

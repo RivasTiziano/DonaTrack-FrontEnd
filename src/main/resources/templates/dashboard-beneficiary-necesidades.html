@@ -44,16 +44,27 @@
         </div>
 
         <!-- Filter Tabs -->
-        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
-            <button type="button" class="btn btn-outline btn-sm filter-tab active">Todas (<span th:text="${needs.size()}">3</span>)</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Recurrentes</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Extraordinarias</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Activas</button>
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterNeeds('todas', this)">Todas (<span th:text="${needs.size()}">3</span>)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterNeeds('Recurrente', this)">Recurrentes</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterNeeds('Extraordinaria', this)">Extraordinarias</button>
+        </div>
+
+        <!-- Empty State for filtered needs -->
+        <div id="no-needs-found" class="dt-empty-state" style="display: none;">
+            <div class="dt-empty-state-icon">
+                <i data-lucide="inbox" style="width: 32px; height: 32px; color: var(--color-muted);"></i>
+            </div>
+            <h3 class="dt-empty-state-title">No hay necesidades con este criterio</h3>
+            <p class="dt-empty-state-text">No se encontraron solicitudes registradas que coincidan con el filtro seleccionado.</p>
+            <button type="button" class="btn btn-outline btn-sm" onclick="filterNeeds('todas', document.querySelector('.filter-tab'))">
+                <span>Restablecer Filtro</span>
+            </button>
         </div>
 
         <!-- Needs Grid -->
-        <div class="dt-cards-grid-3">
-            <article class="need-card" th:each="need : ${needs}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column;">
+        <div id="needs-grid" class="dt-cards-grid-3">
+            <article class="need-card" th:each="need : ${needs}" th:data-type="${need.type}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column;">
                 <div style="position: relative; height: 160px;">
                     <img th:src="${need.image_url}" th:alt="${need.title}" style="width: 100%; height: 100%; object-fit: cover;" />
                     <span class="status-badge" th:classappend="${need.type == 'Extraordinaria' ? 'badge-vencida' : 'badge-asignada'}" style="position: absolute; top: 12px; right: 12px;" th:text="${need.type}">Tipo</span>
@@ -176,6 +187,30 @@
                 </form>
             </div>
         </div>
+        <script>
+            function filterNeeds(type, btn) {
+                if (btn) {
+                    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+                const container = document.getElementById('needs-grid');
+                window.simulateFilterReload(container, function() {
+                    let visible = 0;
+                    document.querySelectorAll('.need-card').forEach(card => {
+                        const cardType = card.getAttribute('data-type');
+                        if (type === 'todas' || cardType === type) {
+                            card.style.display = 'flex';
+                            visible++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    const emptyState = document.getElementById('no-needs-found');
+                    if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+                    if (container) container.style.display = visible === 0 ? 'none' : 'grid';
+                }, 200);
+            }
+        </script>
     </main>
 </body>
 </html>

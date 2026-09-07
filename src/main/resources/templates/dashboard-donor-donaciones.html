@@ -15,15 +15,21 @@
         </nav>
 
         <!-- Header Title -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="dt-page-header">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Historial y Trazabilidad de Donaciones</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Consulta el estado, destino y evidencia de cada donación que realizaste.</p>
+                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Historial y Trazabilidad de Donaciones</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Consulta el estado, destino, categoría de bienes y evidencia fotográfica de tus aportes.</p>
             </div>
-            <a th:href="@{/donante/dashboard/entidades}" class="btn btn-outline">
-                <i data-lucide="heart" style="width: 18px; height: 18px; color: var(--color-primary);"></i>
-                <span>Ver Entidades que Necesitan Ayuda</span>
-            </a>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/donante/dashboard/entidades}" class="btn btn-outline btn-sm">
+                    <i data-lucide="heart" style="width: 16px; height: 16px; color: var(--color-primary); flex-shrink: 0;"></i>
+                    <span>Directorio de Entidades</span>
+                </a>
+                <a th:href="@{/donante/dashboard/entregas}" class="btn btn-primary btn-sm">
+                    <i data-lucide="truck" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                    <span>Seguimiento GPS de Camiones</span>
+                </a>
+            </div>
         </div>
 
         <!-- Onboarding Hint (Heurística #10) -->
@@ -32,9 +38,9 @@
                 <i data-lucide="info" style="width: 20px; height: 20px; color: #d97706;"></i>
             </div>
             <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Estados del ciclo de vida de una donación</div>
+                <div class="onboarding-hint-title">Ciclo de vida y trazabilidad de los bienes entregados</div>
                 <p class="onboarding-hint-text">
-                    Tus donaciones pasan por: <strong>En depósito</strong> (recepción y clasificación) → <strong>Asignación realizada</strong> (match con una necesidad) → <strong>Lista para entregar</strong> (ruta planificada) → <strong>En traslado</strong> (camión en viaje) → <strong>Entregada</strong> (recepción con fotos verificadas).
+                    Tus donaciones pasan por las fases del modelo de dominio: <strong>En depósito</strong> (recepción, pesaje y clasificación por subcategoría) → <strong>Asignación realizada</strong> (match con una necesidad mediante algoritmos) → <strong>Lista para entregar</strong> (consolidación de ruta) → <strong>En traslado</strong> (camión en viaje con telemetría GPS) → <strong>Entregada</strong> (recepción confirmada con fotos verificadas).
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -42,46 +48,149 @@
             </button>
         </div>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
-            <button type="button" class="btn btn-outline btn-sm filter-tab active">Todas (<span th:text="${userDonations.size()}">4</span>)</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">En Depósito</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Asignadas</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">En Traslado</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Entregadas</button>
+        <!-- Comprehensive Filter Toolbar (Punto 1 de Consigna) -->
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);" aria-label="Filtros de donaciones">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
+                <!-- Search text -->
+                <div>
+                    <label for="filter-search" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
+                        <i data-lucide="search" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Buscar por bien o entidad
+                    </label>
+                    <input type="text" id="filter-search" class="form-control" placeholder="Ej: Fideos, Camperas, Fundación Despierta..." style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);" oninput="applyDonationFilters()" />
+                </div>
+
+                <!-- Category Filter -->
+                <div>
+                    <label for="filter-category" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
+                        <i data-lucide="layers" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Categoría de Bien
+                    </label>
+                    <select id="filter-category" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="onCategoryChange()">
+                        <option value="">Todas las categorías</option>
+                        <option value="Alimentos">Alimentos</option>
+                        <option value="Vestimenta">Vestimenta</option>
+                        <option value="Mobiliario">Mobiliario</option>
+                        <option value="Educación">Educación</option>
+                    </select>
+                </div>
+
+                <!-- Subcategory Filter -->
+                <div>
+                    <label for="filter-subcategory" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
+                        <i data-lucide="tag" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Subcategoría
+                    </label>
+                    <select id="filter-subcategory" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="applyDonationFilters()">
+                        <option value="">Todas las subcategorías</option>
+                        <!-- Dynamic options filled or filtered by JS -->
+                        <option value="Fideos secos" data-cat="Alimentos">Fideos secos</option>
+                        <option value="Arroz blanco" data-cat="Alimentos">Arroz blanco</option>
+                        <option value="Leche larga vida" data-cat="Alimentos">Leche larga vida</option>
+                        <option value="Camperas de abrigo" data-cat="Vestimenta">Camperas de abrigo</option>
+                        <option value="Frazadas térmicas" data-cat="Vestimenta">Frazadas térmicas</option>
+                        <option value="Sillas de estudio" data-cat="Mobiliario">Sillas de estudio</option>
+                        <option value="Pupitres escolares" data-cat="Mobiliario">Pupitres escolares</option>
+                        <option value="Útiles escolares" data-cat="Educación">Útiles escolares</option>
+                    </select>
+                </div>
+
+                <!-- Reset Button -->
+                <div>
+                    <button type="button" class="btn btn-outline" style="width: 100%; font-size: 0.875rem; padding: 0.5rem;" onclick="resetDonationFilters()">
+                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+                        <span>Limpiar Filtros</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- State Segmented Buttons -->
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-muted); display: block; margin-bottom: 0.5rem;">Filtrar por Estado de Donación:</span>
+                <div class="filter-tabs" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem;">
+                    <button type="button" class="btn btn-outline btn-sm status-filter-btn active" data-status="" onclick="setStatusFilter('', this)">Todas (<span th:text="${userDonations.size()}">8</span>)</button>
+                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="En depósito" onclick="setStatusFilter('En depósito', this)">En Depósito</button>
+                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="Asignación realizada" onclick="setStatusFilter('Asignación realizada', this)">Asignadas</button>
+                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="Lista para entregar" onclick="setStatusFilter('Lista para entregar', this)">Listas para entregar</button>
+                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="En traslado" onclick="setStatusFilter('En traslado', this)">En Traslado</button>
+                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="Entregada" onclick="setStatusFilter('Entregada', this)">Entregadas</button>
+                </div>
+            </div>
+
+            <!-- Active Filter Chips / Counter Bar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.875rem; font-size: 0.8125rem; color: var(--color-muted); flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    Mostrando <strong id="filter-count" style="color: var(--color-ink);" th:text="${userDonations.size()}">8</strong> de <span th:text="${userDonations.size()}">8</span> donaciones realizadas
+                </div>
+                <div id="active-filter-tags" style="display: flex; gap: 0.35rem; flex-wrap: wrap;"></div>
+            </div>
+        </section>
+
+        <!-- Empty State (hidden by default) -->
+        <div id="no-donations-found" class="card" style="display: none; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); margin-bottom: 2rem;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: grid; place-items: center; margin: 0 auto 1rem auto; color: var(--color-muted);">
+                <i data-lucide="filter-x" style="width: 28px; height: 28px;"></i>
+            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.5rem;">No se encontraron donaciones</h3>
+            <p style="color: var(--color-muted); font-size: 0.875rem; max-width: 440px; margin: 0 auto 1.25rem auto;">
+                No existen registros que coincidan con la combinación de filtros seleccionada. Prueba cambiando de categoría o subcategoría.
+            </p>
+            <button type="button" class="btn btn-primary btn-sm" onclick="resetDonationFilters()" style="margin: 0 auto;">
+                <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+                <span>Restablecer Filtros</span>
+            </button>
         </div>
 
         <!-- Donations Grid -->
-        <div class="dt-cards-grid-3">
-            <article class="donation-card-box" th:each="donation : ${userDonations}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-                <div style="position: relative; height: 180px; overflow: hidden;">
+        <div class="dt-cards-grid-3" id="donations-grid">
+            <article class="donation-card-box" th:each="donation : ${userDonations}"
+                     th:attr="data-id=${donation.id},
+                              data-title=${donation.title},
+                              data-category=${donation.category},
+                              data-subcategory=${donation.subcategory},
+                              data-status=${donation.status},
+                              data-entity=${donation.entity_name},
+                              data-date=${donation.delivery_date},
+                              data-units=${donation.total_units},
+                              data-unit=${donation.unit},
+                              data-itemtype=${donation.item_type},
+                              data-img=${donation.image_url}"
+                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                
+                <div style="position: relative; height: 180px; overflow: hidden; background: #f8fafc;">
                     <img th:src="${donation.image_url}" th:alt="${donation.title}" style="width: 100%; height: 100%; object-fit: cover;" />
-                    <span class="status-badge" th:classappend="'badge-' + ${#strings.toLowerCase(#strings.replace(donation.status, ' ', '-'))}" style="position: absolute; top: 12px; right: 12px; box-shadow: var(--shadow-sm);" th:text="${donation.status}">Estado</span>
+                    <span class="status-badge" 
+                          th:classappend="${donation.status == 'Entregada' ? 'badge-entregada' : (donation.status == 'En traslado' ? 'badge-traslado' : (donation.status == 'Asignación realizada' ? 'badge-asignada' : (donation.status == 'Lista para entregar' ? 'badge-lista' : 'badge-deposito')))}" 
+                          style="position: absolute; top: 12px; right: 12px; box-shadow: var(--shadow-sm); font-weight: 700;" 
+                          th:text="${donation.status}">Estado</span>
+                    
+                    <span style="position: absolute; bottom: 10px; left: 10px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm);" th:text="${donation.item_type}">Tipo Bien</span>
                 </div>
 
                 <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div>
-                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${donation.category} + ' • ' + ${donation.subcategory}">Categoría</span>
-                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${donation.title}">Título</h3>
+                        <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+                            <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-primary); text-transform: uppercase;" th:text="${donation.category}">Categoría</span>
+                            <span style="color: var(--color-muted); font-size: 0.75rem;">•</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #475569; background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 4px;" th:text="${donation.subcategory}">Subcategoría</span>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 4px; line-height: 1.3;" th:text="${donation.title}">Título</h3>
                     </div>
 
-                    <div style="font-size: 0.875rem; color: var(--color-muted); display: flex; flex-direction: column; gap: 0.35rem;">
+                    <div style="font-size: 0.875rem; color: var(--color-muted); display: flex; flex-direction: column; gap: 0.4rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
+                            <i data-lucide="building-2" style="width: 16px; height: 16px; color: var(--color-primary); flex-shrink: 0;"></i>
                             <span>Destino: <strong style="color: var(--color-ink);" th:text="${donation.entity_name}">Entidad</strong></span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                            <i data-lucide="calendar" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
                             <span>Fecha: <strong th:text="${donation.delivery_date}">Fecha</strong></span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="package" style="width: 16px; height: 16px;"></i>
-                            <span>Cantidad: <strong th:text="${donation.total_units} + ' unidades'">25 unidades</strong></span>
+                            <i data-lucide="package" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                            <span>Cantidad: <strong th:text="${donation.total_units} + ' ' + ${donation.unit}">25 unidades</strong></span>
                         </div>
                     </div>
 
                     <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem;">
-                        <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" onclick="openModal('modal-donation-detail')">
+                        <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" th:attr="onclick='openDonationDetailModal(' + ${donation.id} + ')'">
                             <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
                             <span>Trazabilidad</span>
                         </button>
@@ -94,55 +203,229 @@
             </article>
         </div>
 
-        <!-- Accessible Modal for Donation Timeline Details -->
+        <!-- Accessible Modal for Donation Timeline & Evidence Details -->
         <div id="modal-donation-detail" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-detail-title" aria-hidden="true">
             <div class="dt-modal-backdrop" onclick="closeModal('modal-donation-detail')"></div>
-            <div class="dt-modal-content">
+            <div class="dt-modal-content" style="max-width: 620px;">
                 <div class="dt-modal-header">
-                    <h3 id="modal-detail-title" class="dt-modal-title">Trazabilidad de Donación #101</h3>
+                    <h3 id="modal-detail-title" class="dt-modal-title">Trazabilidad de Donación</h3>
                     <button type="button" class="dt-modal-close" onclick="closeModal('modal-donation-detail')" aria-label="Cerrar modal">
                         <i data-lucide="x" style="width: 20px; height: 20px;"></i>
                     </button>
                 </div>
                 <div class="dt-modal-body">
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
-                        <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=200&h=150&fit=crop" alt="Foto donación" style="width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover;" />
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: center;">
+                        <img id="modal-img" src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=200&h=150&fit=crop" alt="Foto donación" style="width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover;" />
                         <div>
-                            <h4 style="font-size: 1.05rem; font-weight: 700;">Camperas y Ropa de Invierno</h4>
-                            <p style="font-size: 0.875rem; color: var(--color-muted);">Entidad: Comedor Los Niños • 25 unidades</p>
-                            <span class="status-badge badge-entregada" style="margin-top: 4px;">Entregada con éxito</span>
+                            <h4 id="modal-title" style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink);">Título de Donación</h4>
+                            <p style="font-size: 0.875rem; color: var(--color-muted);">
+                                <span id="modal-category">Categoría</span> • <span id="modal-units">25 unidades</span>
+                            </p>
+                            <span id="modal-status" class="status-badge badge-entregada" style="margin-top: 4px;">Estado</span>
                         </div>
                     </div>
 
-                    <h4 style="font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem;">Línea de Tiempo de Auditoría</h4>
+                    <!-- Material/HIG Visual Stepper -->
+                    <div class="dt-stepper" id="modal-stepper" aria-label="Progreso de entrega de la donación">
+                        <div class="dt-step completed" id="step-deposito">
+                            <div class="dt-step-bubble"><i data-lucide="package" style="width: 16px; height: 16px;"></i></div>
+                            <span class="dt-step-label">En depósito</span>
+                        </div>
+                        <div class="dt-step completed" id="step-asignacion">
+                            <div class="dt-step-bubble"><i data-lucide="git-merge" style="width: 16px; height: 16px;"></i></div>
+                            <span class="dt-step-label">Asignada</span>
+                        </div>
+                        <div class="dt-step active" id="step-traslado">
+                            <div class="dt-step-bubble"><i data-lucide="truck" style="width: 16px; height: 16px;"></i></div>
+                            <span class="dt-step-label">En traslado</span>
+                        </div>
+                        <div class="dt-step" id="step-entregada">
+                            <div class="dt-step-bubble"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i></div>
+                            <span class="dt-step-label">Entregada</span>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 0.9375rem; font-weight: 700; margin: 1.25rem 0 0.75rem 0; color: var(--color-ink);">Historial y Trazabilidad Certificada</h4>
                     <div class="status-timeline" style="display: flex; flex-direction: column; gap: 1rem; padding-left: 1.5rem; position: relative; border-left: 2px solid var(--color-border);">
                         <div style="position: relative;">
                             <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
-                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Recepción confirmada con fotos</strong>
-                            <p style="font-size: 0.8125rem; color: var(--color-muted);">10 Mar 2026, 16:15 • Por Laura Domínguez (Comedor Los Niños)</p>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Recepción confirmada con evidencia fotográfica</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);" id="modal-step-4">Acreditada por la institución beneficiaria y publicada en galería comunitaria.</p>
                         </div>
                         <div style="position: relative;">
                             <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
-                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Entrega completada por Camión AB 123 CD</strong>
-                            <p style="font-size: 0.8125rem; color: var(--color-muted);">10 Mar 2026, 16:00 • Conductor Miguel Ángel</p>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Traslado logístico por camión asignado</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">Despacho monitoreado con telemetría GPS y control de carga.</p>
                         </div>
                         <div style="position: relative;">
                             <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
-                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Asignación realizada por Algoritmo Semántico</strong>
-                            <p style="font-size: 0.8125rem; color: var(--color-muted);">08 Mar 2026, 09:30 • Score 95% de compatibilidad</p>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Asignación realizada mediante Algoritmo Semántico</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">Match de afinidad de necesidad y prioridad a entidades comunitarias.</p>
                         </div>
                         <div style="position: relative;">
                             <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
-                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Ingreso y segmentación en Depósito Central</strong>
-                            <p style="font-size: 0.8125rem; color: var(--color-muted);">07 Mar 2026, 14:00 • Subcategoría: Camperas de abrigo</p>
+                            <strong style="font-size: 0.875rem; color: var(--color-ink);">Ingreso y clasificación en Depósito Central</strong>
+                            <p style="font-size: 0.8125rem; color: var(--color-muted);">Recepción física, pesaje y segmentación por subcategoría.</p>
                         </div>
                     </div>
                 </div>
                 <div class="dt-modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="closeModal('modal-donation-detail')">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="closeModal('modal-donation-detail')">Entendido</button>
                 </div>
             </div>
         </div>
+
+        <!-- Dynamic Filter & Modal Controller Script -->
+        <script th:inline="javascript">
+            let currentStatusFilter = '';
+
+            function onCategoryChange() {
+                const categorySelect = document.getElementById('filter-category');
+                const subcategorySelect = document.getElementById('filter-subcategory');
+                const selectedCat = categorySelect.value;
+
+                // Filter subcategory options based on chosen category
+                const options = subcategorySelect.querySelectorAll('option');
+                options.forEach(opt => {
+                    if (opt.value === '') {
+                        opt.style.display = '';
+                    } else {
+                        const cat = opt.getAttribute('data-cat');
+                        if (!selectedCat || cat === selectedCat) {
+                            opt.style.display = '';
+                        } else {
+                            opt.style.display = 'none';
+                        }
+                    }
+                });
+
+                // If selected subcategory no longer belongs to category, reset it
+                const selectedSubOpt = subcategorySelect.querySelector('option:checked');
+                if (selectedSubOpt && selectedSubOpt.value !== '' && selectedCat && selectedSubOpt.getAttribute('data-cat') !== selectedCat) {
+                    subcategorySelect.value = '';
+                }
+
+                applyDonationFilters();
+            }
+
+            function setStatusFilter(status, btnElement) {
+                currentStatusFilter = status;
+                document.querySelectorAll('.status-filter-btn').forEach(btn => btn.classList.remove('active'));
+                if (btnElement) {
+                    btnElement.classList.add('active');
+                }
+                applyDonationFilters();
+            }
+
+            function applyDonationFilters() {
+                const searchQuery = document.getElementById('filter-search').value.toLowerCase().trim();
+                const selectedCategory = document.getElementById('filter-category').value;
+                const selectedSubcategory = document.getElementById('filter-subcategory').value;
+
+                const cards = document.querySelectorAll('.donation-card-box');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const title = (card.getAttribute('data-title') || '').toLowerCase();
+                    const entity = (card.getAttribute('data-entity') || '').toLowerCase();
+                    const category = card.getAttribute('data-category') || '';
+                    const subcategory = card.getAttribute('data-subcategory') || '';
+                    const status = card.getAttribute('data-status') || '';
+
+                    // Match criteria
+                    const matchSearch = !searchQuery || title.includes(searchQuery) || entity.includes(searchQuery) || subcategory.toLowerCase().includes(searchQuery);
+                    const matchCat = !selectedCategory || category === selectedCategory;
+                    const matchSub = !selectedSubcategory || subcategory === selectedSubcategory;
+                    const matchStatus = !currentStatusFilter || status === currentStatusFilter;
+
+                    if (matchSearch && matchCat && matchSub && matchStatus) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Update counter
+                const countElem = document.getElementById('filter-count');
+                if (countElem) countElem.textContent = visibleCount;
+
+                // Empty state display
+                const emptyState = document.getElementById('no-donations-found');
+                const grid = document.getElementById('donations-grid');
+                if (visibleCount === 0) {
+                    if (emptyState) emptyState.style.display = 'block';
+                    if (grid) grid.style.display = 'none';
+                } else {
+                    if (emptyState) emptyState.style.display = 'none';
+                    if (grid) grid.style.display = 'grid';
+                }
+            }
+
+            function resetDonationFilters() {
+                document.getElementById('filter-search').value = '';
+                document.getElementById('filter-category').value = '';
+                document.getElementById('filter-subcategory').value = '';
+                currentStatusFilter = '';
+                document.querySelectorAll('.status-filter-btn').forEach((btn, idx) => {
+                    if (idx === 0) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+                onCategoryChange();
+                applyDonationFilters();
+                if (window.showToast) {
+                    showToast('Filtros restablecidos', 'Se muestran todas las donaciones registradas.', 'info');
+                }
+            }
+
+            function openDonationDetailModal(donationId) {
+                const card = document.querySelector('.donation-card-box[data-id="' + donationId + '"]');
+                if (!card) return;
+
+                document.getElementById('modal-title').textContent = card.getAttribute('data-title');
+                document.getElementById('modal-category').textContent = card.getAttribute('data-category') + ' • ' + card.getAttribute('data-subcategory');
+                document.getElementById('modal-units').textContent = card.getAttribute('data-units') + ' ' + card.getAttribute('data-unit');
+                
+                const status = card.getAttribute('data-status');
+                const statusBadge = document.getElementById('modal-status');
+                statusBadge.textContent = status;
+                statusBadge.className = 'status-badge ' + (status === 'Entregada' ? 'badge-entregada' : (status === 'En traslado' ? 'badge-traslado' : (status === 'Asignación realizada' ? 'badge-asignada' : 'badge-deposito')));
+
+                const img = card.getAttribute('data-img');
+                if (img) document.getElementById('modal-img').src = img;
+
+                // Update Stepper Stages
+                const stepDep = document.getElementById('step-deposito');
+                const stepAsig = document.getElementById('step-asignacion');
+                const stepTras = document.getElementById('step-traslado');
+                const stepEnt = document.getElementById('step-entregada');
+
+                if (stepDep && stepAsig && stepTras && stepEnt) {
+                    [stepDep, stepAsig, stepTras, stepEnt].forEach(s => s.className = 'dt-step');
+                    if (status === 'En depósito') {
+                        stepDep.classList.add('active');
+                    } else if (status === 'Asignación realizada' || status === 'Lista para entregar') {
+                        stepDep.classList.add('completed');
+                        stepAsig.classList.add('active');
+                    } else if (status === 'En traslado') {
+                        stepDep.classList.add('completed');
+                        stepAsig.classList.add('completed');
+                        stepTras.classList.add('active');
+                    } else if (status === 'Entregada') {
+                        stepDep.classList.add('completed');
+                        stepAsig.classList.add('completed');
+                        stepTras.classList.add('completed');
+                        stepEnt.classList.add('completed');
+                    }
+                }
+
+                openModal('modal-donation-detail');
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                applyDonationFilters();
+            });
+        </script>
     </main>
 </body>
 </html>

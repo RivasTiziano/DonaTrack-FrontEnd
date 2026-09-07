@@ -13,9 +13,12 @@
     <script th:src="@{/vendor/lucide/lucide.min.js}"></script>
     <script th:src="@{/vendor/leaflet/leaflet.js}"></script>
 </head>
-<body>
+<body class="has-fixed-header">
     <!-- Header Fragment -->
     <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Mobile Navigation Drawer (Direct child of body for rock-solid fixed positioning) -->
+    <div th:replace="~{fragments/header :: mobileDrawer}"></div>
 
     <!-- Contenido Dinámico de la Página -->
     <div th:replace="${content}"></div>

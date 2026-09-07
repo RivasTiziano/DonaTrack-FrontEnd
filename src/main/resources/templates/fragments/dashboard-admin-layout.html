@@ -17,6 +17,9 @@
     <!-- Header -->
     <header class="dashboard-header" role="banner">
         <div class="dashboard-header-left">
+            <button type="button" class="dashboard-sidebar-toggle" aria-label="Abrir menú de navegación">
+                <i data-lucide="menu" style="width: 22px; height: 22px;"></i>
+            </button>
             <a class="brand" th:href="@{/}" aria-label="DonaTrack - Inicio">
                 <span class="brand-mark" aria-hidden="true">
                     <i data-lucide="heart" style="width: 22px; height: 22px;"></i>
@@ -43,6 +46,72 @@
             </a>
         </div>
     </header>
+
+    <!-- Dashboard Mobile Drawer & Backdrop -->
+    <div class="dashboard-mobile-backdrop" aria-hidden="true"></div>
+    <aside class="dashboard-mobile-drawer" role="dialog" aria-modal="true" aria-label="Menú lateral móvil">
+        <div class="dashboard-drawer-header">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+                </span>
+                <span>DonaTrack</span>
+            </div>
+            <button type="button" class="dashboard-drawer-close" aria-label="Cerrar menú">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+
+        <div class="dashboard-drawer-user-card">
+            <div class="user-profile-name" th:text="${user != null ? user.name : 'Administrador'}">Administrador</div>
+            <span class="role-badge" style="background: #fef3c7; color: #b45309; margin-top: 6px;">
+                <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
+                Administración
+            </span>
+        </div>
+
+        <nav class="dashboard-drawer-nav">
+            <a th:href="@{/admin/dashboard}" th:classappend="${activeTab == 'inicio'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="layout-dashboard" style="width: 20px; height: 20px;"></i>
+                <span>Resumen</span>
+            </a>
+            <a th:href="@{/admin/dashboard/donantes}" th:classappend="${activeTab == 'donors'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+                <span>Donantes</span>
+            </a>
+            <a th:href="@{/admin/dashboard/donaciones}" th:classappend="${activeTab == 'donations'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+                <span>Donaciones en Depósito</span>
+            </a>
+            <a th:href="@{/admin/dashboard/asignar}" th:classappend="${activeTab == 'assign'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="git-merge" style="width: 20px; height: 20px;"></i>
+                <span>Asignar Beneficiarios</span>
+            </a>
+            <a th:href="@{/admin/dashboard/camiones}" th:classappend="${activeTab == 'trucks'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="truck" style="width: 20px; height: 20px;"></i>
+                <span>Flota de Camiones</span>
+            </a>
+            <a th:href="@{/admin/dashboard/rankings}" th:classappend="${activeTab == 'rankings'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="trophy" style="width: 20px; height: 20px;"></i>
+                <span>Rankings Mensuales</span>
+            </a>
+            <a th:href="@{/admin/dashboard/importar}" th:classappend="${activeTab == 'import'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="file-up" style="width: 20px; height: 20px;"></i>
+                <span>Importar CSV</span>
+            </a>
+            <a th:href="@{/explorar-donaciones}" class="sidebar-link" style="margin-top: 0.5rem; border-top: 1px dashed var(--color-border); padding-top: 0.85rem;">
+                <i data-lucide="map" style="width: 20px; height: 20px;"></i>
+                <span>Mapa Público</span>
+            </a>
+        </nav>
+
+        <div class="dashboard-drawer-footer">
+            <a th:href="@{/}" class="btn btn-outline" style="width: 100%; justify-content: center; gap: 0.5rem;">
+                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                <span>Cerrar sesión</span>
+            </a>
+        </div>
+    </aside>
 
     <div class="dashboard-body">
         <!-- Sidebar Navigation -->

@@ -54,14 +54,14 @@
             <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-ink);">Listado de Donantes Registrados</h2>
                 <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" class="btn btn-outline btn-sm filter-tab active">Todos</button>
-                    <button type="button" class="btn btn-outline btn-sm filter-tab">Humanas</button>
-                    <button type="button" class="btn btn-outline btn-sm filter-tab">Jurídicas</button>
+                    <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterDonorsTable('all', this)">Todos</button>
+                    <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterDonorsTable('Humana', this)">Humanas</button>
+                    <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterDonorsTable('Jurídica', this)">Jurídicas</button>
                 </div>
             </div>
 
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left;">
+                <table id="donors-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left;">
                     <thead>
                         <tr style="background: #f8fafc; border-bottom: 1px solid var(--color-border); color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
                             <th style="padding: 1rem 1.5rem;">Nombre / Razón Social</th>
@@ -73,8 +73,8 @@
                             <th style="padding: 1rem; text-align: right;">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr th:each="donor : ${donorsList}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
+                    <tbody id="donors-tbody">
+                        <tr th:each="donor : ${donorsList}" th:data-type="${donor.type}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
                             <td style="padding: 1rem 1.5rem;">
                                 <strong style="color: var(--color-ink); font-size: 0.9375rem;" th:text="${donor.name}">Nombre</strong>
                                 <div style="font-size: 0.75rem; color: var(--color-muted);" th:text="'Registrado: ' + ${donor.regDate}">Fecha</div>
@@ -97,10 +97,18 @@
                             </td>
                             <td style="padding: 1rem; text-align: right;">
                                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                    <button type="button" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.6rem;" onclick="showToast('Ver perfil', 'Abriendo perfil del donante.', 'info')" aria-label="Editar">
+                                    <button type="button" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.6rem;" onclick="showToast('Ver perfil', 'Abriendo perfil del donante.', 'info')" aria-label="Ver perfil" data-tooltip="Ver historial y aportes">
                                         <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                     </button>
                                 </div>
+                            </td>
+                        </tr>
+                        <!-- Empty state row -->
+                        <tr id="no-donors-row" style="display: none;">
+                            <td colspan="7" style="padding: 3rem; text-align: center; color: var(--color-muted);">
+                                <i data-lucide="users" style="width: 32px; height: 32px; margin-bottom: 0.5rem; stroke-width: 1.5;"></i>
+                                <div style="font-weight: 600; color: var(--color-ink);">No se encontraron donantes de este tipo</div>
+                                <div style="font-size: 0.8125rem; margin-top: 0.25rem;">Prueba seleccionando la pestaña "Todos".</div>
                             </td>
                         </tr>
                     </tbody>
@@ -196,15 +204,45 @@
         </div>
 
         <script>
+            function filterDonorsTable(type, btn) {
+                if (btn) {
+                    btn.closest('div').querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+                const tbody = document.getElementById('donors-tbody');
+                window.simulateFilterReload(tbody, function() {
+                    const rows = tbody.querySelectorAll('tr[data-type]');
+                    let visible = 0;
+                    rows.forEach(r => {
+                        const rType = r.getAttribute('data-type');
+                        if (type === 'all' || rType === type) {
+                            r.style.display = '';
+                            visible++;
+                        } else {
+                            r.style.display = 'none';
+                        }
+                    });
+                    const noRow = document.getElementById('no-donors-row');
+                    if (noRow) noRow.style.display = visible === 0 ? '' : 'none';
+                }, 200);
+            }
+
             function toggleDonorForm(type) {
                 const hum = document.getElementById('fields-humana');
                 const jur = document.getElementById('fields-juridica');
+                const humInputs = hum.querySelectorAll('input');
+                const jurInputs = jur.querySelectorAll('input');
+
                 if (type === 'juridica') {
                     hum.style.display = 'none';
                     jur.style.display = 'block';
+                    humInputs.forEach(i => i.removeAttribute('required'));
+                    jurInputs.forEach(i => i.setAttribute('required', 'required'));
                 } else {
                     hum.style.display = 'block';
                     jur.style.display = 'none';
+                    jurInputs.forEach(i => i.removeAttribute('required'));
+                    humInputs.forEach(i => i.setAttribute('required', 'required'));
                 }
             }
         </script>

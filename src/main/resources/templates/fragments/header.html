@@ -3,6 +3,7 @@
 <head>
 </head>
 <body>
+    <!-- Top Bar Navigation Header -->
     <header th:fragment="header" class="dt-header" role="banner">
         <div class="dt-header-row">
             <a class="brand" th:href="@{/}" aria-label="DonaTrack - Inicio">
@@ -28,15 +29,17 @@
                 </a>
             </div>
 
-            <!-- Mobile Hamburger Toggle -->
+            <!-- Mobile Hamburger Toggle Button -->
             <button type="button" class="mobile-menu-toggle" aria-label="Abrir menú de navegación">
                 <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
             </button>
         </div>
+    </header>
 
-        <!-- Mobile Navigation Drawer -->
+    <!-- Mobile Navigation Drawer (Top-level under body for bulletproof fixed viewport positioning) -->
+    <div th:fragment="mobileDrawer">
         <div class="mobile-nav-backdrop" aria-hidden="true"></div>
-        <div class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menú móvil">
+        <aside class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menú móvil">
             <div class="mobile-drawer-header">
                 <div class="brand">
                     <span class="brand-mark" aria-hidden="true">
@@ -44,7 +47,7 @@
                     </span>
                     <span>DonaTrack</span>
                 </div>
-                <button type="button" class="mobile-drawer-close btn-icon" aria-label="Cerrar menú" style="background: none; border: none; cursor: pointer;">
+                <button type="button" class="mobile-drawer-close btn-icon" aria-label="Cerrar menú" style="background: none; border: none; cursor: pointer; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-sm);">
                     <i data-lucide="x" style="width: 22px; height: 22px;"></i>
                 </button>
             </div>
@@ -54,18 +57,18 @@
                 <a th:href="@{/#donations}"><i data-lucide="package" style="width: 18px; height: 18px;"></i> Donaciones</a>
                 <a th:href="@{/#gallery}"><i data-lucide="image" style="width: 18px; height: 18px;"></i> Galería</a>
                 <a th:href="@{/explorar-donaciones}"><i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> Explorar en Mapa</a>
+                <a th:href="@{/legal}"><i data-lucide="shield-check" style="width: 18px; height: 18px;"></i> Legal y Privacidad</a>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 2rem;">
-                <a th:href="@{/login}" style="width: 100%;">
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
+                <a th:href="@{/login}" style="width: 100%; text-decoration: none;">
                     <button type="button" class="btn btn-outline" style="width: 100%;">Iniciar sesión</button>
                 </a>
-                <a th:href="@{/registro}" style="width: 100%;">
+                <a th:href="@{/registro}" style="width: 100%; text-decoration: none;">
                     <button type="button" class="btn btn-primary" style="width: 100%;">Registrarse</button>
                 </a>
             </div>
-        </div>
-    </header>
+        </aside>
+    </div>
 </body>
 </html>
-

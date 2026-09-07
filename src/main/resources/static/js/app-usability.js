@@ -121,6 +121,24 @@
     }, delayMs);
   };
 
+  window.simulateFilterReload = function(containerElement, onLoaded, delayMs = 350) {
+    if (!containerElement) {
+      if (typeof onLoaded === 'function') onLoaded();
+      return;
+    }
+    const prevOpacity = containerElement.style.opacity;
+    containerElement.style.transition = 'opacity 0.15s ease';
+    containerElement.style.opacity = '0.4';
+    containerElement.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      containerElement.style.opacity = prevOpacity || '1';
+      containerElement.style.pointerEvents = 'auto';
+      if (typeof onLoaded === 'function') onLoaded();
+      if (window.lucide) window.lucide.createIcons();
+    }, delayMs);
+  };
+
   // --- 4. INITIALIZATION & EVENT DELEGATION ---
   document.addEventListener('DOMContentLoaded', function() {
     // Render Lucide icons
@@ -128,11 +146,32 @@
       window.lucide.createIcons();
     }
 
-    // Dismissible onboarding hints
+    // Global delegation for async action buttons (.btn-async)
+    document.addEventListener('click', function(e) {
+      const asyncBtn = e.target.closest('.btn-async');
+      if (asyncBtn && !asyncBtn.disabled) {
+        const toastTitle = asyncBtn.getAttribute('data-async-title') || 'Acción procesada';
+        const toastMsg = asyncBtn.getAttribute('data-async-msg') || 'Los datos fueron sincronizados en el sistema.';
+        window.simulateAsyncAction(asyncBtn, 600, function() {
+          showToast(toastTitle, toastMsg, 'success');
+        });
+      }
+    });
+
+    // Dismissible onboarding hints with SessionStorage persistence
+    document.querySelectorAll('.onboarding-hint').forEach(hint => {
+      const hintKey = 'hint_dismissed_' + (hint.getAttribute('aria-label') || hint.innerText.slice(0, 20)).replace(/\s+/g, '_');
+      if (sessionStorage.getItem(hintKey) === 'true') {
+        hint.style.display = 'none';
+      }
+    });
+
     document.querySelectorAll('.onboarding-hint-close').forEach(btn => {
       btn.addEventListener('click', function() {
         const hint = this.closest('.onboarding-hint');
         if (hint) {
+          const hintKey = 'hint_dismissed_' + (hint.getAttribute('aria-label') || hint.innerText.slice(0, 20)).replace(/\s+/g, '_');
+          sessionStorage.setItem(hintKey, 'true');
           hint.style.transition = 'all 0.2s ease';
           hint.style.opacity = '0';
           hint.style.transform = 'translateY(-8px)';
@@ -141,27 +180,94 @@
       });
     });
 
-    // Mobile Header Drawer toggle
-    const toggleBtn = document.querySelector('.mobile-menu-toggle');
-    const drawer = document.querySelector('.mobile-nav-drawer');
-    const backdrop = document.querySelector('.mobile-nav-backdrop');
-    const drawerCloseBtn = document.querySelector('.mobile-drawer-close');
+    // --- 4.1 PUBLIC MOBILE HEADER DRAWER ---
+    const pubToggleBtn = document.querySelector('.mobile-menu-toggle:not(.dashboard-sidebar-toggle)');
+    const pubDrawer = document.querySelector('.mobile-nav-drawer');
+    const pubBackdrop = document.querySelector('.mobile-nav-backdrop');
+    const pubDrawerCloseBtn = document.querySelector('.mobile-drawer-close');
 
-    if (toggleBtn && drawer && backdrop) {
-      const openDrawer = () => {
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        document.body.style.overflow = 'hidden';
+    if (pubToggleBtn && pubDrawer && pubBackdrop) {
+      const openPubDrawer = (e) => {
+        if (e) e.stopPropagation();
+        pubDrawer.classList.add('open');
+        pubBackdrop.classList.add('open');
+        document.body.classList.add('drawer-open');
+        document.documentElement.classList.add('drawer-open');
+        if (window.lucide) window.lucide.createIcons();
       };
-      const closeDrawer = () => {
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        document.body.style.overflow = '';
+      const closePubDrawer = () => {
+        pubDrawer.classList.remove('open');
+        pubBackdrop.classList.remove('open');
+        document.body.classList.remove('drawer-open');
+        document.documentElement.classList.remove('drawer-open');
       };
 
-      toggleBtn.addEventListener('click', openDrawer);
-      backdrop.addEventListener('click', closeDrawer);
-      if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
+      pubToggleBtn.addEventListener('click', openPubDrawer);
+      pubBackdrop.addEventListener('click', closePubDrawer);
+      if (pubDrawerCloseBtn) pubDrawerCloseBtn.addEventListener('click', closePubDrawer);
+
+      pubDrawer.querySelectorAll('a, button').forEach(el => {
+        if (!el.classList.contains('mobile-menu-toggle')) {
+          el.addEventListener('click', closePubDrawer);
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && pubDrawer.classList.contains('open')) {
+          closePubDrawer();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 900 && pubDrawer.classList.contains('open')) {
+          closePubDrawer();
+        }
+      });
+    }
+
+    // --- 4.2 DASHBOARD MOBILE LATERAL MENU DRAWER ---
+    const dashToggleBtn = document.querySelector('.dashboard-sidebar-toggle');
+    const dashDrawer = document.querySelector('.dashboard-mobile-drawer');
+    const dashBackdrop = document.querySelector('.dashboard-mobile-backdrop');
+    const dashDrawerCloseBtn = document.querySelector('.dashboard-drawer-close');
+
+    if (dashToggleBtn && dashDrawer && dashBackdrop) {
+      const openDashDrawer = (e) => {
+        if (e) e.stopPropagation();
+        dashDrawer.classList.add('open');
+        dashBackdrop.classList.add('open');
+        document.body.classList.add('drawer-open');
+        document.documentElement.classList.add('drawer-open');
+        if (window.lucide) window.lucide.createIcons();
+      };
+      const closeDashDrawer = () => {
+        dashDrawer.classList.remove('open');
+        dashBackdrop.classList.remove('open');
+        document.body.classList.remove('drawer-open');
+        document.documentElement.classList.remove('drawer-open');
+      };
+
+      dashToggleBtn.addEventListener('click', openDashDrawer);
+      dashBackdrop.addEventListener('click', closeDashDrawer);
+      if (dashDrawerCloseBtn) dashDrawerCloseBtn.addEventListener('click', closeDashDrawer);
+
+      dashDrawer.querySelectorAll('a, button').forEach(el => {
+        if (!el.classList.contains('dashboard-sidebar-toggle') && !el.classList.contains('dashboard-drawer-close')) {
+          el.addEventListener('click', closeDashDrawer);
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && dashDrawer.classList.contains('open')) {
+          closeDashDrawer();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 900 && dashDrawer.classList.contains('open')) {
+          closeDashDrawer();
+        }
+      });
     }
 
     // Interactive Tab filtering with subtle skeleton transition

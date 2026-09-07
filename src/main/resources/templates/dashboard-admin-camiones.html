@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'trucks')}">
 <head>
-    <title>DonaTrack - Flota de Camiones</title>
+    <title>DonaTrack - Administración de Flota de Camiones</title>
 </head>
 <body>
     <main class="admin-trucks-view" th:fragment="main">
@@ -15,26 +15,32 @@
         </nav>
 
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="dt-page-header">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Administración de Flota de Camiones</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Supervisión de capacidades de carga, combustible, choferes y disponibilidad operativa.</p>
+                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Administración de Flota y Logística</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Control operativo de camiones, capacidades de carga (kg / m³), alturas de gálibo, telemetría y choferes.</p>
             </div>
-            <button type="button" class="btn btn-outline" onclick="showToast('Flota Sincronizada', 'Telemetría y combustible actualizados.', 'info')">
-                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
-                <span>Sincronizar Telemetría</span>
-            </button>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="syncFleetTelemetry(this)">
+                    <i data-lucide="refresh-cw" style="width: 15px; height: 15px;"></i>
+                    <span>Sincronizar Telemetría GPS</span>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openModal('modal-new-truck')">
+                    <i data-lucide="plus-circle" style="width: 15px; height: 15px;"></i>
+                    <span>Registrar Nuevo Camión</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Onboarding Hint (Heurística #10) -->
+        <!-- Onboarding Hint (Heurística #10 y Control de Flota) -->
         <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de gestión de camiones">
             <div class="onboarding-hint-icon">
                 <i data-lucide="truck" style="width: 20px; height: 20px; color: #d97706;"></i>
             </div>
             <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Gestión de Logística y Transporte</div>
+                <div class="onboarding-hint-title">Administración y Telemetría Centralizada de la Flota</div>
                 <p class="onboarding-hint-text">
-                    Los camiones transportan las donaciones asignadas desde el depósito hasta las entidades beneficiarias. Cada vehículo cuenta con límites de carga (kg), seguimiento GPS y control de mantenimientos preventivos.
+                    Supervisión integral de las unidades de transporte de la red. Cada vehículo cuenta con capacidad de carga máxima en kilogramos, volumen útil en metros cúbicos y límite de altura para transitar bajo puentes y túneles. Los dispositivos satelitales reportan geolocalización en tiempo real, velocidad de marcha y hora de última emisión para coordinar las rutas de entrega.
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -42,33 +48,180 @@
             </button>
         </div>
 
-        <!-- Trucks Grid -->
-        <div class="dt-cards-grid-3">
-            <article class="truck-card" th:each="truck : ${truckFleet}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <!-- Fleet KPI Global Cards (Punto 9 de Consigna) -->
+        <section class="dt-cards-grid-4" style="margin-bottom: 2rem;">
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Flota Total</span>
+                    <i data-lucide="truck" style="width: 18px; height: 18px; color: var(--color-ink);"></i>
+                </div>
+                <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink);" th:text="${totalTrucks}">6</div>
+                <small style="font-size: 0.75rem; color: var(--color-muted);">Vehículos registrados</small>
+            </div>
+
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Disponibles en Base</span>
+                    <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #10b981;"></i>
+                </div>
+                <div style="font-size: 1.75rem; font-weight: 800; color: #10b981;" th:text="${availableTrucks}">3</div>
+                <small style="font-size: 0.75rem; color: var(--color-muted);">Listos para asignación de ruta</small>
+            </div>
+
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">En Ruta Operativa</span>
+                    <i data-lucide="navigation" style="width: 18px; height: 18px; color: #0284c7;"></i>
+                </div>
+                <div style="font-size: 1.75rem; font-weight: 800; color: #0284c7;" th:text="${onRouteTrucks}">2</div>
+                <small style="font-size: 0.75rem; color: var(--color-muted);">Con GPS satelital transmitiendo</small>
+            </div>
+
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Capacidad de Flota</span>
+                    <i data-lucide="scale" style="width: 18px; height: 18px; color: #7c3aed;"></i>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #7c3aed;" th:text="${totalCapacityKg / 1000} + ' toneladas'">37.5 toneladas</div>
+                <small style="font-size: 0.75rem; color: var(--color-muted);">Capacidad combinada de carga</small>
+            </div>
+        </section>
+
+        <!-- Search & Filter Controls -->
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                <!-- Search -->
+                <div style="grid-column: span 1 / -1;">
+                    <label for="truck-search" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
+                        <i data-lucide="search" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Buscar camión por patente, marca/modelo, chofer o ruta asignada
+                    </label>
+                    <input type="text" id="truck-search" class="form-control" placeholder="Ej: AB 123 CD, Sprinter, Miguel Ángel, Navarro..." style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);" oninput="applyTruckFilters()" />
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label for="filter-truck-status" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
+                        <i data-lucide="shield" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Estado Operativo
+                    </label>
+                    <select id="filter-truck-status" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="applyTruckFilters()">
+                        <option value="">Todos los estados</option>
+                        <option value="Disponible">Disponible en Base</option>
+                        <option value="En ruta">En ruta operativa</option>
+                        <option value="Fuera de servicio">Fuera de servicio (Taller)</option>
+                    </select>
+                </div>
+
+                <!-- Capacity Filter -->
+                <div>
+                    <label for="filter-truck-capacity" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
+                        <i data-lucide="weight" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Rango de Carga
+                    </label>
+                    <select id="filter-truck-capacity" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="applyTruckFilters()">
+                        <option value="">Todas las capacidades</option>
+                        <option value="light">Liviano (&le; 3.500 kg)</option>
+                        <option value="medium">Mediano (3.500 kg - 6.000 kg)</option>
+                        <option value="heavy">Pesado (&gt; 6.000 kg)</option>
+                    </select>
+                </div>
+
+                <!-- Reset -->
+                <div>
+                    <button type="button" class="btn btn-outline" style="width: 100%; font-size: 0.875rem; padding: 0.5rem;" onclick="resetTruckFilters()">
+                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+                        <span>Limpiar Filtros</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border); font-size: 0.8125rem; color: var(--color-muted);">
+                <div>
+                    Mostrando <strong id="truck-count" style="color: var(--color-ink);" th:text="${truckFleet.size()}">6</strong> vehículos de la flota
+                </div>
+            </div>
+        </section>
+
+        <!-- Empty state when no trucks match filter -->
+        <div id="no-trucks-found" class="dt-empty-state" style="display: none;">
+            <div class="dt-empty-state-icon">
+                <i data-lucide="truck" style="width: 32px; height: 32px; color: var(--color-muted);"></i>
+            </div>
+            <h3 class="dt-empty-state-title">No se encontraron camiones con estos filtros</h3>
+            <p class="dt-empty-state-text">Prueba cambiando los criterios de búsqueda, estado operativo o rango de capacidad de carga.</p>
+            <button type="button" class="btn btn-outline btn-sm" onclick="resetTruckFilters()">
+                <span>Limpiar Filtros</span>
+            </button>
+        </div>
+
+        <!-- Trucks Grid (Unidades de la Flota) -->
+        <div class="dt-cards-grid-3" id="trucks-grid">
+            <article class="truck-card" th:each="truck : ${truckFleet}" 
+                     th:attr="data-plate=${truck.plate},
+                              data-brand=${truck.brand},
+                              data-driver=${truck.driver},
+                              data-phone=${truck.phone},
+                              data-capacity=${truck.capacity},
+                              data-currentload=${truck.currentLoad},
+                              data-vol=${truck.volumeCapacity},
+                              data-height=${truck.height},
+                              data-fuel=${truck.fuel},
+                              data-status=${truck.status},
+                              data-route=${truck.activeRoute},
+                              data-gps=${truck.gpsCoords},
+                              data-speed=${truck.speed},
+                              data-service=${truck.nextService}"
+                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem; transition: transform 0.2s ease;">
+                
+                <!-- Card Header with License Plate Style Badge -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: #ecfeff; color: #0891b2; display: grid; place-items: center;">
+                        <div style="width: 46px; height: 46px; border-radius: var(--radius-md); background: #f0fdfa; color: #0d9488; display: grid; place-items: center; flex-shrink: 0;">
                             <i data-lucide="truck" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--color-ink);" th:text="${truck.plate}">AB 123 CD</h3>
-                            <span style="font-size: 0.8125rem; color: var(--color-muted);" th:text="'Chofer: ' + ${truck.driver}">Miguel Ángel</span>
+                            <!-- Plate in bold monospace -->
+                            <div style="display: inline-block; background: #0f172a; color: #ffffff; padding: 0.15rem 0.5rem; border-radius: 4px; font-family: monospace; font-size: 0.9375rem; font-weight: 800; letter-spacing: 0.08em;" th:text="${truck.plate}">AB 123 CD</div>
+                            <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${truck.brand}">Mercedes Sprinter</h3>
                         </div>
                     </div>
-                    <span class="status-badge" th:classappend="${truck.status == 'Disponible' ? 'badge-entregada' : (truck.status == 'En ruta' ? 'badge-traslado' : 'badge-vencida')}" th:text="${truck.status}">Estado</span>
+
+                    <span class="status-badge" 
+                          th:classappend="${truck.status == 'Disponible' ? 'badge-entregada' : (truck.status == 'En ruta' ? 'badge-traslado' : 'badge-vencida')}" 
+                          th:text="${truck.status}">Estado</span>
                 </div>
 
-                <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem; font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <!-- Driver and Active Route -->
+                <div style="font-size: 0.8125rem; color: var(--color-muted); display: flex; flex-direction: column; gap: 0.35rem;">
                     <div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                            <span style="color: var(--color-muted);">Carga actual:</span>
-                            <strong><span th:text="${truck.currentLoad}">0</span> / <span th:text="${truck.capacity}">5000</span> kg</strong>
+                        <i data-lucide="user" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; color: var(--color-primary);"></i>
+                        Chofer: <strong style="color: var(--color-ink);" th:text="${truck.driver}">Miguel Ángel</strong>
+                    </div>
+                    <div>
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; color: #0284c7;"></i>
+                        Ruta: <span style="color: var(--color-ink);" th:text="${truck.activeRoute}">Ruta CABA</span>
+                    </div>
+                </div>
+
+                <!-- Technical Specs Box (Capacidad y Dimensiones) -->
+                <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem 1rem; border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.8125rem;">
+                    <!-- Weight Load -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                            <span style="color: var(--color-muted);">Capacidad Carga (kg):</span>
+                            <strong><span th:text="${truck.currentLoad}">2500</span> / <span th:text="${truck.capacity}">5000</span> kg</strong>
                         </div>
                         <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
-                            <div style="height: 100%; background: #0891b2; border-radius: 999px;" th:style="'width: ' + (${truck.currentLoad} * 100 / ${truck.capacity}) + '%;'"></div>
+                            <div style="height: 100%; background: #0891b2; border-radius: 999px;" 
+                                 th:style="'width: ' + (${truck.currentLoad} * 100 / ${truck.capacity}) + '%;'"></div>
                         </div>
                     </div>
 
+                    <!-- Volume & Height Specs -->
+                    <div style="display: flex; justify-content: space-between; padding-top: 4px; border-top: 1px solid var(--color-border);">
+                        <span>Volumen: <strong th:text="${truck.volumeCapacity} + ' m³'">14.5 m³</strong></span>
+                        <span>Altura Máx: <strong th:text="${truck.height} + ' m'">2.8 m</strong></span>
+                    </div>
+
+                    <!-- Fuel Level -->
                     <div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
                             <span style="color: var(--color-muted);">Combustible:</span>
@@ -79,24 +232,284 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; padding-top: 4px; border-top: 1px solid var(--color-border);">
+                    <!-- Service -->
+                    <div style="display: flex; justify-content: space-between; padding-top: 4px; border-top: 1px solid var(--color-border); font-size: 0.75rem;">
                         <span style="color: var(--color-muted);">Próximo Service:</span>
-                        <span th:text="${truck.nextService}">10/06/2026</span>
+                        <span style="font-weight: 600;" th:text="${truck.nextService}">10/06/2026</span>
                     </div>
                 </div>
 
+                <!-- Action Buttons -->
                 <div style="margin-top: auto; display: flex; gap: 0.5rem;">
-                    <a th:href="'tel:' + ${truck.phone}" class="btn btn-outline btn-sm" style="flex: 1;">
-                        <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
-                        <span>Llamar Chofer</span>
-                    </a>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Estado Modificado', 'El estado operativo del camión fue actualizado.', 'info')">
+                    <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" th:attr="onclick='openManageTruckModal(\'' + ${truck.plate} + '\')'">
                         <i data-lucide="settings" style="width: 14px; height: 14px;"></i>
                         <span>Gestionar</span>
                     </button>
+                    <button type="button" class="btn btn-primary btn-sm" style="flex: 1;" th:attr="onclick='openTruckTelemetryModal(\'' + ${truck.plate} + '\')'">
+                        <i data-lucide="navigation" style="width: 14px; height: 14px;"></i>
+                        <span>Telemetría</span>
+                    </button>
+                    <a th:href="'tel:' + ${truck.phone}" class="btn btn-outline btn-sm" title="Llamar chofer">
+                        <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
+                    </a>
                 </div>
             </article>
         </div>
+
+        <!-- Modal 1: Registrar Nuevo Camión -->
+        <div id="modal-new-truck" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-new-truck-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-new-truck')"></div>
+            <div class="dt-modal-content" style="max-width: 600px;">
+                <div class="dt-modal-header">
+                    <h3 id="modal-new-truck-title" class="dt-modal-title">Registrar Nuevo Camión en la Flota</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-new-truck')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <form onsubmit="handleCreateTruck(event)">
+                    <div class="dt-modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="new-plate" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Patente Oficial *</label>
+                                <input type="text" id="new-plate" required placeholder="Ej: AA 999 ZZ" style="width: 100%; font-family: monospace; font-weight: 700; text-transform: uppercase; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                            <div>
+                                <label for="new-brand" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Marca y Modelo *</label>
+                                <input type="text" id="new-brand" required placeholder="Ej: Iveco Daily 70C17" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+                            <div>
+                                <label for="new-capacity-kg" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Carga Máx (kg) *</label>
+                                <input type="number" id="new-capacity-kg" required placeholder="5000" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                            <div>
+                                <label for="new-capacity-m3" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Volumen (m³) *</label>
+                                <input type="number" step="0.1" id="new-capacity-m3" required placeholder="15.0" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                            <div>
+                                <label for="new-height-m" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Altura (m) *</label>
+                                <input type="number" step="0.1" id="new-height-m" required placeholder="2.8" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="new-driver" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Chofer Titular Asignado *</label>
+                                <input type="text" id="new-driver" required placeholder="Nombre del chofer" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                            <div>
+                                <label for="new-driver-phone" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Teléfono de Contacto *</label>
+                                <input type="tel" id="new-driver-phone" required placeholder="+54 11 ..." style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="new-gps-id" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">ID Dispositivo GPS</label>
+                                <input type="text" id="new-gps-id" placeholder="GPS-TRK-007" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                            </div>
+                            <div>
+                                <label for="new-truck-status" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Estado Inicial</label>
+                                <select id="new-truck-status" class="form-control" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: #ffffff;">
+                                    <option value="Disponible">Disponible (En Base Central)</option>
+                                    <option value="En ruta">En ruta operativa</option>
+                                    <option value="Fuera de servicio">Fuera de servicio (Alistamiento)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dt-modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-truck')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="btn-save-truck">
+                            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                            <span>Registrar en Flota</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal 2: Gestionar Estado y Chofer del Camión -->
+        <div id="modal-manage-truck" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-manage-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-manage-truck')"></div>
+            <div class="dt-modal-content" style="max-width: 520px;">
+                <div class="dt-modal-header">
+                    <h3 id="modal-manage-title" class="dt-modal-title">Gestión Operativa: <span id="m-manage-plate">AB 123 CD</span></h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-manage-truck')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <form onsubmit="handleUpdateTruck(event)">
+                    <div class="dt-modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label for="m-edit-status" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Cambiar Estado Operativo</label>
+                            <select id="m-edit-status" class="form-control" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: #ffffff;">
+                                <option value="Disponible">Disponible (En Base Central)</option>
+                                <option value="En ruta">En ruta activa</option>
+                                <option value="Fuera de servicio">Fuera de servicio (Taller mecánico)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="m-edit-driver" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Reasignar Chofer Titular</label>
+                            <input type="text" id="m-edit-driver" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                        </div>
+
+                        <div>
+                            <label for="m-edit-service" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">Registro de Mantenimiento Preventivo</label>
+                            <input type="text" id="m-edit-service" placeholder="Ej: Service de 50.000 km programado" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);" />
+                        </div>
+                    </div>
+                    <div class="dt-modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('modal-manage-truck')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                            <span>Guardar Modificaciones</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal 3: Telemetría Satelital y Hoja de Ruta (Gps + Ruta) -->
+        <div id="modal-telemetry" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-telemetry-title" aria-hidden="true">
+            <div class="dt-modal-backdrop" onclick="closeModal('modal-telemetry')"></div>
+            <div class="dt-modal-content" style="max-width: 580px;">
+                <div class="dt-modal-header">
+                    <h3 id="modal-telemetry-title" class="dt-modal-title">Telemetría Satelital GPS en Tiempo Real</h3>
+                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-telemetry')" aria-label="Cerrar modal">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+                <div class="dt-modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8125rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-muted);">Patente:</span>
+                            <strong style="color: var(--color-ink); font-family: monospace;" id="tel-plate">AB 123 CD</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-muted);">Coordenadas Satelitales:</span>
+                            <strong style="color: #4338ca; font-family: monospace;" id="tel-coords">-34.6050, -58.4250</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-muted);">Velocidad GPS Reportada:</span>
+                            <strong style="color: #059669;" id="tel-speed">38.5 km/h</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--color-muted);">Ruta Asignada:</span>
+                            <span id="tel-route">Ruta CABA-Norte</span>
+                        </div>
+                    </div>
+
+                    <div style="border-left: 2px solid var(--color-border); padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.8125rem;">
+                        <div>
+                            <strong>Parada 1: Salida de Depósito Central UTN</strong>
+                            <p style="color: var(--color-muted); margin: 0;">14:30 hs • Carga y precintado de bultos verificado</p>
+                        </div>
+                        <div>
+                            <strong>Parada 2: Fundación Despierta (Av. Corrientes 4500)</strong>
+                            <p style="color: var(--color-muted); margin: 0;">15:30 hs • Previsto arribo y descarga con foto</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dt-modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="closeModal('modal-telemetry')">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            function applyTruckFilters() {
+                const search = (document.getElementById('truck-search').value || '').toLowerCase().trim();
+                const status = document.getElementById('filter-truck-status').value;
+                const capacity = document.getElementById('filter-truck-capacity').value;
+
+                const cards = document.querySelectorAll('.truck-card');
+                let count = 0;
+
+                cards.forEach(card => {
+                    const text = (card.textContent || '').toLowerCase();
+                    const cardStatus = card.getAttribute('data-status') || '';
+                    const cap = parseInt(card.getAttribute('data-capacity') || '0', 10);
+
+                    const matchSearch = !search || text.includes(search);
+                    const matchStatus = !status || cardStatus === status;
+
+                    let matchCap = true;
+                    if (capacity === 'light') matchCap = cap <= 3500;
+                    else if (capacity === 'medium') matchCap = cap > 3500 && cap <= 6000;
+                    else if (capacity === 'heavy') matchCap = cap > 6000;
+
+                    if (matchSearch && matchStatus && matchCap) {
+                        card.style.display = 'flex';
+                        count++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                document.getElementById('truck-count').textContent = count;
+                const emptyState = document.getElementById('no-trucks-found');
+                const grid = document.getElementById('trucks-grid');
+                if (emptyState) emptyState.style.display = count === 0 ? 'flex' : 'none';
+                if (grid) grid.style.display = count === 0 ? 'none' : 'grid';
+            }
+
+            function resetTruckFilters() {
+                document.getElementById('truck-search').value = '';
+                document.getElementById('filter-truck-status').value = '';
+                document.getElementById('filter-truck-capacity').value = '';
+                applyTruckFilters();
+                showToast('Filtros restablecidos', 'Se visualiza la totalidad de la flota.', 'info');
+            }
+
+            function openManageTruckModal(plate) {
+                const card = document.querySelector('.truck-card[data-plate="' + plate + '"]');
+                if (!card) return;
+
+                document.getElementById('m-manage-plate').textContent = plate;
+                document.getElementById('m-edit-status').value = card.getAttribute('data-status');
+                document.getElementById('m-edit-driver').value = card.getAttribute('data-driver');
+                document.getElementById('m-edit-service').value = card.getAttribute('data-service');
+
+                openModal('modal-manage-truck');
+            }
+
+            function openTruckTelemetryModal(plate) {
+                const card = document.querySelector('.truck-card[data-plate="' + plate + '"]');
+                if (!card) return;
+
+                document.getElementById('tel-plate').textContent = plate + ' (' + card.getAttribute('data-brand') + ')';
+                document.getElementById('tel-coords').textContent = card.getAttribute('data-gps');
+                document.getElementById('tel-speed').textContent = card.getAttribute('data-speed') + ' km/h';
+                document.getElementById('tel-route').textContent = card.getAttribute('data-route');
+
+                openModal('modal-telemetry');
+            }
+
+            function handleCreateTruck(e) {
+                e.preventDefault();
+                const btn = document.getElementById('btn-save-truck');
+                simulateAsyncAction(btn, 600, function() {
+                    closeModal('modal-new-truck');
+                    showToast('Camión Registrado', 'El vehículo fue incorporado a la Flota con telemetría activa.', 'success');
+                });
+            }
+
+            function handleUpdateTruck(e) {
+                e.preventDefault();
+                closeModal('modal-manage-truck');
+                showToast('Estado Modificado', 'El estado y chofer asignado fueron actualizados en el sistema.', 'success');
+            }
+
+            function syncFleetTelemetry(btn) {
+                simulateAsyncAction(btn, 600, function() {
+                    showToast('Flota Sincronizada', 'Telemetría GPS, odómetro y combustible de todos los vehículos actualizados.', 'info');
+                });
+            }
+        </script>
     </main>
 </body>
 </html>

@@ -291,8 +291,21 @@
     grid-template-columns: 1fr;
   }
 
+  .hero-visual::before {
+    inset: 0;
+  }
+
+  .hero-visual img {
+    min-height: 260px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.85rem, 6vw, 2.5rem);
+    word-break: break-word;
+  }
+
   .section,
   .cta {
-    padding: 3.2rem 0;
+    padding: 2.8rem 0;
   }
 }

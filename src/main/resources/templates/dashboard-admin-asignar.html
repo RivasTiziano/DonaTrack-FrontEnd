@@ -73,12 +73,24 @@
 
             <!-- Matchmaking Results Panel -->
             <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="font-size: 1.15rem; font-weight: 700;">Resultados del Algoritmo (Top Ranking)</h2>
-                    <span style="font-size: 0.8125rem; color: var(--color-muted);">2 candidatos encontrados</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div>
+                        <h2 style="font-size: 1.15rem; font-weight: 700;">Resultados del Algoritmo (Top Ranking)</h2>
+                        <span style="font-size: 0.8125rem; color: var(--color-muted);">2 candidatos consensuados</span>
+                    </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Algorithmic Strategy Selector -->
+                <div style="background: #f1f5f9; padding: 0.35rem; border-radius: var(--radius-md); display: flex; gap: 0.35rem;">
+                    <button type="button" id="btn-strat-sem" class="btn btn-sm" style="flex: 1; background: #ffffff; color: var(--color-ink); font-weight: 700; border-radius: var(--radius-sm); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs);" onclick="switchAssignStrategy('semantico', this)">
+                        <i data-lucide="split" style="width: 14px; height: 14px;"></i> Compatibilidad Semántica
+                    </button>
+                    <button type="button" id="btn-strat-sub" class="btn btn-sm" style="flex: 1; background: transparent; color: var(--color-muted); font-weight: 600; border: none;" onclick="switchAssignStrategy('subatendidos', this)">
+                        <i data-lucide="scale" style="width: 14px; height: 14px;"></i> Prioridad Sub-atendidos
+                    </button>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;" id="candidates-container">
                     <!-- Candidate 1: Recommended Match -->
                     <div class="candidate-card" style="border: 2px solid #10b981; background: #f0fdf4; border-radius: var(--radius-lg); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -174,6 +186,46 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            function switchAssignStrategy(strat, btn) {
+                const btnSem = document.getElementById('btn-strat-sem');
+                const btnSub = document.getElementById('btn-strat-sub');
+                const container = document.getElementById('candidates-container');
+                
+                window.simulateFilterReload(container, function() {
+                    if (strat === 'subatendidos') {
+                        btnSub.style.background = '#ffffff';
+                        btnSub.style.color = 'var(--color-ink)';
+                        btnSub.style.fontWeight = '700';
+                        btnSub.style.border = '1px solid var(--color-border)';
+                        btnSub.style.boxShadow = 'var(--shadow-xs)';
+                        
+                        btnSem.style.background = 'transparent';
+                        btnSem.style.color = 'var(--color-muted)';
+                        btnSem.style.fontWeight = '600';
+                        btnSem.style.border = 'none';
+                        btnSem.style.boxShadow = 'none';
+                        
+                        showToast('Estrategia Aplicada', 'Algoritmo de Prioridad a Entidades Sub-atendidas con factor de equidad.', 'info');
+                    } else {
+                        btnSem.style.background = '#ffffff';
+                        btnSem.style.color = 'var(--color-ink)';
+                        btnSem.style.fontWeight = '700';
+                        btnSem.style.border = '1px solid var(--color-border)';
+                        btnSem.style.boxShadow = 'var(--shadow-xs)';
+                        
+                        btnSub.style.background = 'transparent';
+                        btnSub.style.color = 'var(--color-muted)';
+                        btnSub.style.fontWeight = '600';
+                        btnSub.style.border = 'none';
+                        btnSub.style.boxShadow = 'none';
+                        
+                        showToast('Estrategia Aplicada', 'Algoritmo de Compatibilidad Semántica por subcategoría y cobertura.', 'info');
+                    }
+                }, 250);
+            }
+        </script>
     </main>
 </body>
 </html>

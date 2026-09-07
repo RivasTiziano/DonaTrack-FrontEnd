@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-donor-layout :: layout(~{::title}, ~{::main}, 'notificaciones')}">
 <head>
-    <title>DonaTrack - Notificaciones</title>
+    <title>DonaTrack - Notificaciones del Donante</title>
 </head>
 <body>
     <main class="donor-notifications-view" th:fragment="main">
@@ -15,44 +15,192 @@
         </nav>
 
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div class="dt-page-header">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Centro de Notificaciones</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Mantente al día con los cambios de estado de tus donaciones y recompensas.</p>
+                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Centro de Notificaciones</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Avisos de donaciones asignadas, misiones cumplidas, ascensos de nivel y entregas confirmadas.</p>
             </div>
-            <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Notificaciones actualizadas', 'Todas las notificaciones fueron marcadas como leídas.', 'success')">
+            <button type="button" class="btn btn-outline btn-sm" onclick="markAllDonorNotificationsRead()">
                 <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
                 <span>Marcar todas como leídas</span>
             </button>
         </div>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
-            <button type="button" class="btn btn-outline btn-sm filter-tab active">Todas</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">No leídas (2)</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Entregas</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Incentivos</button>
+        <!-- Onboarding Hint (Heurística #10 y Modelo de Dominio) -->
+        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de notificaciones">
+            <div class="onboarding-hint-icon">
+                <i data-lucide="bell-ring" style="width: 20px; height: 20px; color: #4338ca;"></i>
+            </div>
+            <div class="onboarding-hint-content">
+                <div class="onboarding-hint-title">Centro de Notificaciones y Trazabilidad en Tiempo Real</div>
+                <p class="onboarding-hint-text">
+                    Recibes avisos automáticos ante cuatro eventos clave de tu ciclo solidario: <strong>1) Asignación de Donación</strong> (match con una entidad receptora), <strong>2) Misión Cumplida</strong> (desbloqueo de insignias de honor), <strong>3) Ascenso de Categoría</strong> (subida de nivel en el escalafón), y <strong>4) Recepción Confirmada</strong> (la entidad recibe los bienes y publica evidencia fotográfica). Las alertas se despachan según tus canales predeterminados (WhatsApp, Email o SMS).
+                </p>
+            </div>
+            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Filter Tabs (Punto 5 de Consigna) -->
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm notif-tab active" onclick="filterDonorNotifications('all', this)">
+                Todas (<span th:text="${notifications.size()}">6</span>)
+            </button>
+            <button type="button" class="btn btn-outline btn-sm notif-tab" onclick="filterDonorNotifications('unread', this)">
+                No leídas (<span id="unread-count" th:text="${unreadNotifications}">2</span>)
+            </button>
+            <button type="button" class="btn btn-outline btn-sm notif-tab" onclick="filterDonorNotifications('DONACION_ASIGNADA', this)">
+                <i data-lucide="split" style="width: 13px; height: 13px;"></i>
+                <span>Asignaciones</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm notif-tab" onclick="filterDonorNotifications('MISION_CUMPLIDA', this)">
+                <i data-lucide="award" style="width: 13px; height: 13px;"></i>
+                <span>Misiones Cumplidas</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm notif-tab" onclick="filterDonorNotifications('ASCENSO_CATEGORIA', this)">
+                <i data-lucide="trending-up" style="width: 13px; height: 13px;"></i>
+                <span>Ascensos de Nivel</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm notif-tab" onclick="filterDonorNotifications('ENTREGA_CONFIRMADA', this)">
+                <i data-lucide="package-check" style="width: 13px; height: 13px;"></i>
+                <span>Recepción de Entregas</span>
+            </button>
         </div>
 
         <!-- Notifications List -->
-        <div class="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
-            <article class="notification-card" th:each="notif : ${notifications}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;">
-                <div style="width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;"
-                     th:styleappend="${notif.type == 'success' ? 'background: #ecfdf5; color: #059669;' : (notif.type == 'info' ? 'background: #eff6ff; color: #2563eb;' : 'background: #fef3c7; color: #d97706;')}">
-                    <i th:attr="data-lucide=${notif.type == 'success' ? 'package-check' : (notif.type == 'info' ? 'truck' : 'award')}" style="width: 22px; height: 22px;"></i>
+        <div class="notifications-list" id="notifications-list" style="display: flex; flex-direction: column; gap: 1rem;">
+            <article class="notification-card" th:each="n : ${notifications}" 
+                     th:attr="data-event=${n.eventType}, 
+                              data-unread=${n.unread},
+                              data-title=${n.title},
+                              data-message=${n.message},
+                              data-channel=${n.channel},
+                              data-date=${n.date},
+                              data-status=${n.status}"
+                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: var(--shadow-xs); transition: all 0.2s ease;"
+                     th:styleappend="${n.unread ? 'border-left: 4px solid var(--color-primary); background: #fafafa;' : ''}">
+                
+                <!-- Event Icon -->
+                <div style="width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;"
+                     th:styleappend="${n.badgeType == 'success' ? 'background: #ecfdf5; color: #059669;' : (n.badgeType == 'reward' ? 'background: #fef3c7; color: #d97706;' : (n.badgeType == 'warning' ? 'background: #fdf4ff; color: #9333ea;' : 'background: #eff6ff; color: #2563eb;'))}">
+                    <i th:if="${n.eventType == 'ENTREGA_CONFIRMADA'}" data-lucide="package-check" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'MISION_CUMPLIDA'}" data-lucide="award" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'ASCENSO_CATEGORIA'}" data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'DONACION_ASIGNADA'}" data-lucide="split" style="width: 24px; height: 24px;"></i>
+                    <i th:if="${n.eventType == 'EN_RUTA'}" data-lucide="truck" style="width: 24px; height: 24px;"></i>
                 </div>
 
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-ink);" th:text="${notif.title}">Título</h3>
-                        <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${notif.date}">Fecha</span>
+                <!-- Content -->
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <!-- Event Type Tag -->
+                            <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 4px;"
+                                  th:styleappend="${n.badgeType == 'success' ? 'background: #ecfdf5; color: #059669;' : (n.badgeType == 'reward' ? 'background: #fef3c7; color: #d97706;' : (n.badgeType == 'warning' ? 'background: #fdf4ff; color: #9333ea;' : 'background: #eff6ff; color: #2563eb;'))}"
+                                  th:text="${n.typeLabel}">Tipo Evento</span>
+                            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink); margin: 0;" th:text="${n.title}">Título Notificación</h3>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${n.date}">Fecha</span>
                     </div>
-                    <p style="font-size: 0.875rem; color: var(--color-ink-light); line-height: 1.45;" th:text="${notif.message}">Mensaje de notificación</p>
+
+                    <p style="font-size: 0.875rem; color: var(--color-ink-light); line-height: 1.45; margin: 0.35rem 0;" th:text="${n.message}">Mensaje</p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; gap: 0.5rem; font-size: 0.75rem;">
+                        <!-- Medio de Contacto Pill -->
+                        <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--color-muted);">
+                            <i th:attr="data-lucide=${n.channelIcon}" style="width: 14px; height: 14px; color: var(--color-primary);"></i>
+                            <span>Canal: <strong style="color: var(--color-ink);" th:text="${n.channel}">WhatsApp</strong></span>
+                            <span style="color: #cbd5e1;">|</span>
+                            <span style="color: #10b981; font-weight: 600;">Estado: COMPLETADA</span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a th:if="${n.eventType == 'ENTREGA_CONFIRMADA'}" th:href="@{/explorar-donaciones}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                <i data-lucide="camera" style="width: 13px; height: 13px;"></i>
+                                <span>Ver Fotos de Evidencia</span>
+                            </a>
+                            <a th:if="${n.eventType == 'MISION_CUMPLIDA' or n.eventType == 'ASCENSO_CATEGORIA'}" th:href="@{/donante/dashboard/incentivos}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                <i data-lucide="award" style="width: 13px; height: 13px;"></i>
+                                <span>Ver en Incentivos</span>
+                            </a>
+                            <a th:if="${n.eventType == 'EN_RUTA'}" th:href="@{/donante/dashboard/entregas}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                <i data-lucide="map-pin" style="width: 13px; height: 13px;"></i>
+                                <span>Seguimiento en Mapa</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <span th:if="${notif.unread}" style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; margin-top: 6px;" title="No leída"></span>
+                <!-- Unread Indicator Dot -->
+                <span th:if="${n.unread}" class="unread-dot" style="width: 9px; height: 9px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; margin-top: 6px;" title="Notificación no leída"></span>
             </article>
         </div>
+
+        <!-- Empty State when no notifications match -->
+        <div id="no-donor-notif-found" class="dt-empty-state" style="display: none;">
+            <div class="dt-empty-state-icon">
+                <i data-lucide="bell-off" style="width: 32px; height: 32px; color: var(--color-muted);"></i>
+            </div>
+            <h3 class="dt-empty-state-title">No hay notificaciones con este filtro</h3>
+            <p class="dt-empty-state-text">No se encontraron avisos o actualizaciones para la categoría seleccionada.</p>
+            <button type="button" class="btn btn-outline btn-sm" onclick="filterDonorNotifications('all', document.querySelector('.notif-tab'))">
+                <span>Ver Todas</span>
+            </button>
+        </div>
+
+        <script th:inline="javascript">
+            function filterDonorNotifications(filterType, btn) {
+                document.querySelectorAll('.notif-tab').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+
+                const container = document.getElementById('notifications-list');
+                window.simulateFilterReload(container, function() {
+                    const cards = document.querySelectorAll('.notification-card');
+                    let visible = 0;
+                    cards.forEach(card => {
+                        const ev = card.getAttribute('data-event');
+                        const isUnread = card.getAttribute('data-unread') === 'true';
+
+                        let show = false;
+                        if (filterType === 'all') {
+                            show = true;
+                        } else if (filterType === 'unread') {
+                            show = isUnread;
+                        } else if (ev === filterType) {
+                            show = true;
+                        }
+
+                        if (show) {
+                            card.style.display = 'flex';
+                            visible++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    const emptyState = document.getElementById('no-donor-notif-found');
+                    if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+                    if (container) container.style.display = visible === 0 ? 'none' : 'flex';
+                }, 200);
+            }
+
+            function markAllDonorNotificationsRead() {
+                document.querySelectorAll('.notification-card').forEach(card => {
+                    card.setAttribute('data-unread', 'false');
+                    card.style.borderLeft = '1px solid var(--color-border)';
+                    card.style.background = '#ffffff';
+                    const dot = card.querySelector('.unread-dot');
+                    if (dot) dot.remove();
+                });
+
+                const countElem = document.getElementById('unread-count');
+                if (countElem) countElem.textContent = '0';
+
+                showToast('Notificaciones actualizadas', 'Todas las notificaciones fueron marcadas como leídas.', 'success');
+            }
+        </script>
     </main>
 </body>
 </html>

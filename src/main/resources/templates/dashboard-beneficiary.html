@@ -28,6 +28,24 @@
             </button>
         </div>
 
+        <!-- Action Pending Alert Banner (Heurística #1 y #5) -->
+        <div class="dt-alert-banner" role="alert">
+            <div class="dt-alert-banner-content">
+                <div class="dt-alert-banner-icon">
+                    <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="dt-alert-banner-text">
+                    <strong>Acción pendiente:</strong> Tienes 1 entrega arribada que requiere confirmación y carga de fotografías para la galería comunitaria.
+                </div>
+            </div>
+            <div class="dt-alert-banner-actions">
+                <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm">
+                    <i data-lucide="camera" style="width: 14px; height: 14px;"></i>
+                    <span>Confirmar Recepción</span>
+                </a>
+            </div>
+        </div>
+
         <!-- Quick Stats Grid -->
         <div class="dt-stats-grid">
             <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">

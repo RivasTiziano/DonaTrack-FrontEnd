@@ -43,16 +43,32 @@
         </div>
 
         <!-- Filter Tabs -->
-        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
-            <button type="button" class="btn btn-outline btn-sm filter-tab active">En Depósito (<span th:text="${warehouseDonations.size()}">3</span>)</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Perecederos con Vencimiento</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Mobiliario / Vestimenta</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab">Asignadas</button>
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterWarehouseDonations('all', this)">En Depósito (<span th:text="${warehouseDonations.size()}">3</span>)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterWarehouseDonations('perishable', this)">Perecederos con Vencimiento</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterWarehouseDonations('non-food', this)">Mobiliario / Vestimenta</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterWarehouseDonations('assigned', this)">Asignadas</button>
+        </div>
+
+        <!-- Empty state when no donations match filter -->
+        <div id="no-warehouse-found" class="dt-empty-state" style="display: none;">
+            <div class="dt-empty-state-icon">
+                <i data-lucide="package" style="width: 32px; height: 32px; color: var(--color-muted);"></i>
+            </div>
+            <h3 class="dt-empty-state-title">No hay donaciones en esta categoría</h3>
+            <p class="dt-empty-state-text">No se encontraron ítems en depósito que coincidan con el filtro seleccionado.</p>
+            <button type="button" class="btn btn-outline btn-sm" onclick="filterWarehouseDonations('all', document.querySelector('.filter-tab'))">
+                <span>Ver Todas en Depósito</span>
+            </button>
         </div>
 
         <!-- Warehouse Donations Grid -->
-        <div class="dt-cards-grid-3">
-            <article class="donation-card" th:each="item : ${warehouseDonations}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+        <div id="warehouse-grid" class="dt-cards-grid-3">
+            <article class="donation-card" th:each="item : ${warehouseDonations}" 
+                     th:data-perishable="${item.perishable}" 
+                     th:data-category="${item.category}" 
+                     th:data-status="${item.status}"
+                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
                         <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${item.category} + ' • ' + ${item.subcategory}">Categoría</span>
@@ -85,7 +101,7 @@
                 </div>
 
                 <div style="margin-top: auto; display: flex; gap: 0.5rem;">
-                    <a th:href="@{/admin/dashboard/asignar}" class="btn btn-primary btn-sm" style="flex: 1;">
+                    <a th:href="@{/admin/dashboard/asignar}" class="btn btn-primary btn-sm" style="flex: 1;" data-tooltip="Vincular con necesidades de comedores">
                         <i data-lucide="git-merge" style="width: 14px; height: 14px;"></i>
                         <span>Asignar</span>
                     </a>
@@ -208,6 +224,46 @@
                 </div>
             </div>
         </div>
+        <script>
+            function filterWarehouseDonations(type, btn) {
+                if (btn) {
+                    btn.closest('div').querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+                const container = document.getElementById('warehouse-grid');
+                window.simulateFilterReload(container, function() {
+                    const cards = document.querySelectorAll('.donation-card');
+                    let visible = 0;
+                    cards.forEach(card => {
+                        const isPerishable = card.getAttribute('data-perishable') === 'true';
+                        const category = card.getAttribute('data-category');
+                        const status = card.getAttribute('data-status');
+
+                        let show = false;
+                        if (type === 'all') {
+                            show = true;
+                        } else if (type === 'perishable') {
+                            show = isPerishable;
+                        } else if (type === 'non-food') {
+                            show = (category === 'Mobiliario' || category === 'Vestimenta');
+                        } else if (type === 'assigned') {
+                            show = (status === 'Asignada');
+                        }
+
+                        if (show) {
+                            card.style.display = 'flex';
+                            visible++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    const emptyState = document.getElementById('no-warehouse-found');
+                    if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+                    if (container) container.style.display = visible === 0 ? 'none' : 'grid';
+                }, 200);
+            }
+        </script>
     </main>
 </body>
 </html>

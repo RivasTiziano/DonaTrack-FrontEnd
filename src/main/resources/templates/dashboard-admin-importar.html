@@ -43,9 +43,9 @@
         </div>
 
         <!-- Two Column Layout: Upload area vs Format Specification -->
-        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.75rem; margin-bottom: 2rem;">
+        <div class="dt-import-grid">
             <!-- Upload Box -->
-            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1.25rem;">
+            <div class="card dt-import-card">
                 <h2 style="font-size: 1.2rem; font-weight: 700;">Subir Archivo .CSV</h2>
 
                 <div id="csv-dropzone" style="border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 2.5rem 1.5rem; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s ease;"
@@ -80,14 +80,14 @@
                     </div>
                 </div>
 
-                <button type="button" id="btn-start-import" class="btn btn-primary" style="width: 100%; min-height: 48px;" onclick="startCsvImportSimulation()">
-                    <i data-lucide="play" style="width: 18px; height: 18px;"></i>
+                <button type="button" id="btn-start-import" class="btn btn-primary" style="width: 100%; min-height: 48px; white-space: normal; text-align: center; padding: 0.75rem 1rem;" onclick="startCsvImportSimulation()">
+                    <i data-lucide="play" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
                     <span>Iniciar Procesamiento de Importación</span>
                 </button>
             </div>
 
             <!-- Official Format Guide from TP Specification -->
-            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+            <div class="card dt-import-card">
                 <h2 style="font-size: 1.2rem; font-weight: 700;">Formato Oficial del CSV Requerido</h2>
                 <p style="font-size: 0.8125rem; color: var(--color-muted);">
                     El archivo debe cumplir exactamente con las siguientes 6 columnas en el encabezado:
@@ -160,7 +160,12 @@
                     const file = input.files[0];
                     document.getElementById('csv-filename').textContent = file.name;
                     document.getElementById('csv-filesize').textContent = (file.size / 1024).toFixed(1) + ' KB • Procesamiento listo';
-                    document.getElementById('csv-dropzone').style.display = 'none';
+                    const dropzone = document.getElementById('csv-dropzone');
+                    if (dropzone) {
+                        dropzone.style.borderColor = '#cbd5e1';
+                        dropzone.style.background = '#f8fafc';
+                        dropzone.style.display = 'none';
+                    }
                     document.getElementById('csv-file-info').style.display = 'flex';
                     showToast('Archivo Seleccionado', `${file.name} listo para procesar.`, 'info');
                 }
@@ -168,12 +173,28 @@
 
             function clearCsvFile() {
                 document.getElementById('file-csv-input').value = '';
-                document.getElementById('csv-dropzone').style.display = 'block';
+                const dropzone = document.getElementById('csv-dropzone');
+                if (dropzone) {
+                    dropzone.style.borderColor = '#cbd5e1';
+                    dropzone.style.background = '#f8fafc';
+                    dropzone.style.display = 'block';
+                }
                 document.getElementById('csv-file-info').style.display = 'none';
                 document.getElementById('import-result-summary').style.display = 'none';
             }
 
             function startCsvImportSimulation() {
+                const fileInput = document.getElementById('file-csv-input');
+                const dropzone = document.getElementById('csv-dropzone');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    if (dropzone) {
+                        dropzone.style.borderColor = '#ef4444';
+                        dropzone.style.background = '#fef2f2';
+                    }
+                    showToast('Archivo requerido', 'Por favor selecciona un archivo .csv antes de iniciar el procesamiento.', 'warning');
+                    return;
+                }
+
                 const btn = document.getElementById('btn-start-import');
                 const progBox = document.getElementById('import-progress-box');
                 const progBar = document.getElementById('import-progress-bar');

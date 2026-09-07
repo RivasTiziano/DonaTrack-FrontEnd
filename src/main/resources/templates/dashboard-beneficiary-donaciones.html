@@ -42,9 +42,29 @@
             </button>
         </div>
 
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterAssignedDonations('todas', this)">Todas (<span th:text="${assignedDonations.size()}">2</span>)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterAssignedDonations('En camino', this)">En camino</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterAssignedDonations('Lista para entregar', this)">Listas en Depósito</button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="no-assigned-found" class="dt-empty-state" style="display: none;">
+            <div class="dt-empty-state-icon">
+                <i data-lucide="package-search" style="width: 28px; height: 28px;"></i>
+            </div>
+            <h3 class="dt-empty-state-title">No hay donaciones en esta vista</h3>
+            <p class="dt-empty-state-text">No se encontraron donaciones asignadas con el estado seleccionado.</p>
+            <button type="button" class="btn btn-outline btn-sm" onclick="filterAssignedDonations('todas')">
+                <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+                <span>Ver todas las asignaciones</span>
+            </button>
+        </div>
+
         <!-- Assigned Donations Grid -->
-        <div class="dt-cards-grid-3">
-            <article class="donation-card" th:each="don : ${assignedDonations}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+        <div class="dt-cards-grid-3" id="assigned-grid">
+            <article class="donation-card donation-assigned-card" th:each="don : ${assignedDonations}" th:attr="data-status=${don.status}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
                         <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Donación Asignada</span>
@@ -69,17 +89,42 @@
                 </div>
 
                 <div style="margin-top: auto; display: flex; gap: 0.5rem;">
-                    <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm" style="flex: 1;">
+                    <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm" style="flex: 1;" data-tooltip="Localizar camión satelital">
                         <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
                         <span>Ver Camión</span>
                     </a>
-                    <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm" style="flex: 1;">
+                    <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm" style="flex: 1;" data-tooltip="Subir fotografías y dar por entregada">
                         <i data-lucide="camera" style="width: 14px; height: 14px;"></i>
                         <span>Confirmar</span>
                     </a>
                 </div>
             </article>
         </div>
+
+        <script>
+            function filterAssignedDonations(status, btn) {
+                if (btn) {
+                    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+                const container = document.getElementById('assigned-grid');
+                window.simulateFilterReload(container, function() {
+                    let visible = 0;
+                    document.querySelectorAll('.donation-assigned-card').forEach(card => {
+                        const cardStatus = card.getAttribute('data-status');
+                        if (status === 'todas' || cardStatus === status) {
+                            card.style.display = 'flex';
+                            visible++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    const emptyState = document.getElementById('no-assigned-found');
+                    if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+                    if (container) container.style.display = visible === 0 ? 'none' : 'grid';
+                }, 200);
+            }
+        </script>
     </main>
 </body>
 </html>

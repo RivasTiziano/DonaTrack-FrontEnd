@@ -21,8 +21,8 @@
                 <p style="color: var(--color-muted); font-size: 0.9375rem;">Métricas de analítica y actividad procesadas por el Servicio de Incentivos.</p>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <label style="font-size: 0.875rem; color: var(--color-muted); font-weight: 600;">Mes:</label>
-                <select class="form-control" style="width: auto; min-height: 40px; padding: 0.35rem 0.75rem;">
+                <label for="ranking-month-select" style="font-size: 0.875rem; color: var(--color-muted); font-weight: 600;">Mes:</label>
+                <select id="ranking-month-select" class="form-control" style="width: auto; min-height: 40px; padding: 0.35rem 0.75rem;" onchange="changeRankingPeriod(this)">
                     <option value="marzo-2026">Marzo 2026 (Actual)</option>
                     <option value="febrero-2026">Febrero 2026</option>
                     <option value="enero-2026">Enero 2026</option>
@@ -115,6 +115,15 @@
                 </table>
             </div>
         </div>
+        <script>
+            function changeRankingPeriod(select) {
+                const label = select.options[select.selectedIndex].text;
+                const container = document.querySelector('.admin-rankings-view');
+                window.simulateFilterReload(container, function() {
+                    showToast('Período Actualizado', 'Mostrando métricas y rankings para ' + label, 'info');
+                }, 300);
+            }
+        </script>
     </main>
 </body>
 </html>
