@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<fieldset th:fragment="campos" class="api-fields">
+    <legend>Bien y cantidad</legend>
+    <label>Descripción del bien<input class="form-control" name="descripcion" th:value="${editableBien != null ? editableBien.descripcion : ''}" required maxlength="255" /></label>
+    <label>Foto (URL opcional)<input class="form-control" name="foto" th:value="${editableBien != null ? editableBien.foto : ''}" type="url" /></label>
+    <label>Cantidad<input class="form-control" name="cantidad" th:value="${editableBien != null ? editableBien.cantidad : ''}" type="number" min="0.001" step="any" required /></label>
+    <label>Subcategoría<select class="form-control" name="subCategoriaId" required>
+        <option value="">Seleccionar</option>
+        <optgroup th:each="c : ${categorias}" th:label="${c.nombre}">
+            <option th:each="s : ${c.subCategorias}" th:if="${s.activo}" th:value="${s.id}" th:text="${s.nombre}"></option>
+        </optgroup>
+    </select></label>
+    <label>Unidad<select class="form-control" name="unidadMedida" required>
+        <option th:each="u : ${ {'KILOGRAMO','GRAMO','LITRO','UNIDAD'} }" th:value="${u}" th:text="${u}" th:selected="${editableBien != null and editableBien.unidadMedida == u}"></option>
+    </select></label>
+    <label>Tipo de bien<select class="form-control" name="tipoBien" required>
+        <option th:each="t : ${ {'PERECEDERO','DURABLE'} }" th:value="${t}" th:text="${t}" th:selected="${editableBien != null and editableBien.tipoBien == t}"></option>
+    </select></label>
+    <label>Vencimiento (perecederos)<input class="form-control" name="fechaDeVencimiento" th:value="${editableBien != null ? editableBien.fechaDeVencimiento : ''}" type="date" /></label>
+    <label>Condición (durables)<select class="form-control" name="fueUsado">
+        <option value="">No corresponde</option><option value="false" th:selected="${editableBien != null and editableBien.fueUsado == false}">Nuevo</option><option value="true" th:selected="${editableBien != null and editableBien.fueUsado == true}">Usado</option>
+    </select></label>
+</fieldset>
+</body></html>

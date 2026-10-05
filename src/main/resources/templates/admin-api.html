@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, ${activeTab})}">
+<head><title th:text="${pageTitle} + ' - DonaTrack'">DonaTrack</title></head>
+<body><main th:fragment="main" class="api-view">
+    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+    <nav class="dt-breadcrumbs" aria-label="Migas de pan"><a th:href="@{/admin/dashboard}">Administración</a><span>/</span><span th:text="${pageTitle}"></span></nav>
+    <h1 th:text="${pageTitle}"></h1>
+    <p class="api-notice">Integración REST real. Este entorno de desarrollo todavía no implementa autenticación ni control de acceso.</p>
+    <nav class="api-links" aria-label="Módulos administrativos">
+        <a th:href="@{/admin/dashboard/donantes}">Donantes</a><a th:href="@{/admin/dashboard/donaciones}">Donaciones</a>
+        <a th:href="@{/admin/dashboard/beneficiarios}">Beneficiarios</a><a th:href="@{/admin/dashboard/necesidades}">Necesidades</a>
+        <a th:href="@{/admin/dashboard/bienes}">Bienes</a><a th:href="@{/admin/dashboard/catalogo}">Catálogo</a>
+        <a th:href="@{/admin/dashboard/asignar}">Asignar</a><a th:href="@{/admin/dashboard/camiones}">Camiones</a>
+        <a th:href="@{/admin/dashboard/rankings}">Rankings</a><a th:href="@{/admin/dashboard/importar}">CSV</a>
+        <a th:href="@{/admin/dashboard/entregas}">Entregas</a><a th:href="@{/admin/dashboard/rutas}">Rutas</a>
+    </nav>
+    <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
+    <p th:if="${success != null}" th:text="${success}" role="status" class="api-success"></p>
+    <section th:if="${section == 'inicio'}" class="card api-panel">
+        <h2>Seleccioná un módulo</h2><p>Los listados consultan los servicios al abrir la pantalla. Las acciones muestran confirmación solo después de la respuesta de la API.</p>
+    </section>
+
+    <section th:if="${section == 'donaciones'}" class="card api-panel">
+        <h2>Listado</h2>
+        <p th:if="${#lists.isEmpty(donaciones) and apiError == null}">No hay donaciones registradas.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Donante ID</th><th>Descripción</th><th>Bien</th><th>Disponible</th><th>Estado de cobertura</th><th>Acciones</th></tr></thead><tbody>
+        <tr th:each="d : ${donaciones}"><td th:text="${d.id}"></td><td th:text="${d.donanteId}"></td><td th:text="${d.descripcionGeneral}"></td><td th:text="${d.bien.descripcion}"></td>
+            <td th:text="${d.bien.cantidadDisponible} + ' ' + ${d.bien.unidadMedida}"></td><td th:text="${d.estado}"></td>
+            <td><a th:href="@{/admin/dashboard/donaciones/{id}(id=${d.id})}">Detalle</a>
+                <form method="post" th:action="@{/admin/dashboard/donaciones/{id}/estado(id=${d.id})}">
+                    <label>Nuevo estado<select name="estado" class="form-control"><option>EN_DEPOSITO</option><option>ASIGNACION_REALIZADA</option><option>VENCIDA</option></select></label>
+                    <label>Justificación<input name="justificacion" class="form-control" /></label><button class="btn btn-outline" type="submit">Actualizar</button>
+                </form>
+                <form method="post" th:action="@{/admin/dashboard/donaciones/{id}/eliminar(id=${d.id})}" onsubmit="return confirm('¿Eliminar esta donación? La API verificará si está permitido.');"><button type="submit" class="btn btn-outline">Eliminar</button></form>
+            </td></tr></tbody></table></div>
+        <h2>Registrar donación</h2><p>Este formulario registra un bien por envío. Las donaciones con varios bienes se abordarán con un formulario de filas dinámicas.</p>
+        <form method="post" th:action="@{/admin/dashboard/donaciones}">
+            <label>ID del donante<input class="form-control" type="number" name="donanteId" min="1" required /></label>
+            <label>Descripción general<input class="form-control" name="descripcionGeneral" required /></label>
+            <fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset><button class="btn btn-primary" type="submit">Registrar</button>
+        </form>
+    </section>
+    <section th:if="${section == 'detalle'}" class="card api-panel">
+        <div th:if="${donacion != null}"><h2 th:text="${donacion.descripcionGeneral}"></h2>
+            <p th:text="'Donación #' + ${donacion.id} + ' · ' + ${donacion.estado}"></p>
+            <p th:text="${donacion.bien.descripcion} + ' · disponible: ' + ${donacion.bien.cantidadDisponible} + ' ' + ${donacion.bien.unidadMedida}"></p></div>
+        <h2>Asignaciones de esta donación</h2><p th:if="${#lists.isEmpty(asignaciones) and apiError == null}">Todavía no hay asignaciones.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Necesidad</th><th>Entidad</th><th>Cantidad</th><th>Estado de entrega</th><th>Camión</th></tr></thead><tbody>
+        <tr th:each="a : ${asignaciones}"><td th:text="${a.id}"></td><td th:text="${a.necesidadId}"></td><td th:text="${a.entidadBeneficiariaId}"></td><td th:text="${a.cantidadAsignada}"></td><td th:text="${a.estado}"></td><td th:text="${a.camionId}"></td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section th:if="${section == 'bienes'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(bienes) and apiError == null}">No hay bienes registrados.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Descripción</th><th>Cantidad</th><th>Disponible</th><th>Unidad</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>
+        <tr th:each="b : ${bienes}"><td th:text="${b.id}"></td><td th:text="${b.descripcion}"></td><td th:text="${b.cantidad}"></td><td th:text="${b.cantidadDisponible}"></td><td th:text="${b.unidadMedida}"></td><td th:text="${b.tipoBien}"></td>
+            <td><details><summary>Editar bien</summary><form method="post" th:action="@{/admin/dashboard/bienes/{id}(id=${b.id})}" th:with="editableBien=${b}">
+                <p th:if="${b.categoria != null}" th:text="'Categoría actual: ' + ${b.categoria.nombreCategoria} + '. Seleccioná la subcategoría para confirmar la edición.'"></p>
+                <fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset><button class="btn btn-primary" type="submit">Guardar</button></form></details>
+                <form method="post" th:action="@{/admin/dashboard/bienes/{id}/eliminar(id=${b.id})}" onsubmit="return confirm('¿Eliminar este bien?');"><button class="btn btn-outline" type="submit">Eliminar</button></form></td></tr>
+        </tbody></table></div>
+        <h2>Crear bien</h2><form method="post" th:action="@{/admin/dashboard/bienes}"><fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset><button class="btn btn-primary" type="submit">Crear</button></form>
+    </section>
+    <section th:if="${section == 'catalogo'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(categorias) and apiError == null}">No hay categorías.</p>
+        <article th:each="c : ${categorias}"><h2 th:text="${c.nombre}"></h2><ul><li th:each="s : ${c.subCategorias}" th:text="${s.nombre} + ' (ID ' + ${s.id} + ')'"></li></ul></article>
+        <h2>Crear categoría</h2><form method="post" th:action="@{/admin/dashboard/catalogo/categorias}"><label>Nombre<input class="form-control" name="nombre" required /></label><button class="btn btn-primary" type="submit">Crear</button></form>
+        <h2>Crear subcategoría</h2><form method="post" th:action="@{/admin/dashboard/catalogo/subcategorias}">
+            <label>Categoría<select class="form-control" name="categoriaId" required><option value="">Seleccionar</option><option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}"></option></select></label>
+            <label>Nombre<input class="form-control" name="nombre" required /></label><button class="btn btn-primary" type="submit">Crear</button></form>
+    </section>
+    <section th:if="${section == 'beneficiarios'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(beneficiarios) and apiError == null}">No hay entidades beneficiarias.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Razón social</th><th>Tipo</th><th>Rubro</th><th>Activo</th></tr></thead><tbody>
+        <tr th:each="b : ${beneficiarios}"><td th:text="${b.id}"></td><td th:text="${b.razonSocial}"></td><td th:text="${b.tipoEntidad}"></td><td th:text="${b.rubro}"></td><td th:text="${b.activo ? 'Sí' : 'No'}"></td></tr></tbody></table></div>
+    </section>
+    <section th:if="${section == 'necesidades'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(necesidades) and apiError == null}">No hay necesidades.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Entidad ID</th><th>Descripción</th><th>Tipo</th><th>Recibido</th><th>Restante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        <tr th:each="n : ${necesidades}"><td th:text="${n.necesidadId}"></td><td th:text="${n.entidadBeneficiariaId}"></td><td th:text="${n.descripcion}"></td><td th:text="${n.tipoNecesidad}"></td><td th:text="${n.cantidadRecibida}"></td><td th:text="${n.cantidadRestante}"></td><td th:text="${n.estado}"></td>
+            <td><details><summary>Editar necesidad</summary><form method="post" th:action="@{/admin/dashboard/necesidades/{id}(id=${n.necesidadId})}" th:with="editableBien=${n.bien}">
+                <label>Descripción<input class="form-control" name="descripcionNecesidad" th:value="${n.descripcion}" required /></label>
+                <label>Tipo<select class="form-control" name="tipoNecesidad"><option th:each="t : ${ {'EXTRAORDINARIA','RECURRENTE'} }" th:value="${t}" th:text="${t}" th:selected="${n.tipoNecesidad == t}"></option></select></label>
+                <label>Período ISO<input class="form-control" name="periodo" th:value="${n.periodo}" /></label>
+                <p>Seleccioná la subcategoría para confirmar la edición.</p><fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset>
+                <button class="btn btn-primary" type="submit">Guardar</button></form></details>
+                <form method="post" th:action="@{/admin/dashboard/necesidades/{id}/eliminar(id=${n.necesidadId})}" onsubmit="return confirm('¿Eliminar esta necesidad?');"><button class="btn btn-outline" type="submit">Eliminar</button></form></td></tr></tbody></table></div>
+        <h2>Registrar necesidad</h2><form method="post" th:action="@{/admin/dashboard/necesidades}">
+            <label>Entidad<select class="form-control" name="entidadBeneficiariaId" required><option value="">Seleccionar</option><option th:each="b : ${beneficiarios}" th:value="${b.id}" th:text="${b.razonSocial}"></option></select></label>
+            <label>Descripción de la necesidad<input class="form-control" name="descripcionNecesidad" required /></label>
+            <label>Tipo<select class="form-control" name="tipoNecesidad"><option>EXTRAORDINARIA</option><option>RECURRENTE</option></select></label>
+            <label>Período ISO (solo recurrentes; por ejemplo P1M)<input class="form-control" name="periodo" placeholder="P1M" /></label>
+            <fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset><button class="btn btn-primary" type="submit">Crear</button>
+        </form>
+    </section>
+
+    <section th:if="${section == 'camiones'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(camiones) and apiError == null}">No hay camiones.</p>
+        <div class="api-table"><table><thead><tr><th>Patente</th><th>Carga (kg)</th><th>Volumen (m³)</th><th>Altura (m)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        <tr th:each="c : ${camiones}"><td th:text="${c.patente}"></td><td th:text="${c.capacidadCarga}"></td><td th:text="${c.capacidadVolumen}"></td><td th:text="${c.altura}"></td><td th:text="${c.estado}"></td><td>
+            <form method="post" th:action="@{/admin/dashboard/camiones/{id}/estado(id=${c.id})}"><label>Estado<select class="form-control" name="estado"><option>DISPONIBLE</option><option>EN_RUTA</option><option>FUERA_DE_SERVICIO</option></select></label><button class="btn btn-outline" type="submit">Actualizar</button></form>
+            <form method="post" th:action="@{/admin/dashboard/camiones/{id}/eliminar(id=${c.id})}" onsubmit="return confirm('¿Eliminar este camión?');"><button class="btn btn-outline" type="submit">Eliminar</button></form>
+        </td></tr></tbody></table></div>
+        <h2>Crear camión</h2><form method="post" th:action="@{/admin/dashboard/camiones}" class="api-fields">
+            <label>Patente<input class="form-control" name="patente" required /></label>
+            <label>Capacidad de carga (kg)<input class="form-control" type="number" name="capacidadCarga" min="0.001" step="any" required /></label>
+            <label>Capacidad de volumen (m³)<input class="form-control" type="number" name="capacidadVolumen" min="0.001" step="any" required /></label>
+            <label>Altura (m)<input class="form-control" type="number" name="altura" min="0.001" step="any" required /></label>
+            <button class="btn btn-primary" type="submit">Crear</button></form>
+    </section>
+    <section th:if="${section == 'entregas'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(entregas) and apiError == null}">No hay entregas.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Asignación ID</th><th>Estado</th><th>Camión</th><th>Justificación</th></tr></thead><tbody>
+        <tr th:each="e : ${entregas}"><td th:text="${e.id}"></td><td th:text="${e.asignacionId}"></td><td th:text="${e.estado}"></td><td th:text="${e.camionPatente}"></td><td th:text="${e.justificacion}"></td></tr></tbody></table></div>
+        <p>La confirmación de recepción y las fotografías se integrarán al definir la identidad de la entidad beneficiaria.</p>
+    </section>
+    <section th:if="${section == 'rutas'}" class="card api-panel">
+        <p th:if="${#lists.isEmpty(rutas) and apiError == null}">No hay rutas.</p>
+        <div class="api-table"><table><thead><tr><th>ID</th><th>Chofer</th><th>Fecha</th><th>Estado</th><th>Camión ID</th><th>Distancia (km)</th><th>Duración (min)</th><th>Acciones</th></tr></thead><tbody>
+        <tr th:each="r : ${rutas}"><td th:text="${r.id}"></td><td th:text="${r.chofer}"></td><td th:text="${r.fecha}"></td><td th:text="${r.estado}"></td><td th:text="${r.camionId}"></td><td th:text="${r.totalDistanciaKm}"></td><td th:text="${r.totalDuracionMins}"></td><td>
+            <form method="post" th:action="@{/admin/dashboard/rutas/{id}/iniciar(id=${r.id})}"><button class="btn btn-outline" type="submit">Iniciar</button></form>
+            <form method="post" th:action="@{/admin/dashboard/rutas/{id}/finalizar(id=${r.id})}"><button class="btn btn-outline" type="submit">Finalizar</button></form>
+            <form method="post" th:action="@{/admin/dashboard/rutas/{id}/cancelar(id=${r.id})}" onsubmit="return confirm('¿Cancelar esta ruta?');"><button class="btn btn-outline" type="submit">Cancelar</button></form>
+        </td></tr></tbody></table></div>
+    </section>
+    <section th:if="${section == 'rankings'}" class="card api-panel">
+        <p>La API actual ordena por misiones resueltas, no por kilos ni cantidad de donaciones.</p>
+        <p th:if="${#lists.isEmpty(ranking) and apiError == null}">No hay posiciones disponibles.</p>
+        <div class="api-table"><table><thead><tr><th>Posición</th><th>Donante ID</th><th>Misiones resueltas</th></tr></thead><tbody>
+        <tr th:each="r, position : ${ranking}"><td th:text="${position.count}"></td><td th:text="${r.idDonante}"></td><td th:text="${r.misionesResueltas}"></td></tr></tbody></table></div>
+    </section>
+    <section th:if="${section == 'asignar'}" class="card api-panel">
+        <h2>Algoritmos</h2><form th:each="a : ${algoritmos}" method="post" th:action="@{/admin/dashboard/algoritmos}" class="api-inline">
+            <span th:text="${a.nombre} + (${a.activo} ? ' — activo' : ' — inactivo')"></span>
+            <input type="hidden" name="nombre" th:value="${a.nombre}" /><input type="hidden" name="activo" th:value="${!a.activo}" />
+            <button class="btn btn-outline" type="submit" th:text="${a.activo ? 'Desactivar' : 'Activar'}"></button></form>
+        <h2>Generar sugerencias</h2><form method="post" th:action="@{/admin/dashboard/asignar/sugerir}">
+            <label>Donación<select class="form-control" name="donacionId" required><option value="">Seleccionar</option><option th:each="d : ${donaciones}" th:value="${d.id}" th:text="'#' + ${d.id} + ' · ' + ${d.descripcionGeneral}"></option></select></label>
+            <button class="btn btn-primary" type="submit">Consultar matchmaking</button></form>
+        <div th:if="${sugerencia != null}"><h3 th:text="'Sugerencia para donación #' + ${sugerencia.donacionId}"></h3>
+            <p th:text="${sugerencia.hayInterseccion ? 'Hay coincidencias entre algoritmos.' : 'No hay intersección; revisá los rankings de cada algoritmo.'}"></p>
+            <ul><li th:each="n : ${sugerencia.mejoresNecesidades}" th:text="'#' + ${n.necesidadId} + ' · ' + ${n.descripcion}"></li></ul>
+            <article th:each="top : ${sugerencia.tops}"><h4 th:text="${top.nombreAlgoritmo}"></h4><ol><li th:each="n : ${top.topDiezNecesidades}" th:text="'#' + ${n.necesidadId} + ' · ' + ${n.descripcion}"></li></ol></article></div>
+        <h2>Confirmar asignación</h2><p>Requiere Logística y sus dependencias disponibles. El backend valida compatibilidad y cantidades.</p>
+        <form method="post" th:action="@{/admin/dashboard/asignar}">
+            <label>Donación<select class="form-control" name="donacionId" required><option value="">Seleccionar</option><option th:each="d : ${donaciones}" th:value="${d.id}" th:text="'#' + ${d.id} + ' · disponible ' + ${d.bien.cantidadDisponible} + ' ' + ${d.bien.unidadMedida}"></option></select></label>
+            <label>Necesidad<select class="form-control" name="necesidadId" required><option value="">Seleccionar</option><option th:each="n : ${necesidades}" th:value="${n.necesidadId}" th:text="'#' + ${n.necesidadId} + ' · ' + ${n.descripcion} + ' · restante ' + ${n.cantidadRestante}"></option></select></label>
+            <label>Cantidad a asignar<input class="form-control" name="cantidadAAsignar" type="number" min="0.001" step="any" required /></label><button class="btn btn-primary" type="submit">Confirmar asignación</button></form>
+    </section>
+    <section th:if="${section == 'importar'}" class="card api-panel">
+        <p>Encabezados: TipoPersona, TipoDoc, Documento, Nombre/Razón Social, Email, Teléfono.</p>
+        <p>El documento identifica al donante. La API crea o actualiza y rechaza conflictos de email. Esta operación no crea credenciales ni envía el correo de bienvenida.</p>
+        <form method="post" enctype="multipart/form-data" th:action="@{/admin/dashboard/importar}">
+            <label>Archivo CSV (máximo 20 MB)<input class="form-control" name="archivo" type="file" accept=".csv,text/csv" required /></label>
+            <button class="btn btn-primary" type="submit">Importar archivo</button></form>
+        <div th:if="${importacion != null}" role="status"><h2>Resultado informado por la API</h2>
+            <dl><dt>Filas procesadas</dt><dd th:text="${importacion.filasProcesadas}"></dd><dt>Creados</dt><dd th:text="${importacion.donantesCreados}"></dd><dt>Actualizados</dt><dd th:text="${importacion.donantesActualizados}"></dd><dt>Rechazadas</dt><dd th:text="${importacion.filasRechazadas}"></dd></dl>
+            <ul><li th:each="e : ${importacion.errores}" th:text="'Fila ' + ${e.fila} + ': ' + ${e.mensaje}"></li></ul>
+            <a th:href="@{/admin/dashboard/donantes}">Ver donantes importados</a></div>
+    </section>
+    <script>
+        document.querySelectorAll('.api-view form').forEach(form => {
+            form.addEventListener('submit', event => {
+                // La confirmación cancelada no debe bloquear posteriores intentos.
+                if (event.defaultPrevented) return;
+                form.querySelectorAll('button[type="submit"]').forEach(button => {
+                    button.disabled = true;
+                    button.textContent = 'Procesando…';
+                });
+                form.setAttribute('aria-busy', 'true');
+            });
+        });
+    </script>
+</main></body></html>

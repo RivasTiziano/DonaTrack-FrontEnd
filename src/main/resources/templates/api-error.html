@@ -1,0 +1,5 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'inicio')}">
+<head><title>Solicitud inválida - DonaTrack</title></head><body>
+<main th:fragment="main"><h1>No se pudo procesar la solicitud</h1><p th:text="${message}" role="alert"></p><a th:href="@{/admin/dashboard}">Volver a Administración</a></main>
+</body></html>

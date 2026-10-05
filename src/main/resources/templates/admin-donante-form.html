@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donors')}">
+<head><title>Registrar donante - DonaTrack</title></head><body><main th:fragment="main" class="api-view">
+    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+    <h1 th:text="${tipo == 'humanos' ? 'Registrar persona humana' : 'Registrar persona jurídica'}"></h1>
+    <p>No crea usuario ni contraseña. Los datos y requisitos se validan en Donaciones.</p>
+    <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
+    <form class="card api-panel" method="post" th:action="@{/admin/dashboard/donantes/nuevo/{tipo}(tipo=${tipo})}">
+        <fieldset class="api-fields"><legend>Datos de la persona</legend>
+            <th:block th:if="${tipo == 'humanos'}">
+                <label>Nombre<input class="form-control" name="nombre" th:value="${form != null ? form.nombre : ''}" required /></label>
+                <label>Apellido<input class="form-control" name="apellido" th:value="${form != null ? form.apellido : ''}" required /></label>
+                <label>Fecha de nacimiento<input class="form-control" type="date" name="fechaNacimiento" th:value="${form != null ? form.fechaNacimiento : ''}" required /></label>
+                <label>Género<select class="form-control" name="genero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.genero == g}"></option></select></label>
+            </th:block>
+            <label><span th:text="${tipo == 'humanos' ? 'DNI' : 'CUIT'}"></span><input class="form-control" name="numeroDocumento" th:value="${form != null ? form.numeroDocumento : ''}" required /></label>
+            <th:block th:if="${tipo == 'juridicos'}">
+                <label>Razón social<input class="form-control" name="razonSocial" th:value="${form != null ? form.razonSocial : ''}" required /></label>
+                <label>Tipo<select class="form-control" name="tipoEntidad" required><option value="">Seleccionar</option><option th:each="t : ${ {'GUBERNAMENTAL','ONG','EMPRESA','INSTITUCION'} }" th:text="${t}" th:value="${t}" th:selected="${form != null and form.tipoEntidad == t}"></option></select></label>
+                <label>Rubro<input class="form-control" name="rubro" th:value="${form != null ? form.rubro : ''}" required /></label>
+            </th:block>
+        </fieldset>
+        <fieldset class="api-fields"><legend>Dirección</legend>
+            <label>Calle<input class="form-control" name="calle" th:value="${form != null ? form.calle : ''}" required /></label>
+            <label>Número<input class="form-control" name="numero" th:value="${form != null ? form.numero : ''}" required /></label>
+            <label>Ciudad<input class="form-control" name="ciudad" th:value="${form != null ? form.ciudad : ''}" required /></label>
+            <label>Provincia<input class="form-control" name="provincia" th:value="${form != null ? form.provincia : ''}" required /></label>
+            <label>Latitud (opcional)<input class="form-control" name="latitud" type="number" step="any" th:value="${form != null ? form.latitud : ''}" /></label>
+            <label>Longitud (opcional)<input class="form-control" name="longitud" type="number" step="any" th:value="${form != null ? form.longitud : ''}" /></label>
+        </fieldset>
+        <fieldset class="api-fields"><legend>Contacto</legend><p>Este formulario inicial utiliza email como predeterminado. La gestión de varios contactos se abordará por separado.</p>
+            <label>Email<input class="form-control" name="email" type="email" th:value="${form != null ? form.email : ''}" required /></label>
+            <label>Teléfono SMS (opcional)<input class="form-control" name="telefono" type="tel" th:value="${form != null ? form.telefono : ''}" /></label>
+        </fieldset>
+        <fieldset th:if="${tipo == 'juridicos'}" class="api-fields"><legend>Representante inicial</legend>
+            <label>Nombre<input class="form-control" name="representanteNombre" th:value="${form != null ? form.representanteNombre : ''}" required /></label>
+            <label>Apellido<input class="form-control" name="representanteApellido" th:value="${form != null ? form.representanteApellido : ''}" required /></label>
+            <label>DNI<input class="form-control" name="representanteDocumento" th:value="${form != null ? form.representanteDocumento : ''}" required /></label>
+            <label>Fecha de nacimiento<input class="form-control" type="date" name="representanteNacimiento" th:value="${form != null ? form.representanteNacimiento : ''}" required /></label>
+            <label>Género<select class="form-control" name="representanteGenero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.representanteGenero == g}"></option></select></label>
+        </fieldset>
+        <button class="btn btn-primary" type="submit">Registrar donante</button><a class="btn btn-outline" th:href="@{/admin/dashboard/donantes}">Cancelar</a>
+    </form>
+</main></body></html>

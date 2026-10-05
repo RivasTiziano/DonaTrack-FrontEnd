@@ -1244,47 +1244,12 @@ public class WebController {
     // =========================================================================
     // ADMINISTRADOR DASHBOARD
     // =========================================================================
-    @GetMapping("/admin/dashboard")
-    public String adminDashboard(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin";
-    }
 
-    @GetMapping("/admin/dashboard/donantes")
-    public String adminDonors(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin-donantes";
-    }
 
-    @GetMapping("/admin/dashboard/donaciones")
-    public String adminDonations(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin-donaciones";
-    }
 
-    @GetMapping("/admin/dashboard/asignar")
-    public String adminAssign(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin-asignar";
-    }
 
-    @GetMapping("/admin/dashboard/camiones")
-    public String adminTrucks(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin-camiones";
-    }
 
-    @GetMapping("/admin/dashboard/rankings")
-    public String adminRankings(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin-rankings";
-    }
 
-    @GetMapping("/admin/dashboard/importar")
-    public String adminImport(Model model) {
-        populateAdminModel(model);
-        return "dashboard-admin-importar";
-    }
 
     private void populateAdminModel(Model model) {
         model.addAttribute("user", mapOf(

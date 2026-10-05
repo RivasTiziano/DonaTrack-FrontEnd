@@ -25,10 +25,8 @@
                     <i data-lucide="file-up" style="width: 18px; height: 18px;"></i>
                     <span>Importar CSV</span>
                 </a>
-                <button type="button" class="btn btn-primary" onclick="openModal('modal-new-donor')">
-                    <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
-                    <span>Nuevo Donante</span>
-                </button>
+                <a class="btn btn-primary" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Nueva persona humana</a>
+                <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes/nuevo/juridicos}">Nueva persona jurídica</a>
             </div>
         </div>
 
@@ -49,7 +47,14 @@
             </button>
         </div>
 
+        <div th:if="${errorDonantes != null}" role="alert"
+             style="padding: 1rem; margin-bottom: 1rem; color: #991b1b; background: #fef2f2; border-radius: 8px;">
+            <span th:text="${errorDonantes}"></span>
+        </div>
+
         <!-- Donors Table Card -->
+        <p th:if="${apiError != null}" th:text="${apiError}" role="alert"></p>
+        <p th:if="${success != null}" th:text="${success}" role="status"></p>
         <div class="card" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs);">
             <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-ink);">Listado de Donantes Registrados</h2>
@@ -68,16 +73,19 @@
                             <th style="padding: 1rem;">Tipo</th>
                             <th style="padding: 1rem;">Documento</th>
                             <th style="padding: 1rem;">Contacto</th>
-                            <th style="padding: 1rem;">Categoría</th>
-                            <th style="padding: 1rem; text-align: center;">Donaciones</th>
+                            <th style="padding: 1rem;">Estado del registro</th>
                             <th style="padding: 1rem; text-align: right;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="donors-tbody">
+                        <tr th:if="${#lists.isEmpty(donorsList) and errorDonantes == null}">
+                            <td colspan="6" style="padding: 1rem; text-align: center;">
+                                Todavía no hay donantes registrados.
+                            </td>
+                        </tr>
                         <tr th:each="donor : ${donorsList}" th:data-type="${donor.type}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
                             <td style="padding: 1rem 1.5rem;">
                                 <strong style="color: var(--color-ink); font-size: 0.9375rem;" th:text="${donor.name}">Nombre</strong>
-                                <div style="font-size: 0.75rem; color: var(--color-muted);" th:text="'Registrado: ' + ${donor.regDate}">Fecha</div>
                             </td>
                             <td style="padding: 1rem;">
                                 <span class="status-badge" th:classappend="${donor.type == 'Jurídica' ? 'badge-asignada' : 'badge-deposito'}" th:text="${donor.type}">Tipo</span>
@@ -90,22 +98,19 @@
                                 <div style="font-size: 0.75rem; color: var(--color-muted);" th:text="${donor.phone}">+54 11 1234-5678</div>
                             </td>
                             <td style="padding: 1rem;">
-                                <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-primary);" th:text="${donor.category}">Sostenedor</span>
-                            </td>
-                            <td style="padding: 1rem; text-align: center;">
-                                <strong style="font-size: 1rem; color: var(--color-ink);" th:text="${donor.donationsCount}">12</strong>
+                                <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-primary);" th:text="${donor.estadoRegistro}">Estado</span>
                             </td>
                             <td style="padding: 1rem; text-align: right;">
                                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                    <button type="button" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.6rem;" onclick="showToast('Ver perfil', 'Abriendo perfil del donante.', 'info')" aria-label="Ver perfil" data-tooltip="Ver historial y aportes">
-                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
-                                    </button>
+                                    <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante? La API verificará si está permitido.');">
+                                        <button type="submit" class="btn btn-outline btn-sm">Eliminar</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
                         <!-- Empty state row -->
-                        <tr id="no-donors-row" style="display: none;">
-                            <td colspan="7" style="padding: 3rem; text-align: center; color: var(--color-muted);">
+                        <tr id="no-donors-row" th:if="${not #lists.isEmpty(donorsList) and errorDonantes == null}" style="display: none;">
+                            <td colspan="6" style="padding: 3rem; text-align: center; color: var(--color-muted);">
                                 <i data-lucide="users" style="width: 32px; height: 32px; margin-bottom: 0.5rem; stroke-width: 1.5;"></i>
                                 <div style="font-weight: 600; color: var(--color-ink);">No se encontraron donantes de este tipo</div>
                                 <div style="font-size: 0.8125rem; margin-top: 0.25rem;">Prueba seleccionando la pestaña "Todos".</div>
