@@ -1,0 +1,23 @@
+services:
+  donatrack-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: donatrack-frontend-img
+    container_name: donatrack-frontend
+    ports:
+      - "8090:8090"
+    environment:
+      - FRONTEND_PORT=8090
+      - DONACIONES_API_URL=http://donaciones-service:8080
+      - LOGISTICA_API_URL=http://logistica-service:8083
+      - INCENTIVOS_API_URL=http://incentivos-service:8082
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - donatrack-net
+
+networks:
+  donatrack-net:
+    name: 2026-tpa-ma-ma-grupo-18_default
+    external: true
