@@ -28,17 +28,75 @@
             <label>Latitud (opcional)<input class="form-control" name="latitud" type="number" step="any" th:value="${form != null ? form.latitud : ''}" /></label>
             <label>Longitud (opcional)<input class="form-control" name="longitud" type="number" step="any" th:value="${form != null ? form.longitud : ''}" /></label>
         </fieldset>
-        <fieldset class="api-fields"><legend>Contacto</legend><p>Este formulario inicial utiliza email como predeterminado. La gestión de varios contactos se abordará por separado.</p>
-            <label>Email<input class="form-control" name="email" type="email" th:value="${form != null ? form.email : ''}" required /></label>
+        <fieldset class="api-fields"><legend>Contacto</legend>
+            <label>Email principal (predeterminado)<input class="form-control" name="email" type="email" th:value="${form != null ? form.email : ''}" required /></label>
             <label>Teléfono SMS (opcional)<input class="form-control" name="telefono" type="tel" th:value="${form != null ? form.telefono : ''}" /></label>
+            <div id="contactos-extra-container"></div>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-add-contacto" style="margin-top: 0.5rem;">+ Agregar otro medio de contacto</button>
         </fieldset>
-        <fieldset th:if="${tipo == 'juridicos'}" class="api-fields"><legend>Representante inicial</legend>
-            <label>Nombre<input class="form-control" name="representanteNombre" th:value="${form != null ? form.representanteNombre : ''}" required /></label>
-            <label>Apellido<input class="form-control" name="representanteApellido" th:value="${form != null ? form.representanteApellido : ''}" required /></label>
-            <label>DNI<input class="form-control" name="representanteDocumento" th:value="${form != null ? form.representanteDocumento : ''}" required /></label>
-            <label>Fecha de nacimiento<input class="form-control" type="date" name="representanteNacimiento" th:value="${form != null ? form.representanteNacimiento : ''}" required /></label>
-            <label>Género<select class="form-control" name="representanteGenero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.representanteGenero == g}"></option></select></label>
+        <fieldset th:if="${tipo == 'juridicos'}" class="api-fields"><legend>Representantes Legales</legend>
+            <div id="representantes-container">
+                <div class="card" style="padding: 0.75rem; margin-bottom: 0.75rem; background: var(--color-surface);">
+                    <strong>Representante #1 (Principal)</strong>
+                    <label>Nombre<input class="form-control" name="representanteNombre" th:value="${form != null ? form.representanteNombre : ''}" required /></label>
+                    <label>Apellido<input class="form-control" name="representanteApellido" th:value="${form != null ? form.representanteApellido : ''}" required /></label>
+                    <label>DNI<input class="form-control" name="representanteDocumento" th:value="${form != null ? form.representanteDocumento : ''}" required /></label>
+                    <label>Fecha de nacimiento<input class="form-control" type="date" name="representanteNacimiento" th:value="${form != null ? form.representanteNacimiento : ''}" required /></label>
+                    <label>Género<select class="form-control" name="representanteGenero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.representanteGenero == g}"></option></select></label>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-add-representante">+ Agregar otro representante legal</button>
         </fieldset>
-        <button class="btn btn-primary" type="submit">Registrar donante</button><a class="btn btn-outline" th:href="@{/admin/dashboard/donantes}">Cancelar</a>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" type="submit">Registrar donante</button>
+            <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes}">Cancelar</a>
+        </div>
     </form>
+
+    <script>
+        document.getElementById('btn-add-contacto')?.addEventListener('click', function() {
+            const container = document.getElementById('contactos-extra-container');
+            const div = document.createElement('div');
+            div.style.cssText = 'display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: flex-end;';
+            div.innerHTML = `
+                <label style="flex: 1;">Tipo
+                    <select class="form-control" name="contactoTipo">
+                        <option value="EMAIL">EMAIL</option>
+                        <option value="SMS">SMS</option>
+                        <option value="WHATSAPP">WHATSAPP</option>
+                    </select>
+                </label>
+                <label style="flex: 2;">Valor (Email / Número)
+                    <input class="form-control" name="contactoValor" required />
+                </label>
+                <button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()" style="margin-bottom: 2px;">Eliminar</button>
+            `;
+            container.appendChild(div);
+        });
+
+        document.getElementById('btn-add-representante')?.addEventListener('click', function() {
+            const container = document.getElementById('representantes-container');
+            const count = container.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.style.cssText = 'padding: 0.75rem; margin-top: 0.75rem; margin-bottom: 0.75rem; background: var(--color-surface);';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>Representante #${count}</strong>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="this.closest('.card').remove()">Eliminar</button>
+                </div>
+                <label>Nombre<input class="form-control" name="repNombre" required /></label>
+                <label>Apellido<input class="form-control" name="repApellido" required /></label>
+                <label>DNI<input class="form-control" name="repDocumento" required /></label>
+                <label>Fecha de nacimiento<input class="form-control" type="date" name="repNacimiento" required /></label>
+                <label>Género<select class="form-control" name="repGenero" required>
+                    <option value="FEMENINO">FEMENINO</option>
+                    <option value="MASCULINO" selected>MASCULINO</option>
+                    <option value="NO_BINARIO">NO_BINARIO</option>
+                    <option value="OTRO">OTRO</option>
+                </select></label>
+            `;
+            container.appendChild(div);
+        });
+    </script>
 </main></body></html>

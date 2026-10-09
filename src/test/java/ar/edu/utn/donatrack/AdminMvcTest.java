@@ -194,4 +194,93 @@ class AdminMvcTest {
                 .andExpect(content().string(containsString("&lt;script&gt;")))
                 .andExpect(content().string(not(containsString("<script>alert(1)</script>"))));
     }
+
+    @Test void createsDonationWithMultipleGoods() throws Exception {
+        mvc.perform(post("/admin/dashboard/donaciones")
+                .param("donanteId", "1")
+                .param("descripcionGeneral", "Campaña de Invierno")
+                .param("descripcion", "Frazadas")
+                .param("cantidad", "10")
+                .param("subCategoriaId", "1")
+                .param("unidadMedida", "UNIDAD")
+                .param("tipoBien", "DURABLE")
+                .param("bienDescripcion", "Camperas", "Guantes")
+                .param("bienCantidad", "20", "30")
+                .param("bienSubCategoriaId", "1", "1")
+                .param("bienUnidadMedida", "UNIDAD", "UNIDAD")
+                .param("bienTipoBien", "DURABLE", "DURABLE"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("success"));
+
+        verify(donaciones).crearDonacion(argThat(donacion ->
+                donacion.bienes().size() == 3 &&
+                "Frazadas".equals(donacion.bienes().get(0).descripcion()) &&
+                "Camperas".equals(donacion.bienes().get(1).descripcion()) &&
+                "Guantes".equals(donacion.bienes().get(2).descripcion())));
+    }
+
+    @Test void createsJuridicoDonorWithMultipleContactsAndRepresentatives() throws Exception {
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos")
+                .param("razonSocial", "Empresa Solidaria S.A.")
+                .param("numeroDocumento", "30112233445")
+                .param("tipoEntidad", "EMPRESA")
+                .param("rubro", "Alimenticio")
+                .param("calle", "Av. San Martín")
+                .param("numero", "500")
+                .param("ciudad", "CABA")
+                .param("provincia", "Buenos Aires")
+                .param("email", "contacto@empresa.com")
+                .param("telefono", "1122334455")
+                .param("contactoTipo", "WHATSAPP")
+                .param("contactoValor", "1199887766")
+                .param("representanteNombre", "Carlos")
+                .param("representanteApellido", "Gómez")
+                .param("representanteDocumento", "20111222")
+                .param("representanteNacimiento", "1980-05-15")
+                .param("representanteGenero", "MASCULINO")
+                .param("repNombre", "Laura")
+                .param("repApellido", "Fernández")
+                .param("repDocumento", "25333444")
+                .param("repNacimiento", "1985-10-20")
+                .param("repGenero", "FEMENINO"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("success"));
+
+        verify(registroDonantes).crearJuridico(argThat(request ->
+                request.mediosDeContacto().size() >= 3 &&
+                request.representantesJuridicos().size() == 2 &&
+                "Carlos".equals(request.representantesJuridicos().get(0).nombre()) &&
+                "Laura".equals(request.representantesJuridicos().get(1).nombre())));
+    }
+
+    @Test void rendersAllDonorAndBeneficiaryPages() throws Exception {
+        var bien = new ApiDtos.Bien(1L, "Arroz", null, 80f, 50f, null, "KILOGRAMO", "PERECEDERO", null, null);
+        var donacion = new ApiDtos.Donacion(10L, 1L, "Donación Alimentos", bien, "EN_DEPOSITO", java.time.LocalDateTime.now());
+        when(donaciones.donaciones()).thenReturn(List.of(donacion));
+        when(donaciones.donacion(10L)).thenReturn(donacion);
+        when(donaciones.necesidades()).thenReturn(List.of(new ApiDtos.Necesidad(1L, 2L, bien, "Ayuda comedor", "RECURRENTE", "P1M", 0f, 50f, "ACTIVA")));
+        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Fundación Vida", "ONG", "Comedor", true)));
+
+        for (String path : List.of(
+                "/donante/dashboard",
+                "/donante/dashboard/donaciones",
+                "/donante/dashboard/entidades",
+                "/donante/dashboard/incentivos",
+                "/donante/dashboard/entregas",
+                "/donante/dashboard/notificaciones",
+                "/entidad/dashboard",
+                "/entidad/dashboard/necesidades",
+                "/entidad/dashboard/donaciones",
+                "/entidad/dashboard/confirmar",
+                "/entidad/dashboard/entregas",
+                "/entidad/dashboard/notificaciones",
+                "/explorar-donaciones",
+                "/explorar-donaciones/10",
+                "/",
+                "/legal",
+                "/registro"
+        )) {
+            mvc.perform(get(path)).andExpect(status().isOk());
+        }
+    }
 }

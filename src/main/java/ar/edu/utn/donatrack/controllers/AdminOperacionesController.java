@@ -7,6 +7,7 @@ import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.IncentivosApiService;
 import ar.edu.utn.donatrack.services.LogisticaApiService;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.client.RestClientException;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,37 +42,33 @@ public class AdminOperacionesController {
             model.addAttribute(name, List.of());
     }
 
-    private void load(Model model, Runnable operation) {
-        try { operation.run(); }
-        catch (RestClientException | IllegalStateException exception) {
+    private void load(Model model, Runnable loader) {
+        try { loader.run(); } catch (RestClientException | IllegalStateException exception) {
             model.addAttribute("apiError", errors.describe(exception));
         }
     }
-
-    private String page(Model model, String title, String section, String tab) {
-        model.addAttribute("pageTitle", title);
+    private String page(Model model, String pageTitle, String section, String activeTab) {
+        model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("section", section);
-        model.addAttribute("activeTab", tab);
+        model.addAttribute("activeTab", activeTab);
         return "admin-api";
     }
 
     @GetMapping
-    public String resumen(Model model) {
-        return page(model, "Operaciones administrativas", "inicio", "inicio");
-    }
+    public String index(Model model) { return page(model, "Panel General", "inicio", "inicio"); }
 
     @GetMapping("/donaciones")
     public String donaciones(Model model) {
         load(model, () -> model.addAttribute("donaciones", donaciones.donaciones()));
         load(model, () -> model.addAttribute("categorias", donaciones.categorias()));
-        return page(model, "Donaciones en depósito", "donaciones", "donations");
+        return page(model, "Donaciones", "donaciones", "donations");
     }
 
     @GetMapping("/donaciones/{id}")
-    public String detalle(@PathVariable Long id, Model model) {
+    public String donacion(@PathVariable Long id, Model model) {
         load(model, () -> model.addAttribute("donacion", donaciones.donacion(id)));
         load(model, () -> model.addAttribute("asignaciones", donaciones.asignaciones(id)));
-        return page(model, "Detalle y trazabilidad", "detalle", "donations");
+        return page(model, "Detalle de donación", "detalle", "donations");
     }
 
     @GetMapping("/bienes")
@@ -81,39 +81,39 @@ public class AdminOperacionesController {
     @GetMapping("/catalogo")
     public String catalogo(Model model) {
         load(model, () -> model.addAttribute("categorias", donaciones.categorias()));
-        return page(model, "Categorías y subcategorías", "catalogo", "donations");
+        return page(model, "Catálogo de categorías", "catalogo", "catalog");
     }
 
     @GetMapping("/necesidades")
     public String necesidades(Model model) {
         load(model, () -> model.addAttribute("necesidades", donaciones.necesidades()));
-        load(model, () -> model.addAttribute("categorias", donaciones.categorias()));
         load(model, () -> model.addAttribute("beneficiarios", donaciones.beneficiarios()));
-        return page(model, "Necesidades", "necesidades", "assign");
+        load(model, () -> model.addAttribute("categorias", donaciones.categorias()));
+        return page(model, "Necesidades", "necesidades", "needs");
     }
 
     @GetMapping("/beneficiarios")
     public String beneficiarios(Model model) {
         load(model, () -> model.addAttribute("beneficiarios", donaciones.beneficiarios()));
-        return page(model, "Entidades beneficiarias", "beneficiarios", "assign");
+        return page(model, "Entidades beneficiarias", "beneficiarios", "beneficiaries");
     }
 
     @GetMapping("/camiones")
     public String camiones(Model model) {
         load(model, () -> model.addAttribute("camiones", logistica.camiones()));
-        return page(model, "Flota de camiones", "camiones", "trucks");
+        return page(model, "Camiones de logística", "camiones", "trucks");
     }
 
     @GetMapping("/rankings")
     public String rankings(Model model) {
         load(model, () -> model.addAttribute("ranking", incentivos.ranking()));
-        return page(model, "Ranking mensual por misiones resueltas", "rankings", "rankings");
+        return page(model, "Ranking de incentivos", "rankings", "rankings");
     }
 
     @GetMapping("/entregas")
     public String entregas(Model model) {
         load(model, () -> model.addAttribute("entregas", logistica.entregas()));
-        return page(model, "Entregas y asignaciones", "entregas", "trucks");
+        return page(model, "Entregas logísticas", "entregas", "trucks");
     }
 
     @GetMapping("/rutas")
@@ -172,10 +172,41 @@ public class AdminOperacionesController {
     }
     @PostMapping("/donaciones")
     public String donar(@RequestParam Long donanteId, @RequestParam String descripcionGeneral,
-                        @ModelAttribute BienForm form, BindingResult binding, RedirectAttributes flash) {
+                        @ModelAttribute BienForm form,
+                        @RequestParam(name = "bienDescripcion", required = false) List<String> bienDescripcion,
+                        @RequestParam(name = "bienFoto", required = false) List<String> bienFoto,
+                        @RequestParam(name = "bienCantidad", required = false) List<Float> bienCantidad,
+                        @RequestParam(name = "bienSubCategoriaId", required = false) List<Long> bienSubCategoriaId,
+                        @RequestParam(name = "bienUnidadMedida", required = false) List<String> bienUnidadMedida,
+                        @RequestParam(name = "bienTipoBien", required = false) List<String> bienTipoBien,
+                        @RequestParam(name = "bienFechaDeVencimiento", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> bienFechaDeVencimiento,
+                        @RequestParam(name = "bienFueUsado", required = false) List<Boolean> bienFueUsado,
+                        BindingResult binding, RedirectAttributes flash) {
         if (binding.hasErrors()) return invalid(flash, "donaciones");
+        var listaBienes = new ArrayList<ApiRequests.Bien>();
+        if (form.descripcion() != null && !form.descripcion().isBlank()) {
+            listaBienes.add(form.request());
+        }
+        if (bienDescripcion != null) {
+            for (int i = 0; i < bienDescripcion.size(); i++) {
+                String desc = bienDescripcion.get(i);
+                if (desc == null || desc.isBlank()) continue;
+                String foto = (bienFoto != null && i < bienFoto.size()) ? bienFoto.get(i) : null;
+                Float cant = (bienCantidad != null && i < bienCantidad.size()) ? bienCantidad.get(i) : 1f;
+                Long subCat = (bienSubCategoriaId != null && i < bienSubCategoriaId.size()) ? bienSubCategoriaId.get(i) : null;
+                String unidad = (bienUnidadMedida != null && i < bienUnidadMedida.size()) ? bienUnidadMedida.get(i) : "UNIDAD";
+                String tipo = (bienTipoBien != null && i < bienTipoBien.size()) ? bienTipoBien.get(i) : "DURABLE";
+                LocalDate venc = (bienFechaDeVencimiento != null && i < bienFechaDeVencimiento.size()) ? bienFechaDeVencimiento.get(i) : null;
+                Boolean usado = (bienFueUsado != null && i < bienFueUsado.size()) ? bienFueUsado.get(i) : null;
+                listaBienes.add(new ApiRequests.Bien(desc, foto, cant, subCat, unidad, tipo, venc, usado));
+            }
+        }
+        if (listaBienes.isEmpty()) {
+            flash.addFlashAttribute("apiError", "Debe agregar al menos un bien a la donación.");
+            return "redirect:/admin/dashboard/donaciones";
+        }
         return write(flash, "donaciones", () -> donaciones.crearDonacion(
-                new ApiRequests.Donacion(donanteId, descripcionGeneral, List.of(form.request()))));
+                new ApiRequests.Donacion(donanteId, descripcionGeneral, listaBienes)));
     }
     @PostMapping("/bienes/{id}")
     public String actualizarBien(@PathVariable Long id, @ModelAttribute BienForm form,
