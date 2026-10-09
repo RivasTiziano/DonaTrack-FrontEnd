@@ -27,7 +27,8 @@ public class AdminDonantesController {
     @GetMapping("/admin/dashboard/donantes")
     public String listar(Model model) {
         // Identidad visual provisional: no representa autenticación real.
-        model.addAttribute("user", Map.of(
+        model.addAttribute(
+                "user", Map.of(
                 "name", "Administrador",
                 "email", "",
                 "role", "Administrador de Depósito"

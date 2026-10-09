@@ -18,8 +18,7 @@ public class WebApiCallerService {
     private final RestClient client;
 
     public WebApiCallerService(RestClient.Builder builder) {
-        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3)).build());
+        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build());
         // CSV puede procesar más de 10.000 registros; no se reintentan escrituras.
         factory.setReadTimeout(Duration.ofSeconds(120));
         client = builder.requestFactory(factory).build();
