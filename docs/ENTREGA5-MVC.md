@@ -32,6 +32,12 @@ La respuesta JSON se deserializa a DTO y Thymeleaf genera HTML en el servidor.
 Los formularios hacen POST al frontend; este traduce a POST, PUT, PATCH o DELETE
 del contrato REST. No hay JPA, acceso a bases ni reglas de negocio en el cliente.
 
+Las llamadas están agrupadas por microservicio: `DonacionesApiService`
+(incluye donantes, CSV, bienes, catálogo, beneficiarios, necesidades y matchmaking),
+`LogisticaApiService`, `IncentivosApiService` y `NotificacionesApiService`.
+Todas reutilizan `WebApiCallerService`. Ya no hay un cliente separado para
+consultar donantes ni otro servicio para crearlos o eliminarlos.
+
 Se conserva el layout administrativo y el sistema de estilos de la entrega 4.
 Las operaciones conectadas usan la plantilla compartida `admin-api` y el fragmento
 de campos de bienes. Las plantillas antiguas siguen disponibles como referencia

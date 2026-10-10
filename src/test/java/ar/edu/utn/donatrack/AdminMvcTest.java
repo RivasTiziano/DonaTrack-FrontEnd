@@ -1,6 +1,5 @@
 package ar.edu.utn.donatrack;
 
-import ar.edu.utn.donatrack.clients.DonantesApiClient;
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.ApiRequests;
 import ar.edu.utn.donatrack.dto.donante.*;
@@ -29,8 +28,6 @@ class AdminMvcTest {
     @MockBean DonacionesApiService donaciones;
     @MockBean LogisticaApiService logistica;
     @MockBean IncentivosApiService incentivos;
-    @MockBean DonantesApiClient donantes;
-    @MockBean DonantesApiService registroDonantes;
 
     @BeforeEach void defaults() {
         when(donaciones.donaciones()).thenReturn(List.of());
@@ -43,8 +40,8 @@ class AdminMvcTest {
         when(logistica.entregas()).thenReturn(List.of());
         when(logistica.rutas()).thenReturn(List.of());
         when(incentivos.ranking()).thenReturn(List.of());
-        when(donantes.listarHumanos()).thenReturn(List.of());
-        when(donantes.listarJuridicos()).thenReturn(List.of());
+        when(donaciones.listarHumanos()).thenReturn(List.of());
+        when(donaciones.listarJuridicos()).thenReturn(List.of());
     }
 
     @Test void rendersAllAdministrativePagesWithoutBackends() throws Exception {
@@ -53,9 +50,9 @@ class AdminMvcTest {
     }
 
     @Test void rendersHumanAndJuridicalDonorsAndFilters() throws Exception {
-        when(donantes.listarHumanos()).thenReturn(List.of(new DonanteHumanoResponse(101L, "Persona Real", "Prueba", "DNI", "12345678",
+        when(donaciones.listarHumanos()).thenReturn(List.of(new DonanteHumanoResponse(101L, "Persona Real", "Prueba", "DNI", "12345678",
                 List.of(new MedioDeContactoDto("EMAIL", "real@example.com")), "COMPLETO")));
-        when(donantes.listarJuridicos()).thenReturn(List.of(new DonanteJuridicoResponse(102L, "Empresa Real", "30123456789",
+        when(donaciones.listarJuridicos()).thenReturn(List.of(new DonanteJuridicoResponse(102L, "Empresa Real", "30123456789",
                 List.of(), "PENDIENTE")));
         mvc.perform(get("/admin/dashboard/donantes"))
                 .andExpect(content().string(containsString("Persona Real Prueba")))
@@ -179,7 +176,7 @@ class AdminMvcTest {
                 .param("calle", "Calle").param("numero", "123").param("ciudad", "CABA").param("provincia", "CABA")
                 .param("email", "ana@example.com"))
                 .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("success"));
-        verify(registroDonantes).crearHumano(argThat(request -> java.time.LocalDate.of(1990,1,1).equals(request.fechaNacimiento())
+        verify(donaciones).crearHumano(argThat(request -> java.time.LocalDate.of(1990,1,1).equals(request.fechaNacimiento())
                 && "EMAIL".equals(request.medioDeContactoPredeterminado().tipoMedioContacto())));
     }
 
@@ -187,7 +184,7 @@ class AdminMvcTest {
         doThrow(org.springframework.web.client.HttpClientErrorException.create(org.springframework.http.HttpStatus.BAD_REQUEST,
                 "Bad request", org.springframework.http.HttpHeaders.EMPTY,
                 "{\"message\":\"<script>alert(1)</script>\"}".getBytes(), java.nio.charset.StandardCharsets.UTF_8))
-                .when(registroDonantes).crearHumano(any());
+                .when(donaciones).crearHumano(any());
         mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").param("nombre", "Ana Conservada").param("email", "ana@example.com"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("value=\"Ana Conservada\"")))
@@ -246,7 +243,7 @@ class AdminMvcTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attributeExists("success"));
 
-        verify(registroDonantes).crearJuridico(argThat(request ->
+        verify(donaciones).crearJuridico(argThat(request ->
                 request.mediosDeContacto().size() >= 3 &&
                 request.representantesJuridicos().size() == 2 &&
                 "Carlos".equals(request.representantesJuridicos().get(0).nombre()) &&

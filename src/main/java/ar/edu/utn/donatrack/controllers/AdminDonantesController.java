@@ -1,6 +1,6 @@
 package ar.edu.utn.donatrack.controllers;
 
-import ar.edu.utn.donatrack.clients.DonantesApiClient;
+import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.dto.donante.MedioDeContactoDto;
 import ar.edu.utn.donatrack.models.DonanteFila;
 import org.springframework.stereotype.Controller;
@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 @Controller
 public class AdminDonantesController {
 
-    private final DonantesApiClient donantesApiClient;
+    private final DonacionesApiService donacionesApi;
 
-    public AdminDonantesController(DonantesApiClient donantesApiClient) {
-        this.donantesApiClient = donantesApiClient;
+    public AdminDonantesController(DonacionesApiService donacionesApi) {
+        this.donacionesApi = donacionesApi;
     }
 
     @GetMapping("/admin/dashboard/donantes")
@@ -37,8 +37,8 @@ public class AdminDonantesController {
         List<DonanteFila> filas = new ArrayList<>();
 
         try {
-            var humanos = donantesApiClient.listarHumanos();
-            var juridicos = donantesApiClient.listarJuridicos();
+            var humanos = donacionesApi.listarHumanos();
+            var juridicos = donacionesApi.listarJuridicos();
 
             humanos.forEach(donante -> filas.add(new DonanteFila(
                     donante.id(),

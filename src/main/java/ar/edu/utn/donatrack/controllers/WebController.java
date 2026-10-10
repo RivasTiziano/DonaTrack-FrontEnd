@@ -1,6 +1,5 @@
 package ar.edu.utn.donatrack.controllers;
 
-import ar.edu.utn.donatrack.clients.DonantesApiClient;
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.IncentivosApiService;
@@ -20,14 +19,12 @@ import java.util.Map;
 public class WebController {
 
     private final DonacionesApiService donacionesApi;
-    private final DonantesApiClient donantesClient;
     private final LogisticaApiService logisticaApi;
     private final IncentivosApiService incentivosApi;
 
-    public WebController(DonacionesApiService donacionesApi, DonantesApiClient donantesClient,
+    public WebController(DonacionesApiService donacionesApi,
                          LogisticaApiService logisticaApi, IncentivosApiService incentivosApi) {
         this.donacionesApi = donacionesApi;
-        this.donantesClient = donantesClient;
         this.logisticaApi = logisticaApi;
         this.incentivosApi = incentivosApi;
     }
@@ -337,7 +334,7 @@ public class WebController {
         String donorCategory = "Iniciador Bronce";
 
         try {
-            var humanos = donantesClient.listarHumanos();
+            var humanos = donacionesApi.listarHumanos();
             if (humanos != null && !humanos.isEmpty()) {
                 var h = humanos.get(0);
                 donorName = (h.nombre() != null ? h.nombre() : "") + " " + (h.apellido() != null ? h.apellido() : "");
@@ -347,7 +344,7 @@ public class WebController {
                     donorEmail = h.mediosDeContacto().get(0).formaContacto();
                 }
             } else {
-                var juridicos = donantesClient.listarJuridicos();
+                var juridicos = donacionesApi.listarJuridicos();
                 if (juridicos != null && !juridicos.isEmpty()) {
                     var j = juridicos.get(0);
                     donorName = j.razonSocial();

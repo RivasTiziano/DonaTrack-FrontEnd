@@ -9,12 +9,16 @@ import org.springframework.stereotype.Service;
 public class NotificacionesApiService {
     private final WebApiCallerService http;
     private final String url;
+
     public NotificacionesApiService(WebApiCallerService http, @Value("${apis.notificaciones.url}") String url) {
-        this.http = http; this.url = url.replaceAll("/+$", "");
+        this.http = http;
+        this.url = url.replaceAll("/+$", "");
     }
+
     public boolean disponible() {
         return "Hola desde el servicio de Notificaciones.".equals(http.get(url + "/health", String.class));
     }
+
     public Respuesta enviar(Enviar request) {
         Respuesta response = http.post(url + "/notificaciones/enviar", request, Respuesta.class);
         if (response == null || response.retorno() == null || response.datos() == null)

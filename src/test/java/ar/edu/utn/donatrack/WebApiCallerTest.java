@@ -2,6 +2,8 @@ package ar.edu.utn.donatrack;
 
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.ApiRequests;
+import ar.edu.utn.donatrack.dto.DonanteRequests;
+import ar.edu.utn.donatrack.dto.donante.MedioDeContactoDto;
 import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.internal.WebApiCallerService;
 import com.sun.net.httpserver.HttpServer;
@@ -77,5 +79,37 @@ class WebApiCallerTest {
     @Test void errorsAreNotSilentlyConvertedToEmptyLists() {
         endpoint("/donaciones", 400, "{\"message\":\"Datos inválidos\"}");
         assertThatThrownBy(service::donaciones).isInstanceOf(HttpClientErrorException.class);
+    }
+
+    @Test void unifiedDonacionesApiListsBothDonorTypes() {
+        endpoint("/donantes/humanos", 200, "[{\"id\":1,\"nombre\":\"Ana\",\"apellido\":\"Prueba\"}]");
+        endpoint("/donantes/juridicos", 200, "[{\"id\":2,\"razonSocial\":\"Empresa Prueba\"}]");
+        assertThat(service.listarHumanos().get(0).nombre()).isEqualTo("Ana");
+        assertThat(method.get()).isEqualTo("GET");
+        assertThat(service.listarJuridicos().get(0).razonSocial()).isEqualTo("Empresa Prueba");
+        assertThat(method.get()).isEqualTo("GET");
+    }
+
+    @Test void unifiedDonacionesApiCreatesBothDonorTypes() {
+        endpoint("/donantes/humanos", 201, "{\"id\":1}");
+        endpoint("/donantes/juridicos", 201, "{\"id\":2}");
+        var email = new MedioDeContactoDto("EMAIL", "prueba@example.com");
+        service.crearHumano(new DonanteRequests.Humano("Ana", "Prueba", null,
+                "12345678", "OTRO", null, java.util.List.of(email), email));
+        assertThat(method.get()).isEqualTo("POST");
+        assertThat(request.get()).contains("\"nombre\":\"Ana\"", "prueba@example.com");
+        service.crearJuridico(new DonanteRequests.Juridico("30123456789", "Empresa Prueba",
+                "EMPRESA", "Prueba", null, java.util.List.of(email), email, java.util.List.of()));
+        assertThat(method.get()).isEqualTo("POST");
+        assertThat(request.get()).contains("\"razonSocial\":\"Empresa Prueba\"");
+    }
+
+    @Test void unifiedDonacionesApiDeletesBothDonorTypes() {
+        endpoint("/donantes/humanos/1", 204, "");
+        endpoint("/donantes/juridicos/2", 204, "");
+        service.eliminarHumano(1L);
+        assertThat(method.get()).isEqualTo("DELETE");
+        service.eliminarJuridico(2L);
+        assertThat(method.get()).isEqualTo("DELETE");
     }
 }

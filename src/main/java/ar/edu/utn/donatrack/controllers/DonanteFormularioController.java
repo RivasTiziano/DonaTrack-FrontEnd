@@ -3,7 +3,7 @@ package ar.edu.utn.donatrack.controllers;
 import ar.edu.utn.donatrack.dto.DonanteRequests;
 import ar.edu.utn.donatrack.dto.donante.MedioDeContactoDto;
 import ar.edu.utn.donatrack.forms.DonanteForm;
-import ar.edu.utn.donatrack.services.DonantesApiService;
+import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,10 +19,10 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin/dashboard/donantes")
 public class DonanteFormularioController {
-    private final DonantesApiService api;
+    private final DonacionesApiService api;
     private final ApiErrorMessages errors;
 
-    public DonanteFormularioController(DonantesApiService api, ApiErrorMessages errors) {
+    public DonanteFormularioController(DonacionesApiService api, ApiErrorMessages errors) {
         this.api = api;
         this.errors = errors;
     }
