@@ -14,6 +14,7 @@
         <a th:href="@{/admin/dashboard/asignar}">Asignar</a><a th:href="@{/admin/dashboard/camiones}">Camiones</a>
         <a th:href="@{/admin/dashboard/rankings}">Rankings</a><a th:href="@{/admin/dashboard/importar}">CSV</a>
         <a th:href="@{/admin/dashboard/entregas}">Entregas</a><a th:href="@{/admin/dashboard/rutas}">Rutas</a>
+        <a th:href="@{/admin/dashboard/notificaciones}">Notificaciones</a>
     </nav>
     <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
     <p th:if="${success != null}" th:text="${success}" role="status" class="api-success"></p>

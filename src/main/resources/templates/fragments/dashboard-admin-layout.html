@@ -99,6 +99,9 @@
                 <i data-lucide="file-up" style="width: 20px; height: 20px;"></i>
                 <span>Importar CSV</span>
             </a>
+            <a th:href="@{/admin/dashboard/notificaciones}" th:classappend="${activeTab == 'notificaciones'} ? 'active' : ''" class="sidebar-link">
+                <i data-lucide="bell" style="width: 20px; height: 20px;"></i><span>Notificaciones</span>
+            </a>
             <a th:href="@{/explorar-donaciones}" class="sidebar-link" style="margin-top: 0.5rem; border-top: 1px dashed var(--color-border); padding-top: 0.85rem;">
                 <i data-lucide="map" style="width: 20px; height: 20px;"></i>
                 <span>Mapa Público</span>
@@ -144,6 +147,9 @@
                 <a th:href="@{/admin/dashboard/importar}" th:classappend="${activeTab == 'import'} ? 'active' : ''" class="sidebar-link">
                     <i data-lucide="file-up" style="width: 20px; height: 20px;"></i>
                     <span>Importar CSV</span>
+                </a>
+                <a th:href="@{/admin/dashboard/notificaciones}" th:classappend="${activeTab == 'notificaciones'} ? 'active' : ''" class="sidebar-link">
+                    <i data-lucide="bell" style="width: 20px; height: 20px;"></i><span>Notificaciones</span>
                 </a>
             </nav>
 

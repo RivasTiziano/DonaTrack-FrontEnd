@@ -13,6 +13,14 @@ Variables opcionales:
 | DONACIONES_API_URL | http://localhost:8080 |
 | LOGISTICA_API_URL | http://localhost:8083 |
 | INCENTIVOS_API_URL | http://localhost:8082 |
+| NOTIFICACIONES_API_URL | http://localhost:8081 |
+| NOTIFICACIONES_ENVIO_MANUAL_HABILITADO | false |
+
+Notificaciones tiene comprobación de conexión y envío manual local en
+`/admin/dashboard/notificaciones`. El historial personal y las marcas de lectura
+requieren nuevos endpoints e identidad autorizada en el backend: ver
+[NOTIFICACIONES.md](NOTIFICACIONES.md). El envío manual permanece deshabilitado
+por defecto; habilitarlo solo para pruebas locales controladas.
 
 No exponer este frontend a Internet: aún no hay autenticación ni autorización.
 La selección de rol del login original es una demostración, no una sesión segura.

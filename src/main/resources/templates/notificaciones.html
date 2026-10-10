@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{${audience == 'admin' ? 'fragments/dashboard-admin-layout' : (audience == 'donante' ? 'fragments/dashboard-donor-layout' : 'fragments/dashboard-beneficiary-layout')} :: layout(~{::title}, ~{::main}, 'notificaciones')}">
+<head><title>Notificaciones - DonaTrack</title></head><body><main th:fragment="main" class="api-view">
+    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+    <h1>Centro de Notificaciones</h1>
+    <section class="card api-panel" role="status">
+        <h2>Historial todavía no disponible</h2>
+        <p>El servicio actual permite enviar avisos, pero no expone consultas del historial ni operaciones para marcarlos como leídos.</p>
+        <p>No estamos mostrando una lista vacía como si no tuvieras avisos. También falta identificar y autorizar a cada usuario para consultar solamente los propios.</p>
+        <button class="btn btn-outline" disabled type="button">Marcar como leído (pendiente de backend)</button>
+        <p>Los avisos automáticos de asignaciones y entregas siguen siendo responsabilidad de los servicios y sus eventos RabbitMQ. Abrir esta página no dispara envíos.</p>
+    </section>
+    <section th:if="${audience == 'admin'}" class="card api-panel">
+        <h2>Conexión con Notificaciones</h2>
+        <p th:if="${serviceStatus != null}" th:text="${serviceStatus}" role="status"></p>
+        <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
+        <p th:if="${sendResult != null}" th:text="${sendResult}" role="status" class="api-success"></p>
+        <form method="post" th:action="@{/admin/dashboard/notificaciones/comprobar}"><button class="btn btn-outline" type="submit">Comprobar conexión</button></form>
+        <h2>Envío manual</h2>
+        <p th:unless="${manualEnabled}">Deshabilitado por seguridad hasta incorporar permisos. Para probar en desarrollo local, configurar NOTIFICACIONES_ENVIO_MANUAL_HABILITADO=true. No exponer este entorno públicamente.</p>
+        <form th:if="${manualEnabled}" method="post" th:action="@{/admin/dashboard/notificaciones/enviar}" th:object="${form}"
+              onsubmit="if (!confirm('Este envío puede generar un correo, SMS o WhatsApp real y consumir crédito. ¿Confirmar?')) return false; this.querySelector('button[type=submit]').disabled=true;">
+            <input type="hidden" name="sendToken" th:value="${sendToken}" />
+            <p>Herramienta local de desarrollo: no crea cuentas ni reemplaza el evento de bienvenida.</p>
+            <label>Canal<select class="form-control" th:field="*{medioContacto}"><option value="EMAIL">EMAIL</option><option value="SMS">SMS</option><option value="WHATSAPP">WHATSAPP</option></select></label><p th:errors="*{medioContacto}" class="api-error"></p>
+            <label>Nombre del destinatario<input class="form-control" th:field="*{nombre}" required maxlength="150" /></label><p th:errors="*{nombre}" class="api-error"></p>
+            <label>Email (para EMAIL)<input class="form-control" type="email" th:field="*{email}" /></label><p th:errors="*{email}" class="api-error"></p>
+            <label>Teléfono internacional (para SMS/WhatsApp)<input class="form-control" type="tel" th:field="*{telefono}" placeholder="+5491112345678" /></label><p th:errors="*{telefono}" class="api-error"></p>
+            <label>Asunto<input class="form-control" th:field="*{asunto}" required maxlength="255" /></label><p th:errors="*{asunto}" class="api-error"></p>
+            <label>Mensaje<textarea class="form-control" th:field="*{cuerpo}" required maxlength="10000" rows="5"></textarea></label><p th:errors="*{cuerpo}" class="api-error"></p>
+            <button class="btn btn-primary" type="submit">Solicitar envío real</button>
+        </form>
+    </section>
+</main></body></html>

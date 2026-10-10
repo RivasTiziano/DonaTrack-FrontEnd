@@ -328,11 +328,6 @@ public class WebController {
         return "dashboard-donor-entregas";
     }
 
-    @GetMapping("/donante/dashboard/notificaciones")
-    public String donorNotifications(Model model) {
-        populateDonorModel(model);
-        return "dashboard-donor-notificaciones";
-    }
 
     private void populateDonorModel(Model model) {
         String donorName = "Donante";
@@ -584,11 +579,6 @@ public class WebController {
         return "dashboard-beneficiary-entregas";
     }
 
-    @GetMapping("/entidad/dashboard/notificaciones")
-    public String beneficiaryNotifications(Model model) {
-        populateBeneficiaryModel(model);
-        return "dashboard-beneficiary-notificaciones";
-    }
 
     private void populateBeneficiaryModel(Model model) {
         String entityName = "Entidad Beneficiaria";
