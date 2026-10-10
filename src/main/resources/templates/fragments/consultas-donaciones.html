@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:fragment="contenido">
+<section th:if="${section == 'bien' and bien != null}" class="card api-panel">
+    <h2 th:text="${bien.descripcion}"></h2>
+    <p th:text="'Cantidad: ' + ${bien.cantidad} + ' ' + ${bien.unidadMedida}"></p>
+    <p th:text="'Disponible: ' + ${bien.cantidadDisponible}"></p>
+    <p th:text="'Tipo: ' + ${bien.tipoBien}"></p>
+    <p th:text="'Vencimiento: ' + ${bien.fechaDeVencimiento}"></p>
+    <a th:href="@{/admin/dashboard/bienes}">Volver al listado y editar</a>
+</section>
+
+<section th:if="${section == 'necesidad' and necesidad != null}" class="card api-panel">
+    <h2 th:text="${necesidad.descripcion}"></h2>
+    <p th:text="'Entidad ID: ' + ${necesidad.entidadBeneficiariaId}"></p>
+    <p th:text="'Recibido: ' + ${necesidad.cantidadRecibida} + '; restante: ' + ${necesidad.cantidadRestante}"></p>
+    <p th:text="'Estado: ' + ${necesidad.estado}"></p>
+    <a th:href="@{/admin/dashboard/necesidades}">Volver al listado y editar</a>
+</section>
+
+<section th:if="${section == 'asignaciones'}" class="card api-panel">
+    <form method="get" th:action="@{/admin/dashboard/asignaciones}">
+        <label>Entidad<select class="form-control" name="entidadBeneficiariaId" required><option value="">Seleccionar</option>
+            <option th:each="e : ${beneficiarios}" th:value="${e.id}" th:text="${e.razonSocial}" th:selected="${e.id == entidadId}"></option>
+        </select></label>
+        <label>Estado<select class="form-control" name="estado"><option value="">Todos</option>
+            <option th:each="s : ${ {'PENDIENTE_RUTA','LISTA_PARA_ENTREGAR','EN_TRASLADO','ENTREGADA','ENTREGA_FALLIDA'} }" th:value="${s}" th:text="${s}" th:selected="${s == estado}"></option>
+        </select></label>
+        <button class="btn btn-primary" type="submit">Consultar</button>
+    </form>
+    <p th:if="${asignaciones != null and asignaciones.isEmpty() and apiError == null}">La consulta no devolvió asignaciones.</p>
+    <article th:each="a : ${asignaciones}">
+        <p th:text="'Asignación ' + ${a.id} + ' — Donación ' + ${a.donacionId} + ' — Cantidad ' + ${a.cantidadAsignada} + ' — ' + ${a.estado}"></p>
+        <a th:href="@{/admin/dashboard/asignaciones/{id}/contactos(id=${a.id})}">Contactos</a>
+        <a th:href="@{/admin/dashboard/donaciones/{id}(id=${a.donacionId})}">Ver donación</a>
+    </article>
+    <p>El estado de entrega se actualiza desde Logística; no se modifica directamente aquí.</p>
+</section>
+
+<section th:if="${section == 'contactos' and contactos != null}" class="card api-panel">
+    <h2>Donante</h2>
+    <p th:if="${contactos.donante == null}">Contacto del donante no disponible.</p>
+    <th:block th:if="${contactos.donante != null and contactos.donante.destinatario != null}">
+        <p th:text="${contactos.donante.destinatario.nombre}"></p>
+        <p th:text="${contactos.donante.medioContacto}"></p>
+        <p th:text="${contactos.donante.destinatario.email}"></p>
+        <p th:text="${contactos.donante.destinatario.telefono}"></p>
+    </th:block>
+    <h2>Entidad beneficiaria</h2>
+    <p th:if="${contactos.entidadBeneficiaria == null}">No hay contacto de entidad disponible; la donación puede no estar asignada todavía.</p>
+    <th:block th:if="${contactos.entidadBeneficiaria != null and contactos.entidadBeneficiaria.destinatario != null}">
+        <p th:text="${contactos.entidadBeneficiaria.destinatario.nombre}"></p>
+        <p th:text="${contactos.entidadBeneficiaria.medioContacto}"></p>
+        <p th:text="${contactos.entidadBeneficiaria.destinatario.email}"></p>
+        <p th:text="${contactos.entidadBeneficiaria.destinatario.telefono}"></p>
+    </th:block>
+</section>
+
+<section th:if="${section == 'sugerencias'}" class="card api-panel">
+    <form method="post" th:action="@{/admin/dashboard/evaluador/ejecutar}" onsubmit="return confirm('¿Ejecutar matchmaking para las donaciones disponibles?');">
+        <button class="btn btn-primary" type="submit">Ejecutar evaluador</button>
+    </form>
+    <p th:if="${sugerencias != null and sugerencias.isEmpty() and apiError == null}">No hay sugerencias guardadas.</p>
+    <article th:each="s : ${sugerencias}">
+        <a th:href="@{/admin/dashboard/sugerencias/{id}(id=${s.donacionId})}" th:text="'Donación ' + ${s.donacionId}"></a>
+        <p th:text="'Coincidencia de algoritmos: ' + ${s.hayInterseccion}"></p>
+    </article>
+</section>
+<section th:if="${section == 'sugerencia' and sugerencia != null}" class="card api-panel">
+    <p th:text="'Donación ' + ${sugerencia.donacionId}"></p>
+    <p th:text="'Coincidencia de algoritmos: ' + ${sugerencia.hayInterseccion}"></p>
+    <h2>Mejores necesidades</h2>
+    <ul><li th:each="n : ${sugerencia.mejoresNecesidades}" th:text="${n.descripcion} + ' (ID ' + ${n.necesidadId} + ')'"></li></ul>
+    <article th:each="t : ${sugerencia.tops}"><h3 th:text="${t.nombreAlgoritmo}"></h3>
+        <ul><li th:each="n : ${t.topDiezNecesidades}" th:text="${n.descripcion}"></li></ul>
+    </article>
+    <a th:href="@{/admin/dashboard/asignar}">Asignar una donación</a>
+</section>
+</th:block>
+</body></html>

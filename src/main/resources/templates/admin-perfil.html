@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donors')}">
+<head><title>Datos de perfil - DonaTrack</title></head>
+<body><main th:fragment="main" class="api-view">
+    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+    <a th:href="@{/admin/dashboard}">Volver a administración</a>
+    <h1 th:text="${tipo == 'beneficiarios' ? (id == null ? 'Registrar entidad beneficiaria' : 'Editar entidad beneficiaria') : 'Editar datos básicos del donante'}"></h1>
+    <p>Entorno local sin autenticación. No crea una cuenta ni envía un correo de bienvenida.</p>
+    <p th:if="${apiError != null}" th:text="${apiError}" class="api-error" role="alert"></p>
+    <form th:if="${form != null}" th:object="${form}" method="post"
+          th:action="${tipo == 'beneficiarios' ? (id == null ? '/admin/dashboard/beneficiarios/nuevo' : '/admin/dashboard/beneficiarios/' + id) : '/admin/dashboard/donantes/' + tipo + '/' + id}"
+          class="card api-panel">
+        <fieldset class="api-fields"><legend>Datos básicos</legend>
+            <th:block th:if="${tipo == 'humanos'}">
+                <label>Nombre<input class="form-control" th:field="*{nombre}" required /></label>
+                <label>Apellido<input class="form-control" th:field="*{apellido}" required /></label>
+                <label>Fecha de nacimiento<input class="form-control" type="date" th:field="*{fechaNacimiento}" required /></label>
+                <label>Género<select class="form-control" th:field="*{genero}" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:value="${g}" th:text="${g}"></option></select></label>
+            </th:block>
+            <label th:if="${tipo != 'beneficiarios'}">Documento<input class="form-control" th:field="*{numeroDocumento}" required /></label>
+            <th:block th:if="${tipo != 'humanos'}">
+                <label>Razón social<input class="form-control" th:field="*{razonSocial}" required /></label>
+                <label>Tipo<select class="form-control" th:field="*{tipoEntidad}" required><option value="">Seleccionar</option><option th:each="t : ${ {'GUBERNAMENTAL','ONG','EMPRESA','INSTITUCION'} }" th:value="${t}" th:text="${t}"></option></select></label>
+                <label>Rubro<input class="form-control" th:field="*{rubro}" required /></label>
+            </th:block>
+        </fieldset>
+        <fieldset class="api-fields"><legend>Dirección</legend>
+            <label>Calle<input class="form-control" th:field="*{calle}" required /></label>
+            <label>Número<input class="form-control" th:field="*{numero}" required /></label>
+            <label>Ciudad<input class="form-control" th:field="*{ciudad}" required /></label>
+            <label>Provincia<input class="form-control" th:field="*{provincia}" required /></label>
+            <label>Latitud<input class="form-control" type="number" step="any" th:field="*{latitud}" /></label>
+            <label>Longitud<input class="form-control" type="number" step="any" th:field="*{longitud}" /></label>
+        </fieldset>
+        <fieldset th:if="${tipo == 'beneficiarios'}" class="api-fields"><legend>Contacto predeterminado</legend>
+            <label>Canal<select class="form-control" th:field="*{contactoTipo}" required><option value="EMAIL">EMAIL</option><option value="SMS">SMS</option><option value="WHATSAPP">WHATSAPP</option></select></label>
+            <label>Email o teléfono<input class="form-control" th:field="*{contactoValor}" required /></label>
+            <label th:if="${id != null}">Activo<select class="form-control" th:field="*{activo}"><option value="true">Sí</option><option value="false">No</option></select></label>
+        </fieldset>
+        <fieldset th:if="${tipo == 'beneficiarios' and id == null}" class="api-fields"><legend>Representante (opcional)</legend>
+            <label>Nombre<input class="form-control" name="repNombre" th:value="${repNombre != null and !repNombre.isEmpty() ? repNombre[0] : ''}" /></label>
+            <label>Teléfono<input class="form-control" name="repTelefono" th:value="${repTelefono != null and !repTelefono.isEmpty() ? repTelefono[0] : ''}" /></label>
+            <label>Email<input class="form-control" type="email" name="repEmail" th:value="${repEmail != null and !repEmail.isEmpty() ? repEmail[0] : ''}" /></label>
+        </fieldset>
+        <p th:if="${id != null}">Esta edición conserva los contactos y representantes existentes. No los reemplaza por listas vacías.</p>
+        <ul><li th:each="c : ${contactos}" th:text="${c.tipoMedioContacto} + ': ' + ${c.formaContacto}"></li></ul>
+        <ul><li th:each="r : ${representantes}" th:text="${r.nombre}"></li></ul>
+        <button class="btn btn-primary" type="submit">Guardar datos</button>
+    </form>
+</main></body></html>

@@ -1,4 +1,9 @@
-package ar.edu.utn.donatrack.controllers;
+package ar.edu.utn.donatrack.exceptions;
+
+import ar.edu.utn.donatrack.controllers.AdminController;
+import ar.edu.utn.donatrack.controllers.DonacionesController;
+import ar.edu.utn.donatrack.controllers.LogisticaController;
+import ar.edu.utn.donatrack.controllers.IncentivosController;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
@@ -10,7 +15,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-@ControllerAdvice(assignableTypes = {AdminOperacionesController.class, AdminDonantesController.class, DonanteFormularioController.class})
+@ControllerAdvice(assignableTypes = {AdminController.class, DonacionesController.class,
+        LogisticaController.class, IncentivosController.class})
 public class FrontendExceptionHandler {
     @ExceptionHandler({BindException.class, MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)

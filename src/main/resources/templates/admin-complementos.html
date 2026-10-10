@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'inicio')}">
+<head><title th:text="${pageTitle} + ' - DonaTrack'"></title></head>
+<body><main th:fragment="main" class="api-view">
+<link rel="stylesheet" th:href="@{/css/api-views.css}" />
+<a th:href="@{/admin/dashboard}">Administración</a>
+<h1 th:text="${pageTitle}"></h1>
+<p class="api-notice">Entorno local sin autenticación ni permisos. No exponer públicamente.</p>
+<nav class="api-links">
+    <a th:href="@{/admin/dashboard/donantes}">Donantes</a>
+    <a th:href="@{/admin/dashboard/beneficiarios}">Beneficiarios</a>
+    <a th:href="@{/admin/dashboard/asignaciones}">Asignaciones</a>
+    <a th:href="@{/admin/dashboard/sugerencias}">Sugerencias</a>
+    <a th:href="@{/admin/dashboard/rutas}">Rutas</a>
+    <a th:href="@{/admin/dashboard/seguimiento}">GPS</a>
+    <a th:href="@{/admin/dashboard/incentivos}">Incentivos</a>
+    <a th:href="@{/admin/dashboard/incentivos/donantes}">Consultar donante</a>
+    <a th:href="@{/admin/dashboard/incentivos/historial}">Historial de rankings</a>
+</nav>
+<p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
+<p th:if="${success != null}" th:text="${success}" role="status" class="api-success"></p>
+
+<th:block th:replace="~{fragments/consultas-donaciones :: contenido}"></th:block>
+<th:block th:replace="~{fragments/consultas-logistica :: contenido}"></th:block>
+<th:block th:replace="~{fragments/consultas-incentivos :: contenido}"></th:block>
+</main></body></html>

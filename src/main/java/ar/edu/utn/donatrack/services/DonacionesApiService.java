@@ -3,6 +3,7 @@ package ar.edu.utn.donatrack.services;
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.ApiRequests;
 import ar.edu.utn.donatrack.dto.DonanteRequests;
+import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse;
 import ar.edu.utn.donatrack.dto.donante.DonanteJuridicoResponse;
 import ar.edu.utn.donatrack.services.internal.WebApiCallerService;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /** Cliente de toda la API del microservicio de Donaciones, organizado por recurso. */
 @Service
@@ -53,6 +55,22 @@ public class DonacionesApiService {
         http.delete(url + "/donantes/juridicos/" + id);
     }
 
+    public DonacionesDetalles.Humano humano(Long id) {
+        return http.get(url + "/donantes/humanos/" + id, DonacionesDetalles.Humano.class);
+    }
+
+    public DonacionesDetalles.Juridico juridico(Long id) {
+        return http.get(url + "/donantes/juridicos/" + id, DonacionesDetalles.Juridico.class);
+    }
+
+    public void actualizarHumano(Long id, DonanteRequests.Humano request) {
+        http.update(HttpMethod.PUT, url + "/donantes/humanos/" + id, request);
+    }
+
+    public void actualizarJuridico(Long id, DonanteRequests.Juridico request) {
+        http.update(HttpMethod.PUT, url + "/donantes/juridicos/" + id, request);
+    }
+
     public ApiDtos.Importacion importar(MultipartFile file) {
         return http.upload(url + "/donantes/importar", file, ApiDtos.Importacion.class);
     }
@@ -87,6 +105,21 @@ public class DonacionesApiService {
         http.delete(url + "/donaciones/" + id);
     }
 
+    public DonacionesDetalles.Contactos contactosDonacion(Long id) {
+        return http.get(url + "/donaciones/" + id + "/contactos", DonacionesDetalles.Contactos.class);
+    }
+
+    public List<ApiDtos.Asignacion> asignacionesEntidad(Long entidadId, String estado) {
+        var uri = UriComponentsBuilder.fromUriString(url + "/asignaciones")
+                .queryParam("entidadBeneficiariaId", entidadId);
+        if (estado != null && !estado.isBlank()) uri.queryParam("estado", estado);
+        return http.getList(uri.build().encode().toUriString(), ApiDtos.Asignacion.class);
+    }
+
+    public DonacionesDetalles.Contactos contactosAsignacion(Long id) {
+        return http.get(url + "/asignaciones/" + id + "/contactos", DonacionesDetalles.Contactos.class);
+    }
+
     // Catálogo.
 
     public List<ApiDtos.Categoria> categorias() {
@@ -107,6 +140,10 @@ public class DonacionesApiService {
         return http.getList(url + "/bienes", ApiDtos.Bien.class);
     }
 
+    public ApiDtos.Bien bien(Long id) {
+        return http.get(url + "/bienes/" + id, ApiDtos.Bien.class);
+    }
+
     public void crearBien(ApiRequests.Bien request) {
         http.post(url + "/bienes", request, Object.class);
     }
@@ -125,8 +162,28 @@ public class DonacionesApiService {
         return http.getList(url + "/beneficiarios", ApiDtos.Beneficiario.class);
     }
 
+    public DonacionesDetalles.Beneficiario beneficiario(Long id) {
+        return http.get(url + "/beneficiarios/" + id, DonacionesDetalles.Beneficiario.class);
+    }
+
+    public void crearBeneficiario(DonacionesDetalles.CrearBeneficiario request) {
+        http.post(url + "/beneficiarios", request, DonacionesDetalles.Beneficiario.class);
+    }
+
+    public void actualizarBeneficiario(Long id, DonacionesDetalles.ActualizarBeneficiario request) {
+        http.update(HttpMethod.PUT, url + "/beneficiarios/" + id, request);
+    }
+
+    public void eliminarBeneficiario(Long id) {
+        http.delete(url + "/beneficiarios/" + id);
+    }
+
     public List<ApiDtos.Necesidad> necesidades() {
         return http.getList(url + "/necesidades", ApiDtos.Necesidad.class);
+    }
+
+    public ApiDtos.Necesidad necesidad(Long id) {
+        return http.get(url + "/necesidades/" + id, ApiDtos.Necesidad.class);
     }
 
     public void crearNecesidad(ApiRequests.Necesidad request) {
@@ -153,5 +210,17 @@ public class DonacionesApiService {
 
     public ApiDtos.Sugerencia sugerir(Long id) {
         return http.post(url + "/sugerencias/" + id, Map.of(), ApiDtos.Sugerencia.class);
+    }
+
+    public List<ApiDtos.Sugerencia> sugerencias() {
+        return http.getList(url + "/sugerencias", ApiDtos.Sugerencia.class);
+    }
+
+    public ApiDtos.Sugerencia sugerencia(Long donacionId) {
+        return http.get(url + "/sugerencias/" + donacionId, ApiDtos.Sugerencia.class);
+    }
+
+    public String evaluar() {
+        return http.post(url + "/evaluador/ejecutar", Map.of(), String.class);
     }
 }

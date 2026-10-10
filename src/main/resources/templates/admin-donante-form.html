@@ -31,7 +31,16 @@
         <fieldset class="api-fields"><legend>Contacto</legend>
             <label>Email principal (predeterminado)<input class="form-control" name="email" type="email" th:value="${form != null ? form.email : ''}" required /></label>
             <label>Teléfono SMS (opcional)<input class="form-control" name="telefono" type="tel" th:value="${form != null ? form.telefono : ''}" /></label>
-            <div id="contactos-extra-container"></div>
+            <div id="contactos-extra-container">
+                <div th:each="contacto : ${contactosExtras}" style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                    <label>Tipo<select class="form-control" name="contactoTipo" required>
+                        <option value="">Seleccionar</option>
+                        <option th:each="canal : ${ {'EMAIL','SMS','WHATSAPP'} }" th:value="${canal}" th:text="${canal}" th:selected="${contacto.tipo == canal}"></option>
+                    </select></label>
+                    <label>Valor<input class="form-control" name="contactoValor" th:value="${contacto.valor}" required /></label>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()">Eliminar</button>
+                </div>
+            </div>
             <button type="button" class="btn btn-outline btn-sm" id="btn-add-contacto" style="margin-top: 0.5rem;">+ Agregar otro medio de contacto</button>
         </fieldset>
         <fieldset th:if="${tipo == 'juridicos'}" class="api-fields"><legend>Representantes Legales</legend>
@@ -43,6 +52,17 @@
                     <label>DNI<input class="form-control" name="representanteDocumento" th:value="${form != null ? form.representanteDocumento : ''}" required /></label>
                     <label>Fecha de nacimiento<input class="form-control" type="date" name="representanteNacimiento" th:value="${form != null ? form.representanteNacimiento : ''}" required /></label>
                     <label>Género<select class="form-control" name="representanteGenero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.representanteGenero == g}"></option></select></label>
+                </div>
+                <div class="card" th:each="rep, posicion : ${representantesExtras}" style="padding:0.75rem; margin-bottom:0.75rem;">
+                    <strong th:text="${'Representante #' + (posicion.index + 2)}"></strong>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="this.closest('.card').remove()">Eliminar</button>
+                    <label>Nombre<input class="form-control" name="repNombre" th:value="${rep.nombre}" required /></label>
+                    <label>Apellido<input class="form-control" name="repApellido" th:value="${rep.apellido}" required /></label>
+                    <label>DNI<input class="form-control" name="repDocumento" th:value="${rep.documento}" required /></label>
+                    <label>Fecha de nacimiento<input class="form-control" type="date" name="repNacimiento" th:value="${rep.nacimiento}" required /></label>
+                    <label>Género<select class="form-control" name="repGenero" required><option value="">Seleccionar</option>
+                        <option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:value="${g}" th:text="${g}" th:selected="${rep.genero == g}"></option>
+                    </select></label>
                 </div>
             </div>
             <button type="button" class="btn btn-outline btn-sm" id="btn-add-representante">+ Agregar otro representante legal</button>
@@ -90,10 +110,12 @@
                 <label>DNI<input class="form-control" name="repDocumento" required /></label>
                 <label>Fecha de nacimiento<input class="form-control" type="date" name="repNacimiento" required /></label>
                 <label>Género<select class="form-control" name="repGenero" required>
+                    <option value="">Seleccionar</option>
                     <option value="FEMENINO">FEMENINO</option>
-                    <option value="MASCULINO" selected>MASCULINO</option>
+                    <option value="MASCULINO">MASCULINO</option>
                     <option value="NO_BINARIO">NO_BINARIO</option>
                     <option value="OTRO">OTRO</option>
+                    <option value="PREFIERE_NO_INFORMAR">PREFIERE_NO_INFORMAR</option>
                 </select></label>
             `;
             container.appendChild(div);

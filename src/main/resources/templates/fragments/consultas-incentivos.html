@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:fragment="contenido">
+<section th:if="${section == 'incentivos'}" class="card api-panel">
+    <h2>Categorías</h2>
+    <article th:each="c : ${categoriasIncentivos}">
+        <a th:href="@{/admin/dashboard/incentivos/categorias/{id}(id=${c.id})}" th:text="${c.nombre}"></a>
+    </article>
+    <h2>Crear categoría con su primera misión</h2>
+    <form method="post" th:action="@{/admin/dashboard/incentivos/categorias}">
+        <label>Nombre<input class="form-control" name="nombre" required /></label>
+        <label>Categoría siguiente (opcional)<select class="form-control" name="categoriaSiguienteId"><option value="">Ninguna</option><option th:each="c : ${categoriasIncentivos}" th:value="${c.id}" th:text="${c.nombre}"></option></select></label>
+        <label>Tipo de misión<select class="form-control" name="tipo"><option th:each="t : ${ {'RACHA','COMPLETITUD','DONACIONESEXITOSAS','HABILDONADOR'} }" th:value="${t}" th:text="${t}"></option></select></label>
+        <label>Objetivo<input class="form-control" name="valorObjetivo" type="number" min="1" required /></label>
+        <button class="btn btn-primary" type="submit">Crear categoría</button>
+    </form>
+</section>
+<section th:if="${section == 'misiones' and categoriaIncentivos != null}" class="card api-panel">
+    <h2 th:text="${categoriaIncentivos.nombre}"></h2>
+    <article th:each="m : ${misiones}">
+        <h3 th:text="${m.nombre}"></h3><p th:text="${m.descripcion}"></p>
+        <p th:text="'Objetivo: ' + ${m.valorObjetivo} + ' — orden: ' + ${m.orden}"></p>
+        <form method="post" th:action="@{/admin/dashboard/incentivos/categorias/{id}/misiones/{misionId}/eliminar(id=${categoriaIncentivos.id},misionId=${m.id})}" onsubmit="return confirm('¿Eliminar esta misión? El backend comprobará sus restricciones.');"><button class="btn btn-outline" type="submit">Eliminar misión</button></form>
+    </article>
+    <h2>Agregar misión</h2>
+    <form method="post" th:action="@{/admin/dashboard/incentivos/categorias/{id}/misiones(id=${categoriaIncentivos.id})}">
+        <label>Tipo<select class="form-control" name="tipo"><option th:each="t : ${ {'RACHA','COMPLETITUD','DONACIONESEXITOSAS','HABILDONADOR'} }" th:value="${t}" th:text="${t}"></option></select></label>
+        <label>Objetivo<input class="form-control" name="valorObjetivo" type="number" min="1" required /></label>
+        <button class="btn btn-primary" type="submit">Agregar</button>
+    </form>
+</section>
+<section th:if="${section == 'seleccionarIncentivos'}" class="card api-panel">
+    <p>Consulta administrativa por un donante seleccionado. No representa al usuario conectado.</p>
+    <ul>
+        <li th:each="d : ${humanos}"><a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre} + ' ' + ${d.apellido} + ' (ID ' + ${d.id} + ')'"></a></li>
+        <li th:each="d : ${juridicos}"><a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial} + ' (ID ' + ${d.id} + ')'"></a></li>
+    </ul>
+</section>
+<section th:if="${section == 'donanteIncentivos'}" class="card api-panel">
+    <p>Consulta administrativa. Si el donante todavía no fue registrado en Incentivos, la API puede responder que no existe.</p>
+    <th:block th:if="${metricas != null}">
+        <h2>Métricas</h2>
+        <p th:text="'Donaciones históricas: ' + ${metricas.totalDonacionesHistoricas} + ' — Impacto: ' + ${metricas.impactoAcumulado} + ' — Organizaciones: ' + ${metricas.totalOrganizacionesAyudadas}"></p>
+        <p th:text="'Categoría actual: ' + ${metricas.categoriaActual}"></p>
+        <ul><li th:each="m : ${metricas.desgloseMensual}" th:text="${m.periodo} + ': ' + ${m.totalDonaciones} + ' donaciones; impacto ' + ${m.impacto} + '; entidades ' + ${m.entidadesAyudadas}"></li></ul>
+    </th:block>
+    <h2>Misión actual</h2>
+    <th:block th:if="${progreso != null}">
+        <p th:if="${progreso.mensaje != null}" th:text="${progreso.mensaje}"></p>
+        <th:block th:if="${progreso.idMision != null}"><h3 th:text="${progreso.nombreMision}"></h3><p th:text="${progreso.descripcionMision}"></p>
+            <p th:text="${progreso.valorActual} + ' / ' + ${progreso.valorObjetivo} + ' (' + ${progreso.porcentajeProgreso} + '%)'"></p>
+        </th:block>
+    </th:block>
+    <h2>Misiones completadas</h2><ul><li th:each="m : ${misionesCompletadas}" th:text="${m.nombreMision} + ' — ' + ${m.fechaCompletada}"></li></ul>
+    <h2>Insignias</h2><article th:each="i : ${insignias}"><h3 th:text="${i.nombre}"></h3><p th:text="${i.descripcion}"></p></article>
+    <form method="post" th:action="@{/admin/dashboard/incentivos/donantes/{id}/visibilidad(id=${donanteId})}" onsubmit="return confirm('¿Cambiar la visibilidad de todas las insignias de este donante?');">
+        <label>Visibilidad de todas las insignias<select class="form-control" name="visible"><option value="true">Mostrar</option><option value="false">Ocultar</option></select></label>
+        <p>La API no informa el valor actual; esta selección es una nueva decisión, no una lectura del estado.</p>
+        <button class="btn btn-outline" type="submit">Aplicar visibilidad</button>
+    </form>
+    <h2>Historial de categorías</h2><ul><li th:each="a : ${historialCategorias}" th:text="${a.fechaCambio} + ': ' + ${a.categoriaAnterior} + ' → ' + ${a.categoriaNueva}"></li></ul>
+</section>
+<section th:if="${section == 'historialRanking'}" class="card api-panel">
+    <article th:each="r : ${historialRanking}"><h2 th:text="${r.periodo}"></h2>
+        <ul><li th:each="p : ${r.posiciones}" th:text="'Posición ' + ${p.posicion} + ' — Donante ' + ${p.donante != null ? p.donante.idReferencia : 'sin referencia'} + ' — Misiones: ' + ${p.misionesCompletadas}"></li></ul>
+    </article>
+</section>
+</th:block>
+</body></html>

@@ -2,9 +2,9 @@ package ar.edu.utn.donatrack.controllers;
 
 import ar.edu.utn.donatrack.dto.notificacion.NotificacionDtos.*;
 import ar.edu.utn.donatrack.forms.NotificacionForm;
-import ar.edu.utn.donatrack.services.NotificacionesApiService;
+import ar.edu.utn.donatrack.services.NotificacionesService;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
-import ar.edu.utn.donatrack.validators.NotificacionFormValidator;
+import ar.edu.utn.donatrack.validators.NotificacionesValidator;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,14 +20,14 @@ import java.util.UUID;
 @Controller
 public class NotificacionesController {
     private static final String TOKEN = "notificacionesEnvioToken";
-    private final NotificacionesApiService api;
-    private final NotificacionFormValidator validator;
+    private final NotificacionesService service;
+    private final NotificacionesValidator validator;
     private final ApiErrorMessages errors;
     private final boolean enabled;
-    public NotificacionesController(NotificacionesApiService api, NotificacionFormValidator validator,
+    public NotificacionesController(NotificacionesService service, NotificacionesValidator validator,
                                      ApiErrorMessages errors,
                                      @Value("${app.notificaciones.envio-manual-habilitado:false}") boolean enabled) {
-        this.api = api; this.validator = validator; this.errors = errors; this.enabled = enabled;
+        this.service = service; this.validator = validator; this.errors = errors; this.enabled = enabled;
     }
     @GetMapping("/admin/dashboard/notificaciones")
     public String admin(Model model, HttpSession session) {
@@ -55,9 +55,7 @@ public class NotificacionesController {
     @PostMapping("/admin/dashboard/notificaciones/comprobar")
     public String comprobar(RedirectAttributes flash) {
         try {
-            flash.addFlashAttribute("serviceStatus", api.disponible()
-                    ? "El servicio responde al health check. Esto no verifica Gmail, Twilio ni RabbitMQ."
-                    : "El servicio respondió un health check inesperado.");
+            flash.addFlashAttribute("serviceStatus", service.comprobar());
         } catch (RestClientException exception) { flash.addFlashAttribute("apiError", errors.describe(exception)); }
         return "redirect:/admin/dashboard/notificaciones";
     }
@@ -73,19 +71,13 @@ public class NotificacionesController {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Formulario vencido o ya enviado. Recargá la página.");
             session.removeAttribute(TOKEN);
         }
-        var request = new Enviar(new Destinatario(form.nombre(),
-                form.medioContacto() == Medio.EMAIL ? form.email() : null,
-                form.medioContacto() == Medio.EMAIL ? null : form.telefono()),
-                new Mensaje(form.asunto(), form.cuerpo()), form.medioContacto());
         try {
-            var response = api.enviar(request);
-            if (!"success".equals(response.retorno()) || response.datos() == Estado.FALLIDA) {
-                model.addAttribute("apiError", response.mensajeError() == null ? "El servicio informó que el envío falló." : response.mensajeError());
+            var response = service.enviar(form);
+            if (!response.exitoso()) {
+                model.addAttribute("apiError", response.mensaje());
                 return prepare(model, session, "admin");
             }
-            flash.addFlashAttribute("sendResult", response.datos() == Estado.PENDIENTE
-                    ? "Solicitud aceptada: PENDIENTE. El proveedor todavía puede fallar; no es confirmación de entrega."
-                    : "El servicio informó COMPLETADA. No significa que la persona haya leído el mensaje.");
+            flash.addFlashAttribute("sendResult", response.mensaje());
             return "redirect:/admin/dashboard/notificaciones";
         } catch (RestClientException exception) {
             model.addAttribute("apiError", errors.describe(exception));

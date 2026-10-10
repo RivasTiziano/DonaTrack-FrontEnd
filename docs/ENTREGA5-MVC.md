@@ -27,7 +27,9 @@ La selección de rol del login original es una demostración, no una sesión seg
 
 ## Arquitectura
 
-Navegador → Controller MVC → servicio de API → WebApiCallerService → REST.
+Navegador → Controller MVC → Service del frontend → ApiService → WebApiCallerService → REST.
+Los validators comprueban la entrada; los mappers transforman formularios y respuestas.
+La organización se detalla en [CONTROLLERS-MVC.md](CONTROLLERS-MVC.md).
 La respuesta JSON se deserializa a DTO y Thymeleaf genera HTML en el servidor.
 Los formularios hacen POST al frontend; este traduce a POST, PUT, PATCH o DELETE
 del contrato REST. No hay JPA, acceso a bases ni reglas de negocio en el cliente.
@@ -36,7 +38,11 @@ Las llamadas están agrupadas por microservicio: `DonacionesApiService`
 (incluye donantes, CSV, bienes, catálogo, beneficiarios, necesidades y matchmaking),
 `LogisticaApiService`, `IncentivosApiService` y `NotificacionesApiService`.
 Todas reutilizan `WebApiCallerService`. Ya no hay un cliente separado para
-consultar donantes ni otro servicio para crearlos o eliminarlos.
+consultar donantes. Ahora existe una capa de coordinación del frontend por encima
+de cada servicio de API; no duplica los clientes HTTP.
+
+La ampliación de operaciones, sus pantallas y los endpoints reservados para
+integraciones se documentan en [COBERTURA-API.md](COBERTURA-API.md).
 
 Se conserva el layout administrativo y el sistema de estilos de la entrega 4.
 Las operaciones conectadas usan la plantilla compartida `admin-api` y el fragmento
@@ -47,17 +53,18 @@ de maquetado; no son prueba de integración funcional.
 
 | Pantalla | Operaciones reales |
 | --- | --- |
-| Donantes | Listar humanos y jurídicos, crear humano/jurídico, eliminar |
-| Donaciones | Listar, crear con un bien, detalle/asignaciones, cambiar estado de cobertura, eliminar |
-| Bienes | Listar, crear, actualizar, eliminar |
+| Donantes | Listar, crear y eliminar humanos/jurídicos; consultar y editar datos básicos conservando contactos y representantes |
+| Donaciones | Listar, crear con varios bienes, detalle/asignaciones/contactos, cambiar estado de cobertura, eliminar |
+| Bienes | Listar, detalle, crear, actualizar, eliminar |
 | Catálogo | Listar categorías/subcategorías, crear categoría y subcategoría |
-| Beneficiarios | Listar |
-| Necesidades | Listar, crear extraordinarias/recurrentes, actualizar, eliminar |
-| Matchmaking | Activar/desactivar algoritmos, generar sugerencias y ver tops/intersección, confirmar asignación |
-| Camiones | Listar, crear, cambiar estado, eliminar |
-| Entregas | Listar con asignación y estado de entrega |
-| Rutas | Listar, iniciar, finalizar, cancelar |
-| Rankings | Ranking mensual: ID del donante y misiones resueltas, tal como devuelve la API |
+| Beneficiarios | Listar, registrar, consultar/editar datos básicos, eliminar; asignaciones por entidad y estado |
+| Necesidades | Listar, detalle, crear extraordinarias/recurrentes, actualizar, eliminar |
+| Matchmaking | Activar/desactivar algoritmos, generar/listar/consultar sugerencias y tops; evaluador manual; confirmar asignación |
+| Camiones | Listar, detalle, crear, cambiar estado, eliminar; consultar ubicaciones GPS y avance |
+| Entregas | Listar y detalle con asignación, estado y referencias de fotografías |
+| Rutas | Listar, detalle/paradas, planificar por fecha, iniciar con chofer, finalizar, cancelar |
+| Incentivos | Gestión de categorías y misiones; consulta administrativa de métricas, progreso, misiones e insignias por donante |
+| Rankings | Ranking mensual e historial de rankings guardados |
 | CSV | Subir `archivo` como multipart, mostrar cantidades y errores por fila, acceso al listado resultante |
 
 Las asignaciones requieren Logística, MongoDB y sus demás dependencias disponibles.
@@ -76,16 +83,15 @@ seleccionarla explícitamente, sin deducir IDs por nombres ni inventarlos.
 1. **Identidad y alcance de los paneles personales.** No se conecta “mis donaciones”,
    “mis necesidades” ni “mis incentivos” usando IDs fijos o el primer usuario encontrado.
    Definir identidad real al abordar autenticación; hasta entonces esos paneles son maquetado.
-2. **Formularios con colecciones dinámicas.** La creación de donante usa email
-   predeterminado, teléfono SMS opcional y un representante inicial para jurídicos.
-   Debemos completar selección de medio predeterminado, múltiples contactos y
-   múltiples representantes. La edición de perfiles y CRUD completo de beneficiarios
-   se deja pendiente para no sobrescribir esas colecciones ni perder datos.
-3. **Donaciones con varios bienes.** El formulario inicial registra un bien por envío.
-   La API ya admite varios; falta acordar y construir el formulario de filas dinámicas.
-4. **Recepción con fotos y planificación de rutas.** La captura/subida de evidencias,
-   identidad de quien confirma, mapa/GPS y planificación con n8n son circuitos específicos.
-   No se modifican estados de asignación desde un formulario que suplante a Logística.
+2. **Edición de colecciones de perfiles.** La creación existente de donantes admite
+   contactos y representantes adicionales. La nueva edición básica conserva esas
+   colecciones, pero no incluye un editor para reemplazarlas ni gestionar sus IDs.
+3. **Donaciones con varios bienes.** Ya se registran varios bienes por envío;
+   el backend sigue siendo responsable de su segmentación.
+4. **Recepción con fotos.** La planificación administrativa por fecha y consulta de
+   GPS ya están conectadas. Falta la identidad y autorización de quien confirma
+   recepción y carga evidencias. No se modifican estados de asignación desde un
+   formulario que suplante a Logística.
 5. **Historial de notificaciones.** El backend actual solo expone enviar notificación
    y health, no listar/marcar leído. Necesita definir un contrato antes de conectar las vistas.
 6. **Mapa y transparencia pública.** Definir datos autorizados para publicación y

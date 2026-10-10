@@ -102,6 +102,7 @@
                             </td>
                             <td style="padding: 1rem; text-align: right;">
                                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <a class="btn btn-outline btn-sm" th:href="@{/admin/dashboard/donantes/{tipo}/{id}(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Editar datos</a>
                                     <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante? La API verificará si está permitido.');">
                                         <button type="submit" class="btn btn-outline btn-sm">Eliminar</button>
                                     </form>

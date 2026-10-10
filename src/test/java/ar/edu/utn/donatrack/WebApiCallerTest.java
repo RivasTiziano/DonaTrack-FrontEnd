@@ -81,6 +81,11 @@ class WebApiCallerTest {
         assertThatThrownBy(service::donaciones).isInstanceOf(HttpClientErrorException.class);
     }
 
+    @Test void emptyDetailResponseDoesNotBecomeAnEditableEmptyProfile() {
+        endpoint("/donantes/humanos/1", 204, "");
+        assertThatThrownBy(() -> service.humano(1L)).isInstanceOf(IllegalStateException.class);
+    }
+
     @Test void unifiedDonacionesApiListsBothDonorTypes() {
         endpoint("/donantes/humanos", 200, "[{\"id\":1,\"nombre\":\"Ana\",\"apellido\":\"Prueba\"}]");
         endpoint("/donantes/juridicos", 200, "[{\"id\":2,\"razonSocial\":\"Empresa Prueba\"}]");

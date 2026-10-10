@@ -185,7 +185,9 @@ class AdminMvcTest {
                 "Bad request", org.springframework.http.HttpHeaders.EMPTY,
                 "{\"message\":\"<script>alert(1)</script>\"}".getBytes(), java.nio.charset.StandardCharsets.UTF_8))
                 .when(donaciones).crearHumano(any());
-        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").param("nombre", "Ana Conservada").param("email", "ana@example.com"))
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").param("nombre", "Ana Conservada").param("email", "ana@example.com")
+                .param("apellido","Real").param("numeroDocumento","12345678").param("fechaNacimiento","1990-01-01")
+                .param("genero","OTRO").param("calle","Calle").param("numero","123").param("ciudad","CABA").param("provincia","BA"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("value=\"Ana Conservada\"")))
                 .andExpect(content().string(containsString("&lt;script&gt;")))
@@ -279,5 +281,32 @@ class AdminMvcTest {
         )) {
             mvc.perform(get(path)).andExpect(status().isOk());
         }
+    }
+
+    @Test void juridicoSinRepresentantesMuestraErrorSinInvocarBackend() throws Exception {
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos")
+                .param("razonSocial","Empresa Real").param("numeroDocumento","30123456789")
+                .param("tipoEntidad","EMPRESA").param("rubro","Alimentos")
+                .param("calle","Calle").param("numero","123").param("ciudad","CABA").param("provincia","BA")
+                .param("email","empresa@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ingresá al menos un representante real")))
+                .andExpect(content().string(containsString("value=\"Empresa Real\"")));
+        verify(donaciones,never()).crearJuridico(any());
+    }
+
+    @Test void errorDeRepresentanteConservaContactosYFilasAdicionales() throws Exception {
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos")
+                .param("razonSocial","Empresa Real").param("numeroDocumento","30123456789")
+                .param("tipoEntidad","EMPRESA").param("rubro","Alimentos")
+                .param("calle","Calle").param("numero","123").param("ciudad","CABA").param("provincia","BA")
+                .param("email","empresa@example.com")
+                .param("contactoTipo","EMAIL").param("contactoValor","extra@example.com")
+                .param("repNombre","Laura Conservada").param("repApellido","Real")
+                .param("repDocumento","12345678").param("repGenero","OTRO"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("value=\"Laura Conservada\"")))
+                .andExpect(content().string(containsString("value=\"extra@example.com\"")));
+        verify(donaciones,never()).crearJuridico(any());
     }
 }

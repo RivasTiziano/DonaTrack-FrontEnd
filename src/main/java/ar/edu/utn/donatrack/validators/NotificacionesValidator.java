@@ -7,7 +7,7 @@ import org.springframework.validation.Errors;
 
 /** Validación de entrada del formulario, no de eventos ni reglas de negocio. */
 @Component
-public class NotificacionFormValidator {
+public class NotificacionesValidator {
     public void validate(NotificacionForm form, Errors errors) {
         if (form.medioContacto() == null) errors.rejectValue("medioContacto", "required", "Seleccioná un canal.");
         required(form.nombre(), "nombre", 150, errors);

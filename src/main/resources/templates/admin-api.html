@@ -15,6 +15,13 @@
         <a th:href="@{/admin/dashboard/rankings}">Rankings</a><a th:href="@{/admin/dashboard/importar}">CSV</a>
         <a th:href="@{/admin/dashboard/entregas}">Entregas</a><a th:href="@{/admin/dashboard/rutas}">Rutas</a>
         <a th:href="@{/admin/dashboard/notificaciones}">Notificaciones</a>
+        <a th:href="@{/admin/dashboard/asignaciones}">Asignaciones por entidad</a>
+        <a th:href="@{/admin/dashboard/sugerencias}">Sugerencias guardadas</a>
+        <a th:href="@{/admin/dashboard/seguimiento}">Seguimiento GPS</a>
+        <a th:href="@{/admin/dashboard/paradas}">Paradas</a>
+        <a th:href="@{/admin/dashboard/incentivos}">Administrar Incentivos</a>
+        <a th:href="@{/admin/dashboard/incentivos/donantes}">Incentivos por donante</a>
+        <a th:href="@{/admin/dashboard/incentivos/historial}">Historial de rankings</a>
     </nav>
     <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
     <p th:if="${success != null}" th:text="${success}" role="status" class="api-success"></p>
@@ -50,16 +57,17 @@
         <div th:if="${donacion != null}"><h2 th:text="${donacion.descripcionGeneral}"></h2>
             <p th:text="'Donación #' + ${donacion.id} + ' · ' + ${donacion.estado}"></p>
             <p th:text="${donacion.bien.descripcion} + ' · disponible: ' + ${donacion.bien.cantidadDisponible} + ' ' + ${donacion.bien.unidadMedida}"></p></div>
+        <a th:if="${donacion != null}" th:href="@{/admin/dashboard/donaciones/{id}/contactos(id=${donacion.id})}">Consultar contactos</a>
         <h2>Asignaciones de esta donación</h2><p th:if="${#lists.isEmpty(asignaciones) and apiError == null}">Todavía no hay asignaciones.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Necesidad</th><th>Entidad</th><th>Cantidad</th><th>Estado de entrega</th><th>Camión</th></tr></thead><tbody>
-        <tr th:each="a : ${asignaciones}"><td th:text="${a.id}"></td><td th:text="${a.necesidadId}"></td><td th:text="${a.entidadBeneficiariaId}"></td><td th:text="${a.cantidadAsignada}"></td><td th:text="${a.estado}"></td><td th:text="${a.camionId}"></td></tr>
+        <tr th:each="a : ${asignaciones}"><td><a th:href="@{/admin/dashboard/asignaciones/{id}/contactos(id=${a.id})}" th:text="${a.id}"></a></td><td th:text="${a.necesidadId}"></td><td th:text="${a.entidadBeneficiariaId}"></td><td th:text="${a.cantidadAsignada}"></td><td th:text="${a.estado}"></td><td th:text="${a.camionId}"></td></tr>
         </tbody></table></div>
     </section>
 
     <section th:if="${section == 'bienes'}" class="card api-panel">
         <p th:if="${#lists.isEmpty(bienes) and apiError == null}">No hay bienes registrados.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Descripción</th><th>Cantidad</th><th>Disponible</th><th>Unidad</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody>
-        <tr th:each="b : ${bienes}"><td th:text="${b.id}"></td><td th:text="${b.descripcion}"></td><td th:text="${b.cantidad}"></td><td th:text="${b.cantidadDisponible}"></td><td th:text="${b.unidadMedida}"></td><td th:text="${b.tipoBien}"></td>
+        <tr th:each="b : ${bienes}"><td><a th:href="@{/admin/dashboard/bienes/{id}(id=${b.id})}" th:text="${b.id}"></a></td><td th:text="${b.descripcion}"></td><td th:text="${b.cantidad}"></td><td th:text="${b.cantidadDisponible}"></td><td th:text="${b.unidadMedida}"></td><td th:text="${b.tipoBien}"></td>
             <td><details><summary>Editar bien</summary><form method="post" th:action="@{/admin/dashboard/bienes/{id}(id=${b.id})}" th:with="editableBien=${b}">
                 <p th:if="${b.categoria != null}" th:text="'Categoría actual: ' + ${b.categoria.nombreCategoria} + '. Seleccioná la subcategoría para confirmar la edición.'"></p>
                 <fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset><button class="btn btn-primary" type="submit">Guardar</button></form></details>
@@ -78,7 +86,7 @@
     <section th:if="${section == 'necesidades'}" class="card api-panel">
         <p th:if="${#lists.isEmpty(necesidades) and apiError == null}">No hay necesidades registradas.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Entidad ID</th><th>Descripción</th><th>Tipo</th><th>Período</th><th>Restante</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
-        <tr th:each="n : ${necesidades}"><td th:text="${n.necesidadId}"></td><td th:text="${n.entidadBeneficiariaId}"></td><td th:text="${n.descripcion}"></td><td th:text="${n.tipoNecesidad}"></td><td th:text="${n.periodo}"></td>
+        <tr th:each="n : ${necesidades}"><td><a th:href="@{/admin/dashboard/necesidades/{id}(id=${n.necesidadId})}" th:text="${n.necesidadId}"></a></td><td th:text="${n.entidadBeneficiariaId}"></td><td th:text="${n.descripcion}"></td><td th:text="${n.tipoNecesidad}"></td><td th:text="${n.periodo}"></td>
             <td th:text="${n.cantidadRestante} + ' ' + ${n.bien.unidadMedida}"></td><td th:text="${n.estado}"></td>
             <td><details><summary>Editar</summary><form method="post" th:action="@{/admin/dashboard/necesidades/{id}(id=${n.necesidadId})}" th:with="editableBien=${n.bien}">
                 <label>Descripción de la necesidad<input class="form-control" name="descripcionNecesidad" th:value="${n.descripcion}" required /></label>
@@ -95,15 +103,15 @@
             <fieldset th:replace="~{fragments/api-bien-form :: campos}"></fieldset><button class="btn btn-primary" type="submit">Crear</button></form>
     </section>
     <section th:if="${section == 'beneficiarios'}" class="card api-panel">
-        <p>El registro de entidades beneficiarias se realiza desde el portal público; aquí se consultan las entidades que respondan desde Donaciones.</p>
+        <a class="btn btn-primary" th:href="@{/admin/dashboard/beneficiarios/nuevo}">Registrar entidad beneficiaria</a><p>Seleccioná el ID para consultar y editar los datos de una entidad.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Razón social</th><th>Tipo</th><th>Rubro</th><th>Activo</th></tr></thead><tbody>
-        <tr th:each="b : ${beneficiarios}"><td th:text="${b.id}"></td><td th:text="${b.razonSocial}"></td><td th:text="${b.tipoEntidad}"></td><td th:text="${b.rubro}"></td><td th:text="${b.activo ? 'Sí' : 'No'}"></td></tr>
+        <tr th:each="b : ${beneficiarios}"><td><a th:href="@{/admin/dashboard/beneficiarios/{id}(id=${b.id})}" th:text="${b.id}"></a><form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${b.id})}" onsubmit="return confirm('¿Eliminar esta entidad? El backend comprobará sus restricciones.');"><button class="btn btn-outline" type="submit">Eliminar</button></form></td><td th:text="${b.razonSocial}"></td><td th:text="${b.tipoEntidad}"></td><td th:text="${b.rubro}"></td><td th:text="${b.activo ? 'Sí' : 'No'}"></td></tr>
         </tbody></table></div>
     </section>
     <section th:if="${section == 'camiones'}" class="card api-panel">
         <p th:if="${#lists.isEmpty(camiones) and apiError == null}">No hay camiones registrados.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Patente</th><th>Capacidad carga</th><th>Capacidad volumen</th><th>Altura</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
-        <tr th:each="c : ${camiones}"><td th:text="${c.id}"></td><td th:text="${c.patente}"></td><td th:text="${c.capacidadCarga} + ' kg'"></td><td th:text="${c.capacidadVolumen} + ' m³'"></td><td th:text="${c.altura} + ' m'"></td><td th:text="${c.estado}"></td><td>
+        <tr th:each="c : ${camiones}"><td><a th:href="@{/admin/dashboard/camiones/{id}(id=${c.id})}" th:text="${c.id}"></a></td><td th:text="${c.patente}"></td><td th:text="${c.capacidadCarga} + ' kg'"></td><td th:text="${c.capacidadVolumen} + ' m³'"></td><td th:text="${c.altura} + ' m'"></td><td th:text="${c.estado}"></td><td>
             <form method="post" th:action="@{/admin/dashboard/camiones/{id}/estado(id=${c.id})}">
                 <select name="estado" class="form-control"><option>DISPONIBLE</option><option>EN_RUTA</option><option>FUERA_DE_SERVICIO</option></select>
                 <button class="btn btn-outline" type="submit">Actualizar</button></form>
@@ -119,14 +127,20 @@
     <section th:if="${section == 'entregas'}" class="card api-panel">
         <p th:if="${#lists.isEmpty(entregas) and apiError == null}">No hay entregas.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Asignación ID</th><th>Estado</th><th>Camión</th><th>Justificación</th></tr></thead><tbody>
-        <tr th:each="e : ${entregas}"><td th:text="${e.id}"></td><td th:text="${e.asignacionId}"></td><td th:text="${e.estado}"></td><td th:text="${e.camionPatente}"></td><td th:text="${e.justificacion}"></td></tr></tbody></table></div>
+        <tr th:each="e : ${entregas}"><td><a th:href="@{/admin/dashboard/entregas/{id}(id=${e.id})}" th:text="${e.id}"></a></td><td th:text="${e.asignacionId}"></td><td th:text="${e.estado}"></td><td th:text="${e.camionPatente}"></td><td th:text="${e.justificacion}"></td></tr></tbody></table></div>
         <p>La confirmación de recepción y las fotografías se integrarán al definir la identidad de la entidad beneficiaria.</p>
     </section>
     <section th:if="${section == 'rutas'}" class="card api-panel">
+        <h2>Planificar jornada</h2>
+        <form method="post" th:action="@{/admin/dashboard/rutas/planificar}" onsubmit="return confirm('¿Solicitar la planificación para esta fecha?');">
+            <label>Fecha<input class="form-control" type="date" name="fecha" required /></label><button class="btn btn-primary" type="submit">Solicitar planificación</button>
+        </form>
+        <p>La solicitud es asincrónica. La aceptación no garantiza que las rutas ya estén generadas.</p>
+        <div th:if="${planificacion != null}"><p th:text="'Entregas: ' + ${planificacion.cantidadEntregas} + '; lotes: ' + ${planificacion.cantidadLotes}"></p><ul><li th:each="requestId : ${planificacion.requestIds}" th:text="${requestId}"></li></ul></div>
         <p th:if="${#lists.isEmpty(rutas) and apiError == null}">No hay rutas.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Chofer</th><th>Fecha</th><th>Estado</th><th>Camión ID</th><th>Distancia (km)</th><th>Duración (min)</th><th>Acciones</th></tr></thead><tbody>
-        <tr th:each="r : ${rutas}"><td th:text="${r.id}"></td><td th:text="${r.chofer}"></td><td th:text="${r.fecha}"></td><td th:text="${r.estado}"></td><td th:text="${r.camionId}"></td><td th:text="${r.totalDistanciaKm}"></td><td th:text="${r.totalDuracionMins}"></td><td>
-            <form method="post" th:action="@{/admin/dashboard/rutas/{id}/iniciar(id=${r.id})}"><button class="btn btn-outline" type="submit">Iniciar</button></form>
+        <tr th:each="r : ${rutas}"><td><a th:href="@{/admin/dashboard/rutas/{id}(id=${r.id})}" th:text="${r.id}"></a></td><td th:text="${r.chofer}"></td><td th:text="${r.fecha}"></td><td th:text="${r.estado}"></td><td th:text="${r.camionId}"></td><td th:text="${r.totalDistanciaKm}"></td><td th:text="${r.totalDuracionMins}"></td><td>
+            <form method="post" th:action="@{/admin/dashboard/rutas/{id}/iniciar(id=${r.id})}"><label>Chofer<input class="form-control" name="chofer" th:value="${r.chofer}" required /></label><button class="btn btn-outline" type="submit">Iniciar</button></form>
             <form method="post" th:action="@{/admin/dashboard/rutas/{id}/finalizar(id=${r.id})}"><button class="btn btn-outline" type="submit">Finalizar</button></form>
             <form method="post" th:action="@{/admin/dashboard/rutas/{id}/cancelar(id=${r.id})}" onsubmit="return confirm('¿Cancelar esta ruta?');"><button class="btn btn-outline" type="submit">Cancelar</button></form>
         </td></tr></tbody></table></div>

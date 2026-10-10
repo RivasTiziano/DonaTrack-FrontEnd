@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"><body>
+<th:block th:fragment="contenido">
+<section th:if="${section == 'camion' and camion != null}" class="card api-panel">
+    <h2 th:text="${camion.patente}"></h2>
+    <p th:text="'Estado: ' + ${camion.estado}"></p>
+    <p th:text="'Carga: ' + ${camion.capacidadCarga} + ' kg; volumen: ' + ${camion.capacidadVolumen} + ' m³'"></p>
+    <a th:href="@{/admin/dashboard/seguimiento/{patente}(patente=${camion.patente})}">Última ubicación GPS</a>
+</section>
+<section th:if="${section == 'entrega' and entrega != null}" class="card api-panel">
+    <p th:text="'Asignación ' + ${entrega.asignacionId} + ' — Estado: ' + ${entrega.estado}"></p>
+    <p th:text="'Camión: ' + ${entrega.camionPatente}"></p>
+    <p th:text="${entrega.justificacion}"></p>
+    <h2>Referencias de fotografías</h2><ul><li th:each="foto : ${entrega.fotos}" th:text="${foto}"></li></ul>
+    <p>No se crean ni eliminan entregas desde esta pantalla.</p>
+</section>
+<section th:if="${section == 'ruta' and ruta != null}" class="card api-panel">
+    <p th:text="'Estado: ' + ${ruta.estado} + ' — Fecha: ' + ${ruta.fecha}"></p>
+    <p th:text="'Chofer: ' + ${ruta.chofer} + ' — Camión ID: ' + ${ruta.camionId}"></p>
+    <p th:text="'Distancia: ' + ${ruta.totalDistanciaKm} + ' km; duración: ' + ${ruta.totalDuracionMins} + ' minutos'"></p>
+    <h2>Paradas</h2><article th:each="p : ${ruta.paradas}">
+        <a th:href="@{/admin/dashboard/paradas/{id}(id=${p.id})}" th:text="'Parada ' + ${p.orden}"></a>
+        <p th:if="${p.direccion != null}" th:text="${p.direccion.calle} + ' ' + ${p.direccion.numero} + ', ' + ${p.direccion.ciudad}"></p>
+        <p th:text="'Llegada estimada: ' + ${p.estimatedArrivalTime}"></p>
+    </article>
+</section>
+<section th:if="${section == 'paradas'}" class="card api-panel">
+    <p th:if="${paradas != null and paradas.isEmpty() and apiError == null}">No hay paradas.</p>
+    <article th:each="p : ${paradas}"><a th:href="@{/admin/dashboard/paradas/{id}(id=${p.id})}" th:text="'Parada ' + ${p.id} + ' — orden ' + ${p.orden}"></a></article>
+</section>
+<section th:if="${section == 'parada' and parada != null}" class="card api-panel">
+    <p th:if="${parada.direccion != null}" th:text="${parada.direccion.calle} + ' ' + ${parada.direccion.numero} + ', ' + ${parada.direccion.ciudad}"></p>
+    <p th:text="'Llegada estimada: ' + ${parada.estimatedArrivalTime}"></p>
+    <ul><li th:each="e : ${parada.entregas}"><a th:href="@{/admin/dashboard/entregas/{id}(id=${e.id})}" th:text="'Entrega ' + ${e.id} + ' — ' + ${e.estado}"></a></li></ul>
+</section>
+<section th:if="${section == 'seguimiento'}" class="card api-panel">
+    <p>Últimos datos conocidos del GPS. No representan una posición nueva hasta que el dispositivo publique otra actualización.</p>
+    <a th:href="@{/admin/dashboard/seguimiento}">Actualizar consulta</a>
+    <p th:if="${ubicaciones != null and ubicaciones.isEmpty() and apiError == null}">No hay ubicaciones registradas.</p>
+    <article th:each="u : ${ubicaciones}">
+        <a th:href="@{/admin/dashboard/seguimiento/{patente}(patente=${u.patente})}" th:text="${u.patente}"></a>
+        <p th:text="'Latitud: ' + ${u.latitud} + '; longitud: ' + ${u.longitud}"></p>
+        <p th:text="'Actualizado: ' + ${u.ultimaActualizacion}"></p>
+        <p th:text="'Avance: ' + ${u.porcentajeAvance} + '% — Entregas pendientes: ' + ${u.entregasPendientes}"></p>
+        <p th:text="'Próxima parada: ' + ${u.proximaParadaDireccion}"></p>
+    </article>
+</section>
+<section th:if="${section == 'ubicacion' and ubicacion != null}" class="card api-panel">
+    <h2 th:text="${ubicacion.patente}"></h2>
+    <p th:text="'Latitud: ' + ${ubicacion.latitud} + '; longitud: ' + ${ubicacion.longitud}"></p>
+    <p th:text="'Velocidad: ' + ${ubicacion.velocidad} + '; última actualización: ' + ${ubicacion.ultimaActualizacion}"></p>
+</section>
+</th:block>
+</body></html>

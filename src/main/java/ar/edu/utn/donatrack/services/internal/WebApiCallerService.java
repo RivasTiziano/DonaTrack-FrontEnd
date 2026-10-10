@@ -25,7 +25,9 @@ public class WebApiCallerService {
     }
 
     public <T> T get(String url, Class<T> type) {
-        return client.get().uri(url).retrieve().body(type);
+        T result = client.get().uri(url).retrieve().body(type);
+        if (result == null) throw new IllegalStateException("La API no devolvió los datos esperados");
+        return result;
     }
 
     public <T> List<T> getList(String url, Class<T> type) {
