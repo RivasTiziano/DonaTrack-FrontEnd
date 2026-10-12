@@ -15,12 +15,22 @@ Variables opcionales:
 | INCENTIVOS_API_URL | http://localhost:8082 |
 | NOTIFICACIONES_API_URL | http://localhost:8081 |
 | NOTIFICACIONES_ENVIO_MANUAL_HABILITADO | false |
+| NOTIFICACIONES_HISTORIAL_POR_CONTACTO_HABILITADO | false |
 
 Notificaciones tiene comprobación de conexión y envío manual local en
-`/admin/dashboard/notificaciones`. El historial personal y las marcas de lectura
-requieren nuevos endpoints e identidad autorizada en el backend: ver
-[NOTIFICACIONES.md](NOTIFICACIONES.md). El envío manual permanece deshabilitado
+`/admin/dashboard/notificaciones`. El envío manual permanece deshabilitado
 por defecto; habilitarlo solo para pruebas locales controladas.
+
+El historial personal y la marca de lectura ya existen en el backend
+(`GET /notificaciones`, `GET /notificaciones/no-leidas/cantidad`,
+`PATCH /notificaciones/{id}/leida`, `PATCH /notificaciones/leidas`, que identifican
+al destinatario por `email` y/o `telefono`) y las pantallas
+`/donante/dashboard/notificaciones` y `/entidad/dashboard/notificaciones` están
+conectadas. Con `NOTIFICACIONES_HISTORIAL_POR_CONTACTO_HABILITADO=true` se consulta
+por el email o teléfono que se escriba a mano: es solo para desarrollo local, porque
+cualquiera que conozca un contacto puede leer sus avisos. Apagado (por defecto) las
+pantallas explican que falta la identidad. Cuando exista la sesión con token, el
+contacto debe salir de la identidad autenticada y el parámetro se elimina.
 
 No exponer este frontend a Internet: aún no hay autenticación ni autorización.
 La selección de rol del login original es una demostración, no una sesión segura.

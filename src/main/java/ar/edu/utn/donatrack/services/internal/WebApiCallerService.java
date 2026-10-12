@@ -9,6 +9,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
@@ -28,6 +29,18 @@ public class WebApiCallerService {
         T result = client.get().uri(url).retrieve().body(type);
         if (result == null) throw new IllegalStateException("La API no devolvió los datos esperados");
         return result;
+    }
+
+    /** Para URLs ya armadas y codificadas (por ejemplo con query params que contienen '+' o '@'). */
+    public <T> T get(URI url, Class<T> type) {
+        T result = client.get().uri(url).retrieve().body(type);
+        if (result == null) throw new IllegalStateException("La API no devolvió los datos esperados");
+        return result;
+    }
+
+    /** PATCH sin cuerpo: la operación se identifica por la URL. */
+    public void patch(URI url) {
+        client.patch().uri(url).retrieve().toBodilessEntity();
     }
 
     public <T> List<T> getList(String url, Class<T> type) {

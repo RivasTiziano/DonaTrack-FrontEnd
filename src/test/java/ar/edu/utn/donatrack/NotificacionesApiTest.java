@@ -61,4 +61,45 @@ class NotificacionesApiTest {
         assertThat(api.disponible()).isTrue();
         assertThat(method.get()).isEqualTo("GET");
     }
+
+    AtomicReference<String> rawQuery = new AtomicReference<>();
+    void endpointWithQuery(String path, String body) {
+        server.createContext(path, exchange -> {
+            method.set(exchange.getRequestMethod());
+            rawQuery.set(exchange.getRequestURI().getRawQuery());
+            byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+    }
+    @Test void listsHistoryEncodingThePlusOfThePhoneAndParsesTheBackendContract() {
+        endpointWithQuery("/notificaciones", "{\"retorno\":\"success\",\"mensajeError\":null,\"datos\":[{\"id\":7,"
+                + "\"asunto\":\"Tu donacion fue asignada\",\"cuerpo\":\"Detalle\",\"medio\":\"SMS\","
+                + "\"fecha\":\"2026-10-11T18:30:00\",\"leida\":false,\"fechaLectura\":null,\"referencia\":null,\"campoNuevo\":1}]}");
+        var result = api.listar("Ana+Perez@Mail.com", "+5491112345678", true);
+        assertThat(rawQuery.get()).contains("telefono=%2B5491112345678").contains("email=Ana%2BPerez%40Mail.com").contains("soloNoLeidas=true");
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).id()).isEqualTo(7L);
+        assertThat(result.get(0).medio()).isEqualTo(Medio.SMS);
+        assertThat(result.get(0).fecha()).isEqualTo(java.time.LocalDateTime.of(2026, 10, 11, 18, 30));
+        assertThat(result.get(0).leida()).isFalse();
+    }
+    @Test void countsUnreadAndMarksAsReadWithPatch() {
+        endpointWithQuery("/notificaciones/no-leidas/cantidad", "{\"retorno\":\"success\",\"datos\":{\"noLeidas\":3}}");
+        assertThat(api.contarNoLeidas("ana@mail.com", null)).isEqualTo(3);
+        assertThat(rawQuery.get()).isEqualTo("email=ana@mail.com".replace("@", "%40"));
+        endpointWithQuery("/notificaciones/9/leida", "{\"retorno\":\"success\",\"datos\":{}}");
+        api.marcarLeida(9L, null, "+5491112345678");
+        assertThat(method.get()).isEqualTo("PATCH");
+        assertThat(rawQuery.get()).isEqualTo("telefono=%2B5491112345678");
+        endpointWithQuery("/notificaciones/leidas", "{\"retorno\":\"success\",\"datos\":{\"marcadas\":2}}");
+        api.marcarTodasLeidas("ana@mail.com", null);
+        assertThat(method.get()).isEqualTo("PATCH");
+    }
+    @Test void rejectsAnErrorEnvelopeInsteadOfShowingAnEmptyHistory() {
+        endpointWithQuery("/notificaciones", "{\"retorno\":\"error\",\"mensajeError\":\"x\",\"datos\":null}");
+        assertThatThrownBy(() -> api.listar("ana@mail.com", null, false)).isInstanceOf(IllegalStateException.class);
+    }
 }
