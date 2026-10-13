@@ -17,7 +17,6 @@
             <header class="registro-encabezado">
                 <span class="registro-etiqueta">Persona humana</span>
                 <h1>Crear tu cuenta de donante</h1>
-                <p class="form-hint">Completá tus datos para sumarte a la red de donantes de DonaTrack. Los campos con * son obligatorios.</p>
             </header>
 
             <div th:if="${apiError != null}" class="registro-alerta" role="alert">
@@ -99,14 +98,12 @@
                     <div class="form-group">
                         <label class="form-label" for="email">Email <span class="required">*</span></label>
                         <input class="form-control" type="email" id="email" th:field="*{email}" placeholder="tu@email.com" autocomplete="email" required />
-                        <span class="form-hint">Es también el email con el que vas a iniciar sesión.</span>
                         <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
                     </div>
                     <div class="registro-grid">
                         <div class="form-group">
                             <label class="form-label" for="telefono">Teléfono (opcional)</label>
                             <input class="form-control" type="tel" id="telefono" th:field="*{telefono}" placeholder="+54 11 1234-5678" autocomplete="tel" />
-                            <span class="form-hint">Lo usamos para mensajes de texto (SMS).</span>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="whatsapp">WhatsApp (opcional)</label>
@@ -120,7 +117,6 @@
                             <label><input type="radio" th:field="*{predeterminado}" value="SMS" /> Teléfono (SMS)</label>
                             <label><input type="radio" th:field="*{predeterminado}" value="WHATSAPP" /> WhatsApp</label>
                         </div>
-                        <span class="form-hint">Elegí por cuál medio preferís recibir los avisos. Tiene que ser uno de los que cargaste.</span>
                         <p class="form-error" th:if="${#fields.hasErrors('predeterminado')}" th:errors="*{predeterminado}"></p>
                     </div>
                 </fieldset>

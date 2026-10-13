@@ -17,7 +17,6 @@
             <header class="registro-encabezado">
                 <span class="registro-etiqueta">Entidad beneficiaria</span>
                 <h1>Registrar tu entidad</h1>
-                <p class="form-hint">Registrá a la organización que recibe donaciones. Los campos con * son obligatorios.</p>
             </header>
 
             <div th:if="${apiError != null}" class="registro-alerta" role="alert">
@@ -83,13 +82,11 @@
                 <div class="form-group">
                     <label class="form-label" for="email">Email de contacto de la entidad <span class="required">*</span></label>
                     <input class="form-control" type="email" id="email" th:field="*{email}" placeholder="contacto@entidad.org" autocomplete="email" required />
-                    <span class="form-hint">Es el medio de contacto predeterminado de la entidad y el email con el que va a iniciar sesión.</span>
                     <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
                 </div>
 
                 <fieldset class="registro-fieldset" data-registro-representantes data-registro-minimo="1">
                     <legend>Personas representantes <span class="required">*</span></legend>
-                    <p class="form-hint">Cargá al menos una persona representante con su nombre y un teléfono. El correo es opcional.</p>
                     <div data-registro-bloques>
                         <fieldset class="registro-fieldset" data-registro-bloque th:each="rep, st : *{representantes}">
                             <legend>Persona representante</legend>
