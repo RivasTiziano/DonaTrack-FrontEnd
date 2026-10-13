@@ -42,25 +42,19 @@ class PublicoYRegistroMvcTest {
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Entrega de útiles escolares"))))
-                .andExpect(content().string(containsString("/img/hero-donaciones.jpg")))
+                .andExpect(content().string(containsString("/img/landing-donaciones.webp")))
                 .andExpect(content().string(not(containsString("100% trazabilidad verificada"))))
                 .andExpect(content().string(containsString("La transparencia empieza con datos reales")));
         sinLlamadasALaApi();
     }
 
-    @Test void mapaNoLlamaALaApiNiTraeCoordenadasNiUnsplash() throws Exception {
-        mvc.perform(get("/explorar-donaciones"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))))
-                .andExpect(content().string(containsString("No se muestran ubicaciones de entregas. Consultá las entregas públicas en la página principal.")));
+    @Test void mapaPublicoRetiradoNoLlamaALaApi() throws Exception {
+        mvc.perform(get("/explorar-donaciones")).andExpect(status().isNotFound());
         sinLlamadasALaApi();
     }
 
-    @Test void detallePublicoSinDatosMuestraEstadoVacio() throws Exception {
-        mvc.perform(get("/explorar-donaciones/15"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Este registro no está habilitado para consulta pública.")))
-                .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))));
+    @Test void detallePublicoRetiradoNoLlamaALaApi() throws Exception {
+        mvc.perform(get("/explorar-donaciones/15")).andExpect(status().isNotFound());
         sinLlamadasALaApi();
     }
 
@@ -98,27 +92,28 @@ class PublicoYRegistroMvcTest {
         sinLlamadasALaApi();
     }
 
-    @Test void detalleMuestraLasFotosRevisadasYLaEntidad() throws Exception {
-        when(publico.detalleEntrega("15")).thenReturn(new EntregaPublicaDto(15L, "Fideos", LocalDateTime.of(2026, 10, 2, 10, 0),
-                5f, "KILOGRAMO", null, "Alimentos", "Secos", new EntregaPublicaDto.EntidadResumen("Comedor Sol", "La Plata"),
-                List.of("https://fotos.example/15.jpg")));
-        mvc.perform(get("/explorar-donaciones/15"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("https://fotos.example/15.jpg")))
-                .andExpect(content().string(containsString("Comedor Sol")))
-                .andExpect(content().string(not(containsString("Este registro no está habilitado"))));
-        sinLlamadasALaApi();
-    }
-
-    @Test void mapaDibujaLosMarcadoresConLaUbicacionDeLaEntidad() throws Exception {
+    // Req 2: el mapa está embebido en la landing; cada marcador lleva la ubicación de la entidad y el detalle va en el popup.
+    @Test void landingDibujaLosMarcadoresDelMapaConLaUbicacionDeLaEntidad() throws Exception {
         when(publico.entregasEnMapa()).thenReturn(List.of(new EntregaMapaDto(1L, LocalDateTime.of(2026, 1, 15, 10, 0),
                 "Alimentos", "Secos", 5f, "KILOGRAMO",
                 new EntregaMapaDto.EntidadUbicada("Comedor Sol", "La Plata", "Buenos Aires", -34.92f, -57.95f))));
-        mvc.perform(get("/explorar-donaciones"))
+        mvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Comedor Sol")))
-                .andExpect(content().string(containsString("-34.92")))
-                .andExpect(content().string(not(containsString("No se muestran ubicaciones de entregas"))));
+                .andExpect(content().string(containsString("id=\"public-deliveries-map\"")))
+                .andExpect(content().string(containsString("data-lat=\"-34.92\"")))
+                .andExpect(content().string(containsString("Comedor Sol (La Plata)")));
+        sinLlamadasALaApi();
+    }
+
+    // Req 1: destacadas de los últimos 30 días en el carrusel, con la foto revisada por el admin.
+    @Test void landingMuestraLasDestacadasConSuFoto() throws Exception {
+        when(publico.donacionesDestacadas()).thenReturn(List.of(new EntregaPublicaDto(15L, "Fideos", LocalDateTime.of(2026, 10, 2, 10, 0),
+                5f, "KILOGRAMO", null, "Alimentos", "Secos", new EntregaPublicaDto.EntidadResumen("Comedor Sol", "La Plata"),
+                List.of("https://fotos.example/15.jpg"))));
+        mvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("https://fotos.example/15.jpg")))
+                .andExpect(content().string(not(containsString("La transparencia empieza con datos reales"))));
         sinLlamadasALaApi();
     }
 }

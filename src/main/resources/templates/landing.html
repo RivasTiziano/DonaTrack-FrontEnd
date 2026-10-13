@@ -7,17 +7,11 @@
     <main id="inicio">
         <section class="hero">
             <div class="container hero-grid">
-                <div>
-
+                <div class="hero-copy">
                     <h1 th:text="${heroContent.title}">Title</h1>
-                    <p th:text="${heroContent.description}">Description</p>
-                    <div class="hero-actions">
-                        <a th:href="@{/registro}" class="btn btn-primary">Empezar a donar</a>
-                        <a href="#como-funciona" class="btn btn-outline hero-link-button">
-                            <span>Ver cómo funciona</span>
-                            <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
-                        </a>
-                    </div>
+                    <p class="hero-intro">Detrás de cada donación hay <em>alguien que quiere ayudar y una comunidad que la necesita.</em> En <strong>DonaTrack</strong> hacemos que ese encuentro sea más simple.</p>
+                    <p><em>Conectamos a personas y organizaciones que donan</em> con comedores, escuelas y entidades que comparten sus necesidades. Alimentos, ropa, muebles o juguetes, cada aporte puede encontrar un lugar donde hacer la diferencia.</p>
+                    <p><em>Acompañamos el recorrido de la ayuda,</em> desde que se recibe y se organiza hasta que llega a destino. Quienes donan pueden <em>seguir sus aportes,</em> y las entidades pueden gestionar lo que necesitan y confirmar lo que reciben.</p>
                     <div class="stats" aria-label="Estadisticas destacadas" th:if="${not #lists.isEmpty(heroStats)}">
                         <div class="stat" th:each="stat : ${heroStats}">
                             <strong th:text="${stat.value}">0</strong>
@@ -26,8 +20,7 @@
                     </div>
                 </div>
                 <div class="hero-visual">
-                    <!-- Foto decorativa: Maria Lin Kim / Unsplash. Crédito y licencia: static/img/CREDITOS.md -->
-                    <img th:src="${heroContent.heroImage}" alt="Bolsas de alimentos con frutas, verduras y pan" width="1200" height="900" fetchpriority="high" />
+                    <img th:src="@{/img/landing-donaciones.webp}" alt="Dos personas entregándose una caja con la palabra Donaciones" width="1024" height="512" fetchpriority="high" />
                 </div>
             </div>
         </section>
@@ -45,7 +38,7 @@
                     <!-- Paso 1 -->
                     <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary); display: grid; place-items: center;">
+                            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #eef2f6; color: var(--color-ink-light); display: grid; place-items: center;">
                                 <i data-lucide="package-plus" style="width: 24px; height: 24px;"></i>
                             </div>
                             <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-muted);">01</span>
@@ -108,7 +101,7 @@
                     Hacemos que la solidaridad sea medible y visible para fortalecer la confianza.
                 </p>
                 <div class="feature-grid">
-                    <article class="feature-card" th:each="feature : ${landingFeatures}">
+                    <article class="feature-item" th:each="feature : ${landingFeatures}">
                         <div class="feature-icon" aria-hidden="true">
                             <i th:attr="data-lucide=${feature.icon}" style="width: 20px; height: 20px;"></i>
                         </div>
@@ -119,55 +112,44 @@
             </div>
         </section>
 
-        <section class="section" id="donations">
-            <div class="container">
-                <h2>Donaciones destacadas del último mes</h2>
-                <p class="section-copy">Entregas de los últimos 30 días habilitadas para consulta pública.</p>
-                <div class="donation-grid">
-                    <article class="donation-card" th:each="donation : ${featuredDonations}">
-                        <img th:if="${donation.image != null}" th:src="${donation.image}" th:alt="${donation.item}" />
-                        <h3 th:text="${donation.item}">Item</h3>
-                        <p class="meta" th:if="${donation.category != null}" th:text="${donation.category}">Categoría</p>
-                        <p th:if="${donation.entity != null}">
-                            <strong>Entidad:</strong> <span th:text="${donation.entity}">Entidad</span><span th:if="${donation.locality != null}" th:text="' (' + ${donation.locality} + ')'"></span>
-                        </p>
-                        <p class="meta" th:if="${donation.date != null}" th:text="${donation.date}">Date</p>
-                        <a class="btn btn-outline" th:href="@{/explorar-donaciones/{id}(id=${donation.id})}">Ver detalles</a>
-                    </article>
-                </div>
-                <div class="landing-empty" role="status" th:if="${#lists.isEmpty(featuredDonations)}"><i data-lucide="package-search" aria-hidden="true"></i><h3>La transparencia empieza con datos reales</h3><p>Las entregas aparecerán aquí cuando esté disponible su registro público. No mostramos fotos de ejemplo como donaciones.</p><a class="btn btn-outline" th:href="@{/explorar-donaciones}">Explorar el mapa</a></div>
-            </div>
-        </section>
-
         <section class="section" id="gallery">
             <div class="container">
-                <h2>Galeria de donaciones</h2>
-                <p class="section-copy">Consultá entregas publicadas sin necesidad de iniciar sesión. Los registros “Prueba” y sus fotos ilustrativas no representan entregas reales.</p>
-                <div class="gallery-grid">
-                    <figure class="gallery-item" th:each="item : ${recentDeliveries}">
-                        <img th:src="${item.image}" th:alt="${item.title}" />
-                        <figcaption><a th:href="@{/explorar-donaciones/{id}(id=${item.id})}" th:text="${item.title}">Entrega</a></figcaption>
+                <h2>Donaciones destacadas del mes</h2>
+                <div class="gallery-carousel" th:if="${not #lists.isEmpty(recentDeliveries)}" data-gallery-carousel role="region" aria-roledescription="carrusel" aria-label="Donaciones destacadas del mes">
+                    <div class="gallery-viewport" id="donations-gallery" tabindex="0" aria-label="Galería automática; tocá una imagen o presioná Enter para avanzar">
+                    <div class="gallery-track">
+                    <figure class="gallery-item" th:each="item : ${recentDeliveries}" role="button" tabindex="0" th:aria-label="${'Ver siguiente donación: ' + item.title}">
+                        <img th:src="${item.image}" th:alt="${item.title}" loading="lazy" />
                     </figure>
-                </div>
-                <div class="landing-empty" role="status" th:if="${#lists.isEmpty(recentDeliveries)}"><i data-lucide="package-search" aria-hidden="true"></i><h3>La transparencia empieza con datos reales</h3><p>Las entregas aparecerán aquí cuando esté disponible su registro público. No mostramos fotos de ejemplo como donaciones.</p><a class="btn btn-outline" th:href="@{/explorar-donaciones}">Explorar el mapa</a></div>
-            </div>
-        </section>
-
-        <section class="cta">
-            <div class="container">
-                <div class="cta-box">
-                    <h2>Sumate a una red de ayuda</h2>
-                    <p>
-                        Registra tus donaciones o solicita apoyo en una plataforma clara,
-                        colaborativa y centrada en el impacto social.
-                    </p>
-                    <div class="cta-actions">
-                        <a th:href="@{/registro}" class="btn btn-outline">Registrarme como donante</a>
-                        <a th:href="@{/registro/entidad-beneficiaria}" class="btn btn-outline">Registrarme como beneficiario</a>
                     </div>
+                    </div>
+
+                </div>
+                <div class="landing-empty" role="status" th:if="${#lists.isEmpty(recentDeliveries)}"><i data-lucide="package-search" aria-hidden="true"></i><h3>La transparencia empieza con datos reales</h3><p>Las entregas aparecerán aquí cuando esté disponible su registro público. No mostramos fotos de ejemplo como donaciones.</p></div>
+            </div>
+        </section>
+        <script th:src="@{/js/gallery-carousel.js}" defer></script>
+        <section class="section public-deliveries-section" id="mapa-donaciones">
+            <div class="container">
+                <h2>Mapa de donaciones entregadas</h2>
+                <p>Conocé dónde llegó la ayuda. Tocá un marcador para ver los detalles de cada entrega.</p>
+                <div id="public-deliveries-map" role="region" aria-label="Mapa interactivo de donaciones entregadas"></div>
+                <p id="public-map-status" role="status"></p>
+                <div hidden id="public-deliveries-data">
+                    <article th:each="delivery : ${publicDeliveries}"
+                             th:attr="data-lat=${delivery.latitud},data-lng=${delivery.longitud}">
+                        <img th:if="${delivery.imagen != null}" th:src="${delivery.imagen}" alt="Foto de la donación entregada" loading="lazy" />
+                        <h3>Donación entregada</h3>
+                        <p th:text="${delivery.descripcion}"></p>
+                        <p><strong>Fecha: </strong><span th:text="${#temporals.format(delivery.fechaEntrega, 'dd/MM/yyyy')}"></span></p>
+                        <p><strong>Cantidad: </strong><span th:text="${delivery.cantidad + ' ' + delivery.unidad}"></span></p>
+                    </article>
                 </div>
             </div>
         </section>
+        <script th:src="@{/js/public-deliveries-map.js}" defer></script>
+
+
 
         <footer class="footer" id="contact">
             <div class="container">

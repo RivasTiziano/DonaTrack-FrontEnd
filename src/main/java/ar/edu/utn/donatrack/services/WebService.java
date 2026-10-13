@@ -11,8 +11,6 @@ public class WebService {
     public WebService(PublicoService publico, WebMapper mapper) {
         this.publico = publico; this.mapper = mapper;
     }
-    public Map<String,Object> landing() { return mapper.landing(publico.donacionesDestacadas()); }
+    public Map<String,Object> landing() { return mapper.landing(publico.donacionesDestacadas(), publico.entregasEnMapa()); }
     public Map<String,Object> legal() { return mapper.legal(); }
-    public Map<String,Object> mapa() { return mapper.map(publico.entregasEnMapa()); }
-    public Map<String,Object> detalle(String id) { return mapper.entregaDetalle(publico.detalleEntrega(id)); }
 }
