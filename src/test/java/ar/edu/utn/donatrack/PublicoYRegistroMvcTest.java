@@ -31,10 +31,11 @@ class PublicoYRegistroMvcTest {
         verifyNoInteractions(donaciones, autenticacion, incentivos, logistica, notificaciones);
     }
 
-    @Test void landingNoLlamaALaApiNiTraeImagenesDeUnsplash() throws Exception {
+    // La foto del hero y la galería son ilustrativas; las donaciones destacadas siguen sin datos inventados.
+    @Test void landingNoLlamaALaApiYMuestraGaleriaIlustrativa() throws Exception {
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))))
+                .andExpect(content().string(containsString("Entrega de útiles escolares")))
                 .andExpect(content().string(not(containsString("100% trazabilidad verificada"))))
                 .andExpect(content().string(containsString("Pronto vas a poder ver acá las donaciones entregadas del último mes.")));
         sinLlamadasALaApi();

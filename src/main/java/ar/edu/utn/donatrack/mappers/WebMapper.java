@@ -8,7 +8,8 @@ import java.util.*;
  */
 @Component
 public class WebMapper {
-    private static final String IMAGEN_INSTITUCIONAL = "/favicon.svg";
+    // Foto decorativa del hero (no representa una donación real).
+    private static final String IMAGEN_INSTITUCIONAL = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=900&h=700&fit=crop";
 
     public Map<String,Object> landing(List<ApiDtos.Donacion> destacadas) {
         Map<String,Object> model = new LinkedHashMap<>();
@@ -37,7 +38,12 @@ public class WebMapper {
         model.put("featuredDonations", featured);
 
         // PROVISORIO: reemplazar por la galería pública de entregas (pedido backend D1)
-        model.put("recentDeliveries", List.of());
+        // Galería ilustrativa de la landing (fotos de referencia, no entregas reales registradas en el sistema).
+        model.put("recentDeliveries", List.of(
+            Map.of("title", "Entrega de útiles escolares", "image", "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300&h=300&fit=crop"),
+            Map.of("title", "Distribución de alimentos", "image", "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=300&h=300&fit=crop"),
+            Map.of("title", "Donación de ropa de abrigo", "image", "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=300&h=300&fit=crop")
+        ));
 
         model.put("footerQuickLinks", List.of(
             Map.of("label", "Acerca de", "href", "/#about"),
