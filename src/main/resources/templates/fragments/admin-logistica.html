@@ -107,6 +107,12 @@
     </label>
 </div>
 <p th:if="${entregas.isEmpty() and apiError == null}">No hay entregas.</p>
+<div th:if="${publicacion != null and publicacion.publicable}" class="api-success" role="status">
+    <p>Fotos que quedan visibles en la landing: <strong th:text="${#lists.size(publicacion.fotos)}">0</strong></p>
+    <ul>
+        <li th:each="foto : ${publicacion.fotos}" th:text="${foto}"></li>
+    </ul>
+</div>
 <div class="api-table">
     <table class="data-table" id="tabla-entregas">
         <thead>
@@ -142,12 +148,36 @@
                     </span>
                 </td>
                 <td data-label="Acciones">
-                    <a class="btn btn-outline" th:href="@{/admin/dashboard/entregas/{id}(id=${item.id})}">Detalle / revisar</a>
+                    <div class="row-actions">
+                        <a class="btn btn-outline" th:href="@{/admin/dashboard/entregas/{id}(id=${item.id})}">Detalle / revisar</a>
+                        <button type="button" class="btn btn-outline" th:if="${item.estado == 'ENTREGADA' and item.asignacionId != null}"
+                                th:data-dialog-open="'publicar-asignacion-' + ${item.asignacionId}">Publicar en la landing</button>
+                    </div>
                 </td>
             </tr>
         </tbody>
     </table>
 </div>
+<th:block th:each="item : ${entregas}">
+    <dialog class="dialog" th:if="${item.estado == 'ENTREGADA' and item.asignacionId != null}"
+            th:id="'publicar-asignacion-' + ${item.asignacionId}"
+            th:attr="aria-labelledby='publicar-asignacion-title-' + ${item.asignacionId}">
+        <div class="dialog-header">
+            <h2 th:id="'publicar-asignacion-title-' + ${item.asignacionId}">Publicar en la landing</h2>
+            <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
+        </div>
+        <p>Revisá que las fotos no muestren datos personales. Las fotos de la recepción que se publiquen quedan visibles sin login.</p>
+        <form method="post" th:action="@{/admin/dashboard/asignaciones/{id}/publicacion(id=${item.asignacionId})}" class="form-stack">
+            <label>Descripción pública (opcional, hasta 500 caracteres)
+                <textarea class="form-control" name="descripcionPublica" maxlength="500" rows="4"></textarea>
+            </label>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit" name="publicable" value="true">Publicar en la landing</button>
+                <button class="btn btn-outline" type="submit" name="publicable" value="false">Despublicar</button>
+            </div>
+        </form>
+    </dialog>
+</th:block>
 <p>La confirmación de recepción y las fotografías se realizan desde el panel de la entidad. No se crean ni eliminan entregas manualmente aquí.</p>
 </section>
 <section th:if="${section == 'rutas'}" class="card api-panel">

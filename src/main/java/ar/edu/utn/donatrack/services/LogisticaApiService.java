@@ -61,6 +61,11 @@ public class LogisticaApiService {
         return http.getList(url + "/entregas", ApiDtos.Entrega.class);
     }
 
+    /** Entregas en camino del dueño de la sesión (el back lo toma del token; no recibe parámetros). */
+    public List<LogisticaDetalles.SeguimientoEntrega> seguimiento() {
+        return http.getList(url + "/entregas/seguimiento", LogisticaDetalles.SeguimientoEntrega.class);
+    }
+
     /** Entregas filtradas por el back. Los parámetros nulos o vacíos no se envían. */
     public List<ApiDtos.Entrega> entregas(Long entidadBeneficiariaId, Long donanteId, Long asignacionId, String estado) {
         var uri = UriComponentsBuilder.fromUriString(url + "/entregas");

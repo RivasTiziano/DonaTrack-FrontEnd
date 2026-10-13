@@ -4,7 +4,9 @@ import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.DonanteRequests;
 import ar.edu.utn.donatrack.dto.IncentivosDtos;
+import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import org.springframework.stereotype.Component;
+import java.time.LocalDateTime;
 import java.util.*;
 import static ar.edu.utn.donatrack.mappers.PanelFormato.*;
 
@@ -262,28 +264,29 @@ public class PanelDonanteMapper {
 
     // ---------- Entregas ----------
 
-    /** Asignación en curso del donante. Sin datos del camión: la API no permite seguirlo por dueño. */
-    public Map<String, Object> entrega(ApiDtos.Asignacion a, ApiDtos.Beneficiario destino) {
-        ApiDtos.Bien bien = a.bien();
-        String titulo = notBlank(a.descripcionGeneralDonacion()) ? a.descripcionGeneralDonacion()
+    /**
+     * Entrega en camino del donante: el seguimiento (destino, camión) más la asignación para el título y la categoría.
+     * La asignación puede faltar si el listado no la trae; en ese caso la fila queda con datos mínimos.
+     */
+    public Map<String, Object> entrega(LogisticaDetalles.SeguimientoEntrega s, ApiDtos.Asignacion a, String entidadNombre,
+                                       LocalDateTime ahora) {
+        ApiDtos.Bien bien = a == null ? null : a.bien();
+        String titulo = a == null ? null
+                : notBlank(a.descripcionGeneralDonacion()) ? a.descripcionGeneralDonacion()
                 : (bien == null ? null : bien.descripcion());
         String cat = bien == null || bien.categoria() == null ? null : bien.categoria().nombreCategoria();
-        DonanteRequests.Direccion dir = destino == null ? null : destino.direccion();
-        Map<String, Object> coords = dir != null && dir.latitud() != null && dir.longitud() != null
-                ? mapa("lat", dir.latitud(), "lng", dir.longitud()) : null;
-        String nombreDestino = destino != null ? destino.razonSocial()
-                : (a.entidadBeneficiariaId() == null ? null : "Entidad #" + a.entidadBeneficiariaId());
-        return mapa("id", a.id(),
-                "donationId", a.donacionId(),
+        return mapa("id", s.entregaId(),
+                "asignacionId", s.asignacionId(),
+                "donationId", a == null ? null : a.donacionId(),
                 "donationTitle", titulo,
                 "category", cat,
-                "destinationEntity", nombreDestino,
-                "destinationAddress", direccion(dir),
-                "destinationCoords", coords,
-                "status", a.estado(),
-                "status_label", etiquetaEstado(a.estado()),
-                "status_badge", claseEstado(a.estado()),
-                "truck", null);
+                "destinationEntity", entidadNombre,
+                "destinationAddress", ubicacion(s.destino()),
+                "destinationCoords", coordenadas(s.destino()),
+                "status", s.estado(),
+                "status_label", etiquetaEstado(s.estado()),
+                "status_badge", claseEstado(s.estado()),
+                "truck", camion(s.camion(), ahora));
     }
 
     // ---------- Auxiliares ----------

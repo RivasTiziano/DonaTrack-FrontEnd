@@ -29,4 +29,14 @@ public final class LogisticaDetalles {
                               LocalDateTime ultimaActualizacion, Long rutaId, int entregasTotales,
                               int entregasVisitadas, int entregasPendientes, double porcentajeAvance,
                               String proximaParadaDireccion) {}
+    /** GET /entregas/seguimiento: una entrega en camino del dueño (sin velocidad ni avance de ruta). */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record SeguimientoEntrega(Long entregaId, Long asignacionId, String estado, Destino destino,
+                                     CamionPosicion camion) {}
+    /** Ciudad y coordenadas del destino, sin calle ni número. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Destino(String ciudad, String provincia, Double latitud, Double longitud) {}
+    /** Última posición del camión; lat/lng y fecha en null si todavía no reportó GPS. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CamionPosicion(String patente, Double latitud, Double longitud, LocalDateTime ultimaActualizacion) {}
 }

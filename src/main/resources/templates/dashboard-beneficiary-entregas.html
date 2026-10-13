@@ -18,9 +18,13 @@
         <div class="dt-page-header">
             <div>
                 <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Envíos en Camino hacia tu Sede</h1>
-                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Entregas asignadas a tu entidad que están listas para entregar o en traslado.</p>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Entregas asignadas a tu entidad que están planificadas o en traslado.</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm">
+                    <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+                    <span>Actualizar</span>
+                </a>
                 <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm">
                     <i data-lucide="camera" style="width: 15px; height: 15px;"></i>
                     <span>Confirmar Recepción</span>
@@ -36,7 +40,7 @@
             <div class="onboarding-hint-content">
                 <div class="onboarding-hint-title">Recepción de las entregas</div>
                 <p class="onboarding-hint-text">
-                    Cuando una entrega llega a tu sede, confirmá la recepción desde la sección de confirmación. Acá ves qué bienes vienen en cada envío.
+                    Cuando una entrega llega a tu sede, confirmá la recepción desde la sección de confirmación. Acá ves qué bienes vienen en cada envío y dónde está su camión.
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -59,7 +63,7 @@
                     </label>
                     <select id="incoming-status-filter" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="applyIncomingFilters()">
                         <option value="">Todos los estados</option>
-                        <option value="LISTA_PARA_ENTREGAR">Lista para entregar</option>
+                        <option value="PLANIFICADA">Planificada</option>
                         <option value="EN_TRASLADO">En traslado</option>
                     </select>
                 </div>
@@ -69,13 +73,16 @@
             </div>
         </section>
 
-        <!-- Aviso de ubicación -->
-        <!-- PROVISORIO: pedido backend C3/C4 (ubicación del camión del dueño, GET /entregas/seguimiento) -->
-        <p class="card" style="padding: 1rem 1.25rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); font-size: 0.875rem; color: var(--color-muted); margin-bottom: 1.5rem;">
-            La ubicación de los camiones todavía no está disponible para tu cuenta.
-        </p>
+        <!-- Estado vacío: no hay envíos en camino a la sede -->
+        <p th:if="${incomingDeliveries.isEmpty()}" class="card" style="padding: 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">No hay envíos en camino a tu sede.</p>
 
-        <p th:if="${incomingDeliveries.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">No hay envíos en camino a tu sede.</p>
+        <!-- Mapa: los camiones en camino y la sede -->
+        <section th:unless="${incomingDeliveries.isEmpty()}" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.5rem;" aria-label="Mapa de envíos">
+            <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border);">
+                <strong style="font-size: 0.9375rem; color: var(--color-ink);">Camiones en camino</strong>
+            </div>
+            <div id="entity-tracking-map" style="height: 360px; width: 100%; z-index: 1;"></div>
+        </section>
 
         <!-- Lista de envíos -->
         <div class="dt-cards-grid-3" id="incoming-grid">
@@ -90,6 +97,12 @@
                     <span>Bien: <strong style="color: var(--color-ink);" th:text="${good.name ?: '—'}">Bien</strong></span>
                     <span>Cantidad: <strong style="color: var(--color-ink);" th:text="${good.quantity ?: '—'}">—</strong></span>
                 </div>
+                <!-- Camión: sin datos de posición o sin GPS, "Sin posición todavía" -->
+                <div style="font-size: 0.8125rem; color: var(--color-muted);" th:if="${inc.truck?.lat == null}">Sin posición todavía</div>
+                <div style="font-size: 0.8125rem; color: var(--color-muted);" th:if="${inc.truck?.lat != null}">
+                    Camión <strong style="color: var(--color-ink);" th:text="${inc.truck.plate ?: '—'}">AB123CD</strong>
+                    · Última actualización <span th:text="${inc.truck.lastUpdateAgo}">hace 5 min</span>
+                </div>
                 <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--color-border);">
                     <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm" th:if="${inc.status == 'EN_TRASLADO'}" style="width: 100%;">
                         <i data-lucide="camera" style="width: 14px; height: 14px;"></i>
@@ -99,7 +112,53 @@
             </article>
         </div>
 
-        <script>
+        <script th:inline="javascript">
+            // Envíos en camino (API). Todos llegan a la sede de la entidad: el marcador de destino se dibuja una vez.
+            const envios = /*[[${incomingDeliveries}]]*/ [];
+            const CENTRO_PREDETERMINADO = [-34.6037, -58.3816];
+
+            function tieneCoords(p) {
+                return p != null && p.lat != null && p.lng != null;
+            }
+
+            function crearPopup(lineas) {
+                const div = document.createElement('div');
+                lineas.forEach(texto => {
+                    const linea = document.createElement('div');
+                    linea.textContent = texto;
+                    div.appendChild(linea);
+                });
+                return div;
+            }
+
+            function iniciarMapaEnvios() {
+                const contenedor = document.getElementById('entity-tracking-map');
+                if (!contenedor || typeof L === 'undefined') return;
+                const sede = envios.find(e => tieneCoords(e.destinationCoords));
+                const centro = sede ? [sede.destinationCoords.lat, sede.destinationCoords.lng] : CENTRO_PREDETERMINADO;
+                const mapa = L.map(contenedor).setView(centro, sede ? 13 : 5);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(mapa);
+
+                const puntos = [];
+                if (sede) {
+                    L.marker(centro).addTo(mapa)
+                        .bindPopup(crearPopup(['Tu sede', sede.destinationAddress || '']));
+                    puntos.push(centro);
+                }
+                envios.forEach(e => {
+                    if (!e.truck || !tieneCoords(e.truck)) return;
+                    const pos = [e.truck.lat, e.truck.lng];
+                    L.circleMarker(pos, { radius: 9, color: '#1d4ed8', fillColor: '#3b82f6', fillOpacity: 0.9 })
+                        .addTo(mapa)
+                        .bindPopup(crearPopup(['Camión ' + (e.truck.plate || '—'),
+                            e.truck.lastUpdate ? 'Última actualización: ' + e.truck.lastUpdate : 'Sin fecha de actualización']));
+                    puntos.push(pos);
+                });
+                if (puntos.length > 1) mapa.fitBounds(puntos, { padding: [24, 24] });
+            }
+
             function applyIncomingFilters() {
                 const query = (document.getElementById('incoming-search').value || '').toLowerCase().trim();
                 const status = document.getElementById('incoming-status-filter').value;
@@ -112,6 +171,14 @@
                 });
                 document.getElementById('incoming-count').textContent = count;
             }
+
+            // Actualización cada 60 s (EXTRA): recarga la página salvo que el usuario esté buscando.
+            setInterval(() => {
+                const busqueda = document.getElementById('incoming-search');
+                if (!busqueda || !busqueda.value) location.reload();
+            }, 60000);
+
+            document.addEventListener('DOMContentLoaded', iniciarMapaEnvios);
         </script>
     </main>
 </body>
