@@ -60,3 +60,102 @@
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
+
+/* Animated single-choice dropdowns keep native fields for submission and validation. */
+window.initializeAnimatedSelects = () => {
+  let activeClose;
+  document.querySelectorAll('select:not([multiple])').forEach((select, serial) => {
+    if (select.closest('.animated-select')) return;
+    serial = window.animatedSelectSerial = (window.animatedSelectSerial || 0) + 1;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'animated-select';
+    select.before(wrapper);
+    wrapper.append(select);
+    select.classList.add('animated-select-native');
+    select.tabIndex = -1;
+    select.setAttribute("aria-hidden", "true");
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'animated-select-trigger';
+    trigger.setAttribute('role', 'combobox');
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-required', String(select.required));
+    trigger.setAttribute('aria-expanded', 'false');
+    const label = select.labels && select.labels[0];
+    if (label) {
+      label.id ||= 'dropdown-label-' + serial;
+      trigger.setAttribute('aria-labelledby', label.id);
+      label.addEventListener('click', () => trigger.focus());
+    } else trigger.setAttribute('aria-label', select.getAttribute('aria-label') || 'Elegir una opción');
+    const panel = document.createElement('div');
+    panel.id = 'dropdown-options-' + serial;
+    panel.className = 'animated-select-options';
+    panel.setAttribute('role', 'listbox');
+    panel.inert = true;
+    trigger.setAttribute('aria-controls', panel.id);
+    wrapper.append(trigger, panel);
+    const sync = () => {
+      trigger.textContent = select.selectedOptions[0]?.textContent || 'Elegí una opción';
+      trigger.disabled = select.disabled;
+    };
+    const close = () => {
+      wrapper.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
+      panel.inert = true;
+      if (activeClose === close) activeClose = null;
+    };
+    const choose = index => {
+      select.selectedIndex = index;
+      select.dispatchEvent(new Event('input', { bubbles: true }));
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      trigger.removeAttribute('aria-invalid');
+      sync(); close(); trigger.focus();
+    };
+    const open = () => {
+      if (activeClose) activeClose();
+      sync();
+      panel.replaceChildren();
+      [...select.options].forEach((option, index) => {
+        if (option.hidden) return;
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'animated-select-option';
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', String(option.selected));
+        item.disabled = option.disabled || option.parentElement.disabled;
+        item.textContent = option.textContent;
+        item.addEventListener('click', () => choose(index));
+        panel.append(item);
+      });
+      wrapper.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      panel.inert = false;
+      activeClose = close;
+    };
+    trigger.addEventListener('click', () => wrapper.classList.contains('is-open') ? close() : open());
+    wrapper.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { close(); trigger.focus(); event.preventDefault(); return; }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      if (!wrapper.classList.contains('is-open')) open();
+      const options = [...panel.querySelectorAll('button:not(:disabled)')];
+      let index = options.indexOf(document.activeElement);
+      index = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1
+        : (index + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+      options[index]?.focus();
+    });
+    wrapper.addEventListener('focusout', event => { if (!wrapper.contains(event.relatedTarget)) close(); });
+    document.addEventListener('pointerdown', event => { if (!wrapper.contains(event.target)) close(); });
+    select.addEventListener('change', sync);
+    select.addEventListener('invalid', event => {
+      event.preventDefault();
+      trigger.setAttribute('aria-invalid', 'true');
+      trigger.focus();
+      open();
+    });
+    select.form?.addEventListener('reset', () => setTimeout(sync, 0));
+    new MutationObserver(sync).observe(select, { attributes: true, childList: true, subtree: true });
+    sync();
+  });
+};
+window.initializeAnimatedSelects();

@@ -87,12 +87,12 @@
                     <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
                 </div>
 
-                <fieldset class="registro-fieldset" data-registro-representantes data-registro-minimo="0">
+                <fieldset class="registro-fieldset" data-registro-representantes data-registro-minimo="1">
                     <legend>Personas representantes <span class="required">*</span></legend>
                     <p class="form-hint">Cargá al menos una persona representante con su nombre y un teléfono. El correo es opcional.</p>
                     <div data-registro-bloques>
                         <fieldset class="registro-fieldset" data-registro-bloque th:each="rep, st : *{representantes}">
-                            <legend>Persona representante <span data-registro-numero th:text="${st.count}">1</span></legend>
+                            <legend>Persona representante</legend>
                             <div class="registro-grid">
                                 <div class="form-group">
                                     <label class="form-label" th:for="|rep-${st.index}-nombre|">Nombre y apellido <span class="required" th:if="${st.first}">*</span></label>
@@ -107,7 +107,7 @@
                                     <input class="form-control" type="email" th:id="|rep-${st.index}-correo|" th:name="|representantes[${st.index}].correo|" th:value="${rep.correo}" placeholder="ana@entidad.org" />
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-outline js-only" data-registro-quitar>Quitar esta persona</button>
+                            <button type="button" class="btn btn-outline js-only" data-registro-quitar th:hidden="${st.first}">Quitar esta persona</button>
                         </fieldset>
                     </div>
                     <p class="form-error" th:if="${#fields.hasErrors('representantes')}" th:errors="*{representantes}"></p>

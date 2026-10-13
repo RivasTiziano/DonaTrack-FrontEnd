@@ -24,7 +24,7 @@ import org.springframework.web.client.RestClientException;
 @Controller
 public class AutenticacionController {
     private static final String REGISTRADO = "redirect:/login?registrado";
-    private static final int REPRESENTANTES_INICIALES = 2;
+    private static final int REPRESENTANTES_INICIALES = 1;
 
     private final AutenticacionService service;
     private final SesionActual sesiones;

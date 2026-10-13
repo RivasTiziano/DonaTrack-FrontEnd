@@ -128,3 +128,27 @@ html.drawer-open:has(.dashboard-mobile-drawer.open),body.drawer-open:has(.dashbo
   background: linear-gradient(110deg, #be123c 0%, #e11d48 55%, #ef4444 100%) !important;
   color: #fff !important;
 }
+
+.animated-select { position: relative; width: 100%; }
+.animated-select-native { position: absolute; width: 1px; height: 1px; padding: 0; opacity: 0; pointer-events: none; }
+.animated-select .animated-select-trigger {
+  width: 100%; min-height: 48px; padding: 12px 42px 12px 12px; text-align: left;
+  border: 1px solid #a3a3a3 !important; border-radius: 6px; font: inherit;
+  color: #292929 !important; position: relative;
+}
+.animated-select-trigger::after { content: ''; position: absolute; right: 18px; top: 19px; width: 7px; height: 7px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: rotate(45deg); transition: transform 240ms ease; }
+.animated-select.is-open .animated-select-trigger::after { transform: rotate(225deg); }
+.animated-select .animated-select-trigger:focus-visible { outline: none !important; border-color: #94a3b8 !important; }
+.animated-select-options { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 120; max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid #dbe2ea; border-radius: 8px; padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-10px) scaleY(.96); transform-origin: top; transition: opacity 240ms ease, transform 240ms ease, visibility 240ms; }
+.animated-select.is-open .animated-select-options { opacity: 1; visibility: visible; transform: translateY(0) scaleY(1); }
+.animated-select .animated-select-option { display: block; width: 100%; border: 0 !important; text-align: left; border-radius: 5px; padding: 10px 12px; font: inherit; }
+.animated-select .animated-select-option:hover, .animated-select .animated-select-option:focus-visible { background: #fff1f2 !important; color: #be123c !important; outline: none !important; }
+.animated-select-option[aria-selected="true"] { font-weight: 700; }
+.animated-select-trigger[aria-invalid="true"] { border-color: #e11d48 !important; }
+
+.registration-page [data-registro-agregar] { border: 0 !important; background: transparent !important; color: #111 !important; }
+.registration-page [data-registro-agregar]:hover { color: #111 !important; text-decoration: underline; text-underline-offset: 4px; }
+.registration-page [data-registro-quitar][hidden] { display: none !important; }
+
+.registration-page [data-registro-representantes] { border: 0; background: transparent; padding: 0; border-radius: 0; }
+.registration-page [data-registro-representantes] > legend { display: none; }

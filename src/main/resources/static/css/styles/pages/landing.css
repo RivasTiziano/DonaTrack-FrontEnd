@@ -454,3 +454,17 @@
 #about .feature-grid { gap: 2.5rem; }
 #about .feature-item { background: transparent; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
 #about .feature-icon { background: transparent; border-radius: 0; width: 28px; height: 28px; place-items: start; }
+#about .feature-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  column-gap: 16px;
+  row-gap: 8px;
+  align-items: center;
+}
+#about .feature-item h3 { grid-column: 1; grid-row: 1; margin: 0; }
+#about .feature-item .feature-icon { grid-column: 2; grid-row: 1; place-items: center; }
+#about .feature-item p { grid-column: 1 / -1; grid-row: 2; }
+
+.delivery-heart-marker { background: transparent; border: 0; }
+.delivery-heart-marker svg { display: block; width: 34px; height: 34px; fill: #e11d48; stroke: #fff; stroke-width: 1.5; stroke-linejoin: round; }
+.delivery-heart-marker:hover svg { fill: #be123c; }

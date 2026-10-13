@@ -195,11 +195,11 @@ class RegistroMvcTest {
         verifyNoInteractions(registro);
     }
 
-    @Test void formularioDeOrganizacionMuestraDosBloquesDeRepresentantes() throws Exception {
+    @Test void formularioDeOrganizacionMuestraUnRepresentanteObligatorio() throws Exception {
         mvc.perform(get(RUTA_JURIDICO))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("name=\"representantes[0].nombre\"")))
-                .andExpect(content().string(containsString("name=\"representantes[1].nombre\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("name=\"representantes[1].nombre\""))))
                 .andExpect(content().string(containsString("data-registro-agregar")));
     }
 
@@ -230,7 +230,7 @@ class RegistroMvcTest {
         datos.remove("representantes[0].tipoDocumento");
         mvc.perform(enviar(RUTA_JURIDICO, datos))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Cargá al menos una persona representante con todos sus datos.")));
+                .andExpect(content().string(containsString("Completá todos los datos de cada representante cargado.")));
         verifyNoInteractions(registro);
     }
 
