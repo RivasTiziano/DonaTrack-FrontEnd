@@ -87,7 +87,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.16);
+
 }
 
 .detail-card--empty {
@@ -147,7 +147,7 @@
 
 .donation-map-marker svg {
   display: block;
-  filter: drop-shadow(0 8px 12px rgba(37, 99, 235, 0.24));
+
 }
 
 .modal-overlay {
@@ -169,7 +169,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
+
 }
 
 .donation-modal__header,

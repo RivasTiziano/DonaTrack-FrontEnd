@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <th:block th:fragment="contenido">
+            <section th:if="${section == 'asignar'}" class="card api-panel">
+                <div class="panel-columns">
+                    <div>
+                        <h2>Generar sugerencias</h2>
+                        <form method="post" th:action="@{/admin/dashboard/asignar/sugerir}">
+                            <label>Donación<select class="form-control" name="donacionId" required>
+                                <option value="">Seleccionar</option>
+                                <option th:each="d : ${donaciones}" th:value="${d.id}" th:text="'#' + ${d.id} + ' · ' + ${d.descripcionGeneral}">
+                                </option>
+                            </select>
+                        </label>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit">Consultar matchmaking</button>
+                        </div>
+                    </form>
+                    <div th:if="${sugerencia != null}">
+                        <h3 th:text="'Sugerencia para donación #' + ${sugerencia.donacionId}">
+                        </h3>
+                        <p th:text="${sugerencia.hayInterseccion ? 'Hay coincidencias entre algoritmos.' : 'No hay intersección; revisá los tops de cada algoritmo.'}">
+                        </p>
+                        <div class="api-table">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Necesidad</th>
+                                        <th scope="col">Descripción</th>
+                                        <th scope="col">Restante</th>
+                                        <th scope="col">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="n : ${sugerencia.mejoresNecesidades}">
+                                        <td data-label="Necesidad" th:text="${n.necesidadId}">
+                                        </td>
+                                        <td data-label="Descripción" th:text="${n.descripcion}">
+                                        </td>
+                                        <td data-label="Restante" th:text="${n.cantidadRestante}">
+                                        </td>
+                                        <td data-label="Acción">
+                                            <button class="btn btn-outline" type="button" data-dialog-open="asignar-cantidad" th:data-necesidad-id="${n.necesidadId}" th:data-donacion-id="${sugerencia.donacionId}">Asignar</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <article th:each="top : ${sugerencia.tops}">
+                            <h4 th:text="${top.nombreAlgoritmo}">
+                            </h4>
+                            <div class="api-table">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Necesidad</th>
+                                            <th scope="col">Descripción</th>
+                                            <th scope="col">Restante</th>
+                                            <th scope="col">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="n : ${top.topDiezNecesidades}">
+                                            <td data-label="Necesidad" th:text="${n.necesidadId}">
+                                            </td>
+                                            <td data-label="Descripción" th:text="${n.descripcion}">
+                                            </td>
+                                            <td data-label="Restante" th:text="${n.cantidadRestante}">
+                                            </td>
+                                            <td data-label="Acción">
+                                                <button class="btn btn-outline" type="button" data-dialog-open="asignar-cantidad" th:data-necesidad-id="${n.necesidadId}" th:data-donacion-id="${sugerencia.donacionId}">Asignar</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-dialog-open="asignar-cantidad">Asignar una cantidad</button>
+                    <dialog class="dialog" id="asignar-cantidad" aria-labelledby="asignar-titulo">
+                        <div class="dialog-header">
+                            <h2 id="asignar-titulo">Asignar una cantidad</h2>
+                            <button type="button" class="btn btn-outline" data-dialog-close>Cerrar</button>
+                        </div>
+                        <form method="post" th:action="@{/admin/dashboard/asignar}">
+                            <label>Donación<select class="form-control" name="donacionId" required>
+                                <option value="">Seleccionar</option>
+                                <option th:each="d : ${donaciones}" th:value="${d.id}" th:text="'#' + ${d.id} + ' · disponible ' + ${d.bien.cantidadDisponible} + ' ' + ${d.bien.unidadMedida}">
+                                </option>
+                            </select>
+                        </label>
+                        <label>Necesidad<select class="form-control" name="necesidadId" required>
+                            <option value="">Seleccionar</option>
+                            <option th:each="n : ${necesidades}" th:value="${n.necesidadId}" th:text="'#' + ${n.necesidadId} + ' · ' + ${n.descripcion} + ' · restante ' + ${n.cantidadRestante}">
+                            </option>
+                        </select>
+                    </label>
+                    <label>Cantidad a asignar<input class="form-control" name="cantidadAAsignar" type="number" min="0.001" step="any" required />
+                </label>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Confirmar asignación</button>
+                </div>
+            </form>
+        </dialog>
+        
+    </div>
+    <aside>
+        <h2>Algoritmos activos</h2>
+        <form th:each="a : ${algoritmos}" method="post" th:action="@{/admin/dashboard/algoritmos}" class="algorithm-toggle">
+            <span th:text="${a.nombre} + (${a.activo} ? ' — activo' : ' — inactivo')">
+            </span>
+            <input type="hidden" name="nombre" th:value="${a.nombre}" />
+            <input type="hidden" name="activo" th:value="${!a.activo}" />
+            <div class="form-actions">
+                <button class="btn btn-outline" type="submit" role="switch" th:attr="aria-checked=${a.activo}" th:text="${a.activo ? 'Desactivar' : 'Activar'}">
+                </button>
+            </div>
+        </form>
+    </aside>
+</div>
+</section>
+</th:block>
+</body>
+</html>

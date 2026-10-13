@@ -1,172 +1,89 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donors')}">
-<head>
-    <title>DonaTrack - Administrar Donantes</title>
-</head>
-<body>
-    <main class="admin-donors-view" th:fragment="main">
-        <!-- Breadcrumbs -->
-        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
-            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
-            <span class="separator">/</span>
-            <a th:href="@{/admin/dashboard}">Panel Administración</a>
-            <span class="separator">/</span>
-            <span class="current">Administrar Donantes</span>
-        </nav>
-
-        <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-            <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Administración de Personas Donantes</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Gestiona y registra donantes individuales y corporativos en el sistema.</p>
+    <head>
+        <title>Administrar Donantes - DonaTrack</title>
+    </head>
+    <body>
+        <section th:fragment="main" class="api-view">
+            <header th:replace="~{fragments/admin-ui :: header('Personas donantes', 'Registro, contactos y acceso de personas humanas y jurídicas.')}">
+            </header>
+            <div class="toolbar">
+                <a class="btn btn-primary" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Nuevo donante</a>
+                <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes/nuevo/juridicos}">Nuevo donante jurídico</a>
+                <a th:if="${sesion.tiene('IMPORTAR_DONANTES_CSV')}" class="btn btn-outline" th:href="@{/admin/dashboard/importar}">Importar CSV</a>
             </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <a th:href="@{/admin/dashboard/importar}" class="btn btn-outline">
-                    <i data-lucide="file-up" style="width: 18px; height: 18px;"></i>
-                    <span>Importar CSV</span>
-                </a>
-                <a class="btn btn-primary" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Nueva persona humana</a>
-                <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes/nuevo/juridicos}">Nueva persona jurídica</a>
+            <div th:replace="~{fragments/admin-ui :: mensajes}">
             </div>
+            <p th:if="${errorDonantes != null}" class="api-error" role="alert" th:text="${errorDonantes}">
+            </p>
+            <section class="card api-panel">
+                <div class="toolbar">
+                    <label>Buscar donante<input class="form-control" type="search" data-filter-table="donors-table" placeholder="Nombre, documento o contacto"/>
+                </label>
+                <label>Tipo<select class="form-control" data-filter-table="donors-table" data-field="type">
+                    <option value="">Todos</option>
+                    <option value="Humana">Donantes</option>
+                    <option value="Jurídica">Donantes jurídicos</option>
+                </select>
+            </label>
         </div>
-
-        <!-- Onboarding Hint (Heurística #10) -->
-        <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de tipos de donante">
-            <div class="onboarding-hint-icon">
-                <i data-lucide="users" style="width: 20px; height: 20px; color: #d97706;"></i>
-            </div>
-            <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Tipos de Donantes Registrables</div>
-                <p class="onboarding-hint-text">
-                    • <strong>Persona Humana:</strong> Requiere Nombre, Apellido, DNI, Edad (≥18), Género, Dirección y Correo electrónico obligatorio (Teléfono/WhatsApp opcionales).<br/>
-                    • <strong>Persona Jurídica:</strong> Requiere Razón Social, CUIT, Tipo (ONG, Empresa, Gubernamental, Institución) y datos del representante designado.
-                </p>
-            </div>
-            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
-                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-            </button>
+        <div class="empty-state" th:if="${#lists.isEmpty(donorsList) and errorDonantes == null and apiError == null}">
+            <i data-lucide="users" aria-hidden="true">
+            </i>
+            <p>Todavía no hay donantes registrados.</p>
+            <a class="btn btn-primary" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Registrar un donante</a>
         </div>
-
-        <div th:if="${errorDonantes != null}" role="alert"
-             style="padding: 1rem; margin-bottom: 1rem; color: #991b1b; background: #fef2f2; border-radius: 8px;">
-            <span th:text="${errorDonantes}"></span>
+        <div class="api-table">
+            <table id="donors-table" class="data-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Nombre / Razón social</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Documento</th>
+                        <th scope="col">Contacto</th>
+                        <th scope="col">Registro</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="donor : ${donorsList}" th:data-type="${donor.type}" data-record>
+                        <td data-label="Nombre">
+                            <strong th:text="${donor.name}">
+                            </strong>
+                        </td>
+                        <td data-label="Tipo" th:text="${donor.type == 'Humana' ? 'Donante' : 'Donante jurídico'}">
+                        </td>
+                        <td data-label="Documento" th:text="${donor.docType + ': ' + donor.doc}">
+                        </td>
+                        <td data-label="Contacto">
+                            <span th:text="${donor.email}">
+                            </span>
+                            <small class="muted" th:text="${donor.phone}">
+                            </small>
+                        </td>
+                        <td data-label="Registro">
+                            <span class="registration-state" th:text="${donor.estadoRegistro == 'PENDIENTE_COMPLETAR' ? 'Pendiente de completar' : 'Completo'}"></span>
+                        </td>
+                        <td data-label="Acciones">
+                            <div class="row-actions">
+                                <a class="btn btn-outline action-icon action-edit" th:href="@{/admin/dashboard/donantes/{tipo}/{id}(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" aria-label="Ver o editar" title="Ver o editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></a>
+                                <a th:if="${accesosHabilitados != null and accesosHabilitados.contains((donor.type == 'Humana' ? 'humanos/' : 'juridicos/') + donor.id)}" class="btn btn-outline" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
+                                <details class="row-menu">
+                                    <summary aria-label="Más acciones">⋯</summary>
+                                    <div class="menu-content">
+                                        <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante?');">
+                                            <button type="submit" class="btn btn-outline action-icon action-delete" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-
-        <!-- Donors Table Card -->
-        <p th:if="${apiError != null}" th:text="${apiError}" role="alert"></p>
-        <p th:if="${success != null}" th:text="${success}" role="status"></p>
-        <div class="card" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs);">
-            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-ink);">Listado de Donantes Registrados</h2>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterDonorsTable('all', this)">Todos</button>
-                    <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterDonorsTable('Humana', this)">Humanas</button>
-                    <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterDonorsTable('Jurídica', this)">Jurídicas</button>
-                </div>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table id="donors-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 1px solid var(--color-border); color: var(--color-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                            <th style="padding: 1rem 1.5rem;">Nombre / Razón Social</th>
-                            <th style="padding: 1rem;">Tipo</th>
-                            <th style="padding: 1rem;">Documento</th>
-                            <th style="padding: 1rem;">Contacto</th>
-                            <th style="padding: 1rem;">Estado del registro</th>
-                            <th style="padding: 1rem; text-align: right;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="donors-tbody">
-                        <tr th:if="${#lists.isEmpty(donorsList) and errorDonantes == null}">
-                            <td colspan="6" style="padding: 1rem; text-align: center;">
-                                Todavía no hay donantes registrados.
-                            </td>
-                        </tr>
-                        <tr th:each="donor : ${donorsList}" th:data-type="${donor.type}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
-                            <td style="padding: 1rem 1.5rem;">
-                                <strong style="color: var(--color-ink); font-size: 0.9375rem;" th:text="${donor.name}">Nombre</strong>
-                            </td>
-                            <td style="padding: 1rem;">
-                                <span class="status-badge" th:classappend="${donor.type == 'Jurídica' ? 'badge-asignada' : 'badge-deposito'}" th:text="${donor.type}">Tipo</span>
-                            </td>
-                            <td style="padding: 1rem;">
-                                <span style="font-weight: 600;" th:text="${donor.docType} + ': ' + ${donor.doc}">DNI 12345678</span>
-                            </td>
-                            <td style="padding: 1rem;">
-                                <div style="color: var(--color-ink);" th:text="${donor.email}">email@mail.com</div>
-                                <div style="font-size: 0.75rem; color: var(--color-muted);" th:text="${donor.phone}">+54 11 1234-5678</div>
-                            </td>
-                            <td style="padding: 1rem;">
-                                <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-primary);" th:text="${donor.estadoRegistro}">Estado</span>
-                            </td>
-                            <td style="padding: 1rem; text-align: right;">
-                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                    <a class="btn btn-outline btn-sm" th:href="@{/admin/dashboard/donantes/{tipo}/{id}(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Editar datos</a>
-                                    <a class="btn btn-outline btn-sm" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
-                                    <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante? La API verificará si está permitido.');">
-                                        <button type="submit" class="btn btn-outline btn-sm">Eliminar</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Empty state row -->
-                        <tr id="no-donors-row" th:if="${not #lists.isEmpty(donorsList) and errorDonantes == null}" style="display: none;">
-                            <td colspan="6" style="padding: 3rem; text-align: center; color: var(--color-muted);">
-                                <i data-lucide="users" style="width: 32px; height: 32px; margin-bottom: 0.5rem; stroke-width: 1.5;"></i>
-                                <div style="font-weight: 600; color: var(--color-ink);">No se encontraron donantes de este tipo</div>
-                                <div style="font-size: 0.8125rem; margin-top: 0.25rem;">Prueba seleccionando la pestaña "Todos".</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-
-        <script>
-            function filterDonorsTable(type, btn) {
-                if (btn) {
-                    btn.closest('div').querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                }
-                const tbody = document.getElementById('donors-tbody');
-                window.simulateFilterReload(tbody, function() {
-                    const rows = tbody.querySelectorAll('tr[data-type]');
-                    let visible = 0;
-                    rows.forEach(r => {
-                        const rType = r.getAttribute('data-type');
-                        if (type === 'all' || rType === type) {
-                            r.style.display = '';
-                            visible++;
-                        } else {
-                            r.style.display = 'none';
-                        }
-                    });
-                    const noRow = document.getElementById('no-donors-row');
-                    if (noRow) noRow.style.display = visible === 0 ? '' : 'none';
-                }, 200);
-            }
-
-            function toggleDonorForm(type) {
-                const hum = document.getElementById('fields-humana');
-                const jur = document.getElementById('fields-juridica');
-                const humInputs = hum.querySelectorAll('input');
-                const jurInputs = jur.querySelectorAll('input');
-
-                if (type === 'juridica') {
-                    hum.style.display = 'none';
-                    jur.style.display = 'block';
-                    humInputs.forEach(i => i.removeAttribute('required'));
-                    jurInputs.forEach(i => i.setAttribute('required', 'required'));
-                } else {
-                    hum.style.display = 'block';
-                    jur.style.display = 'none';
-                    jurInputs.forEach(i => i.removeAttribute('required'));
-                    humInputs.forEach(i => i.setAttribute('required', 'required'));
-                }
-            }
-        </script>
-    </main>
+        <p data-filter-empty="donors-table" hidden role="status">No se encontraron donantes con esos filtros.</p>
+    </section>
+</section>
 </body>
 </html>

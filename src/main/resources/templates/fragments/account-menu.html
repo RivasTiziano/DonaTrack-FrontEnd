@@ -1,0 +1,5 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body>
+<details th:fragment="menu" class="account-menu" th:with="nombre=${sesion != null ? (sesion.esAdmin() ? 'Administración' : sesion.nombreVisible) : 'Cuenta'}">
+<summary class="account-avatar" th:aria-label="${'Menú de ' + nombre}" th:text="${#strings.toUpperCase(#strings.substring(nombre,0,1))}">A</summary>
+<div class="account-dropdown"><span th:text="${nombre}">Cuenta</span><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-outline">Salir</button></form></div>
+</details></body></html>

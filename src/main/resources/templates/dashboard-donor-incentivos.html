@@ -46,7 +46,7 @@
 
         <!-- Donor KPI Summary Cards -->
         <section class="dt-cards-grid-4" style="margin-bottom: 2rem;">
-            <div class="metric-card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+            <div class="metric-card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; ">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Donaciones Totales</span>
                     <i data-lucide="package" style="width: 18px; height: 18px; color: var(--color-primary);"></i>
@@ -55,7 +55,7 @@
                 <small style="font-size: 0.75rem; color: #059669; font-weight: 600;">Históricas registradas</small>
             </div>
 
-            <div class="metric-card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+            <div class="metric-card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; ">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Impacto Acumulado</span>
                     <i data-lucide="heart" style="width: 18px; height: 18px; color: #e11d48;"></i>
@@ -68,7 +68,7 @@
         </section>
 
         <!-- Category Stepper / Path (Punto 3 y 4 de Consigna) -->
-        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; margin-bottom: 2.5rem; box-shadow: var(--shadow-xs);">
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; margin-bottom: 2.5rem; ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-primary); letter-spacing: 0.05em;">Camino de Categorías y Ascensos</span>
@@ -82,14 +82,14 @@
 
             <!-- Stepper Steps -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; position: relative;">
-                <div th:each="cat : ${incentiveCategories}" 
+                <div th:each="cat : ${incentiveCategories}"
                      style="border-radius: var(--radius-lg); padding: 1.25rem; border: 2px solid; display: flex; flex-direction: column; gap: 0.5rem; position: relative;"
                      th:styleappend="${cat.status == 'Actual' ? 'border-color: var(--color-primary); background: #f0fdf4;' : (cat.status == 'Completada' ? 'border-color: #10b981; background: #ffffff;' : 'border-color: #e2e8f0; background: #f8fafc; opacity: 0.75;')}">
-                    
+
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-muted);" th:text="'Nivel ' + ${cat.nivel}">Nivel 1</span>
-                        <span class="status-badge" 
-                              th:classappend="${cat.status == 'Actual' ? 'badge-entregada' : (cat.status == 'Completada' ? 'badge-lista' : 'badge-vencida')}" 
+                        <span class="status-badge"
+                              th:classappend="${cat.status == 'Actual' ? 'badge-entregada' : (cat.status == 'Completada' ? 'badge-lista' : 'badge-vencida')}"
                               th:text="${cat.status}">Estado</span>
                     </div>
 
@@ -168,10 +168,10 @@
 
             <!-- Missions Grid -->
             <div class="dt-cards-grid-2" id="missions-container">
-                <article class="mission-card" th:each="m : ${missions}" 
+                <article class="mission-card" th:each="m : ${missions}"
                          th:attr="data-category=${m.categoriaNombre}, data-type=${m.tipo}"
-                         style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1.25rem; transition: transform 0.2s ease;">
-                    
+                         style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem;  display: flex; flex-direction: column; gap: 1.25rem; transition: transform 0.2s ease;">
+
                     <!-- Card Top Header -->
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
                         <div style="display: flex; gap: 0.75rem; align-items: center;">
@@ -207,7 +207,7 @@
 
                     <!-- Prize Badge Showcase (Insignia Premio requerida en Punto 3) -->
                     <div th:if="${m.insigniaPremio != null}" style="border: 1px solid #e0e7ff; background: #f5f3ff; border-radius: var(--radius-md); padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.875rem;">
-                        <div style="width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #ffffff; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
+                        <div style="width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #ffffff; flex-shrink: 0; "
                              th:style="'background: #7c3aed;'">
                             <i data-lucide="award" style="width: 22px; height: 22px;"></i>
                         </div>
@@ -233,7 +233,7 @@
         </section>
 
         <!-- Insignias Showcase (Insignias Obtenidas e Insignias por Desbloquear) -->
-        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; margin-bottom: 2.5rem; box-shadow: var(--shadow-xs);">
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; margin-bottom: 2.5rem; ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--color-ink);">Insignias Obtenidas y Catálogo</h2>
@@ -262,11 +262,11 @@
             <div class="dt-cards-grid-3">
                 <p th:if="${badges.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">Todavía no tenés insignias visibles.</p>
                 <article class="badge-card" th:each="b : ${badges}"
-                         style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem; transition: transform 0.2s ease;"
+                         style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem;  display: flex; align-items: center; gap: 1rem; transition: transform 0.2s ease;"
                          th:styleappend="${b.status == 'Bloqueada' ? 'opacity: 0.6; background: #f8fafc; border-style: dashed;' : ''}">
-                    
-                    <div style="width: 52px; height: 52px; border-radius: 50%; color: #ffffff; display: grid; place-items: center; flex-shrink: 0; box-shadow: var(--shadow-sm);"
-                         th:styleappend="${b.status == 'Obtenida' ? 'background: linear-gradient(135deg, var(--color-primary), #4338ca);' : 'background: #94a3b8;'}">
+
+                    <div style="width: 52px; height: 52px; border-radius: 50%; color: #ffffff; display: grid; place-items: center; flex-shrink: 0; "
+                         th:styleappend="${b.status == 'Obtenida' ? 'background: #fff;' : 'background: #94a3b8;'}">
                         <i th:attr="data-lucide=${b.icon}" style="width: 26px; height: 26px;"></i>
                     </div>
 
@@ -282,7 +282,7 @@
         </section>
 
         <!-- Historial de Auditoría de Categorías -->
-        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; box-shadow: var(--shadow-xs);">
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 1.75rem; ">
             <div style="margin-bottom: 1.25rem;">
                 <h2 style="font-size: 1.2rem; font-weight: 800; color: var(--color-ink);">Historial de Ascensos de Categoría</h2>
                 <p style="font-size: 0.875rem; color: var(--color-muted); margin-top: 2px;">Registro inmutable de los cambios de nivel certificados por el sistema.</p>

@@ -57,7 +57,7 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
   margin-bottom: 30px;
 }
 
@@ -86,15 +86,15 @@
   gap: 20px;
   align-items: center;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(33, 150, 243, 0) 100%);
+  background: var(--color-surface, #fff);
   border: 1px solid #e3f2fd;
   border-radius: 10px;
   transition: all 0.3s;
 }
 
 .ranking-item:hover {
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
-  transform: translateX(4px);
+
+
 }
 
 .rank-position {
@@ -163,7 +163,7 @@
 
 .score-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  background: var(--color-surface, #fff);
   border-radius: 4px;
   transition: width 0.3s;
 }
@@ -185,7 +185,7 @@
   background: white;
   border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
   display: flex;
   align-items: center;
   gap: 20px;

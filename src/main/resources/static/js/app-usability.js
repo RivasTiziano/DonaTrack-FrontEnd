@@ -40,14 +40,16 @@
         <i data-lucide="${iconName}" style="width: 20px; height: 20px; color: ${iconColor};"></i>
       </div>
       <div class="toast-body">
-        <div class="toast-title">${title}</div>
-        <div class="toast-message">${message}</div>
+        <div class="toast-title"></div>
+        <div class="toast-message"></div>
       </div>
       <button type="button" class="toast-close" aria-label="Cerrar notificación">
         <i data-lucide="x" style="width: 16px; height: 16px;"></i>
       </button>
     `;
 
+    toast.querySelector('.toast-title').textContent = title;
+    toast.querySelector('.toast-message').textContent = message;
     container.appendChild(toast);
     if (window.lucide) {
       window.lucide.createIcons();
@@ -235,6 +237,10 @@
       const openDashDrawer = (e) => {
         if (e) e.stopPropagation();
         dashDrawer.classList.add('open');
+        dashDrawer.setAttribute('aria-hidden','false');
+        dashToggleBtn.setAttribute('aria-expanded','true');
+        document.querySelectorAll('.dashboard-header,.dashboard-body,.dashboard-bottom-nav').forEach(el => el.inert=true);
+        dashDrawerCloseBtn?.focus();
         dashBackdrop.classList.add('open');
         document.body.classList.add('drawer-open');
         document.documentElement.classList.add('drawer-open');
@@ -242,6 +248,10 @@
       };
       const closeDashDrawer = () => {
         dashDrawer.classList.remove('open');
+        dashDrawer.setAttribute('aria-hidden','true');
+        dashToggleBtn.setAttribute('aria-expanded','false');
+        document.querySelectorAll('.dashboard-header,.dashboard-body,.dashboard-bottom-nav').forEach(el => el.inert=false);
+        dashToggleBtn.focus();
         dashBackdrop.classList.remove('open');
         document.body.classList.remove('drawer-open');
         document.documentElement.classList.remove('drawer-open');

@@ -43,10 +43,32 @@ public class AccesoService {
         }
     }
 
+    public boolean habilitado(String tipo, Long id) {
+        if (!"beneficiarios".equals(tipo)) {
+            String estado = "humanos".equals(tipo) ? donaciones.humano(id).estadoRegistro() : donaciones.juridico(id).estadoRegistro();
+            if (!"PENDIENTE_COMPLETAR".equals(estado)) return false;
+        }
+        String rol = switch(tipo) { case "humanos" -> "DONANTE_HUMANO"; case "juridicos" -> "DONANTE_JURIDICO"; default -> "BENEFICIARIA"; };
+        return !auth.existeUsuario(rol, id);
+    }
+
+    /** Completa el contacto sin cambiar el estado pendiente ni crear el usuario. */
+    public void completarEmail(String tipo,Long id,String email) {
+        if("beneficiarios".equals(tipo) || !habilitado(tipo,id))
+            throw new FormularioInvalidoException("Este perfil no requiere un nuevo acceso o ya tiene cuenta.");
+        if(perfil(tipo,id).email()!=null)
+            throw new FormularioInvalidoException("El donante ya tiene un email de contacto.");
+        validator.validarEmail(email);
+        donaciones.completarEmail(tipo,id,email.trim().toLowerCase(java.util.Locale.ROOT));
+    }
+
     /** Crea el usuario. La contraseña se envía al backend y no se conserva. */
     public void crear(Acceso perfil, String password, String confirmacion) {
+        perfil = perfil(perfil.tipo(), perfil.id());
         if (perfil.email() == null)
             throw new FormularioInvalidoException("El perfil no tiene un email de contacto; cargalo antes de crear el acceso.");
+        if (!habilitado(perfil.tipo(), perfil.id()))
+            throw new FormularioInvalidoException("Este perfil no requiere un nuevo acceso o ya tiene cuenta.");
         validator.validar(password, confirmacion);
         // PROVISORIO: reemplazar por flujo de primer acceso con CuentaCreada (pedido backend E2)
         try {
@@ -59,19 +81,25 @@ public class AccesoService {
     private Acceso humano(Long id) {
         DonacionesDetalles.Humano humano = donaciones.humano(id);
         return new Acceso("humanos", id, "DONANTE_HUMANO",
-                nombreCompleto(humano.nombre(), humano.apellido()), email(humano.medioDeContactoPredeterminado()));
+                nombreCompleto(humano.nombre(), humano.apellido()), email(humano.mediosDeContacto(), humano.medioDeContactoPredeterminado()));
     }
 
     private Acceso juridico(Long id) {
         DonacionesDetalles.Juridico juridico = donaciones.juridico(id);
         return new Acceso("juridicos", id, "DONANTE_JURIDICO", juridico.razonSocial(),
-                email(juridico.medioDeContactoPredeterminado()));
+                email(juridico.mediosDeContacto(), juridico.medioDeContactoPredeterminado()));
     }
 
     private Acceso beneficiaria(Long id) {
         DonacionesDetalles.Beneficiario entidad = donaciones.beneficiario(id);
         return new Acceso("beneficiarios", id, "BENEFICIARIA", entidad.razonSocial(),
                 email(entidad.medioDeContactoPredeterminado()));
+    }
+
+    private static String email(java.util.List<MedioDeContactoDto> contactos, MedioDeContactoDto predeterminado) {
+        String valor = email(predeterminado);
+        if (valor != null) return valor;
+        return contactos == null ? null : contactos.stream().map(AccesoService::email).filter(java.util.Objects::nonNull).findFirst().orElse(null);
     }
 
     private static String email(MedioDeContactoDto medio) {

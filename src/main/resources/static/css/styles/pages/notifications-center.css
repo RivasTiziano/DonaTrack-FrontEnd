@@ -12,7 +12,7 @@
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
 }
 
 .header-title {
@@ -60,7 +60,7 @@
   background: white;
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
 }
 
 .filter-tab {
@@ -79,7 +79,7 @@
 }
 
 .filter-tab.active {
-  background: linear-gradient(135deg, #667EEA, #764BA2);
+  background: var(--color-surface, #fff);
   color: white;
 }
 
@@ -98,7 +98,7 @@
   border-radius: 12px;
   padding: 1.5rem;
   border-left: 4px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
   transition: all 0.3s ease;
 }
 
@@ -108,7 +108,7 @@
 }
 
 .notification-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
 }
 
 .notification-icon {
@@ -184,7 +184,7 @@
   padding: 3rem 1rem;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
 }
 
 .empty-state svg {

@@ -32,15 +32,17 @@ public class DonacionesController {
     private final ApiErrorMessages errors;
     private final PanelDonanteService panelDonante;
     private final PanelEntidadService panelEntidad;
+    private final ar.edu.utn.donatrack.services.AccesoService accesos;
 
     public DonacionesController(DonacionesService service, ApiViewSupport views, ApiErrorMessages errors, DonacionesValidator validator,
-                                PanelDonanteService panelDonante, PanelEntidadService panelEntidad) {
+                                PanelDonanteService panelDonante, PanelEntidadService panelEntidad, ar.edu.utn.donatrack.services.AccesoService accesos) {
         this.service = service;
         this.validator = validator;
         this.views = views;
         this.errors = errors;
         this.panelDonante = panelDonante;
         this.panelEntidad = panelEntidad;
+        this.accesos = accesos;
     }
 
     // Listados y operaciones de Donaciones
@@ -48,8 +50,15 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/donaciones")
     public String donaciones(Model model) {
         load(model, () -> model.addAttribute("donaciones", service.donaciones()));
+        model.addAttribute("nombresDonantes", service.nombresDonantes());
         load(model, () -> model.addAttribute("categorias", service.categorias()));
         return page(model, "Donaciones", "donaciones", "donations");
+    }
+
+    @GetMapping("/admin/dashboard/donaciones/nueva")
+    public String nuevaDonacion(Model model) {
+        load(model, () -> model.addAttribute("categorias", service.categorias()));
+        return "admin-donacion-nueva";
     }
 
     @GetMapping("/admin/dashboard/donaciones/{id}")
@@ -116,12 +125,26 @@ public class DonacionesController {
     }
 
     @PostMapping("/admin/dashboard/donaciones")
-    public String donar(@RequestParam Long donanteId,@RequestParam String descripcionGeneral,
+    public String donar(@RequestParam String donanteId,@RequestParam String descripcionGeneral,
                         @ModelAttribute BienForm form, BindingResult binding,
                         @ModelAttribute BienesAdicionalesForm adicionales, BindingResult adicionalesBinding,
-                        RedirectAttributes flash) {
-        if(binding.hasErrors() || adicionalesBinding.hasErrors()) return invalid(flash,"donaciones");
-        return write(flash,"donaciones",()->service.donar(donanteId,descripcionGeneral,form,adicionales));
+                        @RequestParam MultiValueMap<String,String> campos, Model model, RedirectAttributes flash) {
+        model.addAttribute("campos", campos);
+        model.addAttribute("editableBien", form);
+        model.addAttribute("adicionales", adicionales);
+        try {
+            if (binding.hasErrors() || adicionalesBinding.hasErrors())
+                throw new FormularioInvalidoException("Revisá los números y las fechas de los bienes.");
+            Long id;
+            try { id = Long.valueOf(donanteId); }
+            catch (NumberFormatException e) { throw new FormularioInvalidoException("Ingresá un ID de donante válido."); }
+            service.donar(id, descripcionGeneral, form, adicionales);
+            flash.addFlashAttribute("success", "Donación registrada correctamente.");
+            return "redirect:/admin/dashboard/donaciones";
+        } catch(FormularioInvalidoException e) { model.addAttribute("apiError", e.getMessage()); }
+        catch(RestClientException e) { model.addAttribute("apiError", errors.describe(e)); }
+        load(model, () -> model.addAttribute("categorias", service.categorias()));
+        return "admin-donacion-nueva";
     }
 
     @PostMapping("/admin/dashboard/bienes/{id}")
@@ -209,7 +232,7 @@ public class DonacionesController {
         }
         try {
             service.crear(tipo,form);
-            flash.addFlashAttribute("success","Donante registrado correctamente en la API.");
+            flash.addFlashAttribute("success","Donante registrado correctamente.");
             return "redirect:/admin/dashboard/donantes";
         } catch (FormularioInvalidoException e) {
             model.addAttribute("apiError",e.getMessage());
@@ -221,7 +244,7 @@ public class DonacionesController {
     public String eliminarDonante(@PathVariable String tipo, @PathVariable Long id, RedirectAttributes flash) {
         try {
             service.eliminarDonante(tipo,id);
-            flash.addFlashAttribute("success", "Eliminación confirmada por la API.");
+            flash.addFlashAttribute("success", "Registro eliminado.");
         } catch (RestClientException exception) {
             flash.addFlashAttribute("apiError", errors.describe(exception));
         }
@@ -231,7 +254,19 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/donantes")
     public String listar(Model model) {
         model.addAttribute("donorsList",List.of());
-        try { model.addAttribute("donorsList",service.filasDonantes()); }
+        model.addAttribute("accesosHabilitados", java.util.Set.of());
+        try {
+            var filas = service.filasDonantes();
+            model.addAttribute("donorsList", filas);
+            var habilitados = new java.util.HashSet<String>();
+            for (var fila : filas) {
+                if (!"PENDIENTE_COMPLETAR".equals(fila.estadoRegistro())) continue;
+                String tipo = !"Humana".equals(fila.type()) ? "juridicos" : "humanos";
+                try { if (accesos.habilitado(tipo, fila.id())) habilitados.add(tipo + "/" + fila.id()); }
+                catch (RestClientException | IllegalStateException e) { /* Fail closed: never offer an unverified account. */ }
+            }
+            model.addAttribute("accesosHabilitados", habilitados);
+        }
         catch(RestClientException | IllegalStateException e) {
             model.addAttribute("errorDonantes","No se pudo obtener el listado de donantes. Verificá que el servicio de Donaciones esté disponible.");
         }
@@ -239,7 +274,13 @@ public class DonacionesController {
     }
 
     @GetMapping("/admin/dashboard/donantes/{tipo:humanos|juridicos}/{id}")
-    public String donante(@PathVariable String tipo,@PathVariable Long id,Model model) {
+    public String donante(@PathVariable String tipo,@PathVariable Long id,
+                           @RequestParam(defaultValue="false") boolean completarContacto,Model model) {
+        model.addAttribute("completarContacto",completarContacto);
+        if(completarContacto) {
+            model.addAttribute("emailContacto","");
+            model.addAttribute("apiError","Agregá un email de contacto antes de crear el acceso.");
+        }
         prepare(model,tipo,id);
         try {
             var perfil=service.perfilDonante(tipo,id);

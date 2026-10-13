@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donors')}">
-<head><title>Registrar donante - DonaTrack</title></head><body><main th:fragment="main" class="api-view">
-    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+<head><title>Registrar donante - DonaTrack</title></head><body><section th:fragment="main" class="api-view">
     <h1 th:text="${tipo == 'humanos' ? 'Registrar persona humana' : 'Registrar persona jurídica'}"></h1>
     <p>No crea usuario ni contraseña. Los datos y requisitos se validan en Donaciones.</p>
-    <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
+    <div th:replace="~{fragments/admin-ui :: mensajes}"></div>
     <form class="card api-panel" method="post" th:action="@{/admin/dashboard/donantes/nuevo/{tipo}(tipo=${tipo})}">
-        <fieldset class="api-fields"><legend>Datos de la persona</legend>
+        <fieldset class="form-grid"><legend>Datos de la persona</legend>
             <th:block th:if="${tipo == 'humanos'}">
                 <label>Nombre<input class="form-control" name="nombre" th:value="${form != null ? form.nombre : ''}" required /></label>
                 <label>Apellido<input class="form-control" name="apellido" th:value="${form != null ? form.apellido : ''}" required /></label>
@@ -20,7 +19,7 @@
                 <label>Rubro<input class="form-control" name="rubro" th:value="${form != null ? form.rubro : ''}" required /></label>
             </th:block>
         </fieldset>
-        <fieldset class="api-fields"><legend>Dirección</legend>
+        <fieldset class="form-grid"><legend>Dirección</legend>
             <label>Calle<input class="form-control" name="calle" th:value="${form != null ? form.calle : ''}" required /></label>
             <label>Número<input class="form-control" name="numero" th:value="${form != null ? form.numero : ''}" required /></label>
             <label>Ciudad<input class="form-control" name="ciudad" th:value="${form != null ? form.ciudad : ''}" required /></label>
@@ -28,24 +27,24 @@
             <label>Latitud (opcional)<input class="form-control" name="latitud" type="number" step="any" th:value="${form != null ? form.latitud : ''}" /></label>
             <label>Longitud (opcional)<input class="form-control" name="longitud" type="number" step="any" th:value="${form != null ? form.longitud : ''}" /></label>
         </fieldset>
-        <fieldset class="api-fields"><legend>Contacto</legend>
+        <fieldset class="form-grid"><legend>Contacto</legend>
             <label>Email principal (predeterminado)<input class="form-control" name="email" type="email" th:value="${form != null ? form.email : ''}" required /></label>
             <label>Teléfono SMS (opcional)<input class="form-control" name="telefono" type="tel" th:value="${form != null ? form.telefono : ''}" /></label>
             <div id="contactos-extra-container">
-                <div th:each="contacto : ${contactosExtras}" style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                <div th:each="contacto : ${contactosExtras}">
                     <label>Tipo<select class="form-control" name="contactoTipo" required>
                         <option value="">Seleccionar</option>
                         <option th:each="canal : ${ {'EMAIL','SMS','WHATSAPP'} }" th:value="${canal}" th:text="${canal}" th:selected="${contacto.tipo == canal}"></option>
                     </select></label>
                     <label>Valor<input class="form-control" name="contactoValor" th:value="${contacto.valor}" required /></label>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()">Eliminar</button>
+                    <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.parentElement.remove()" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                 </div>
             </div>
-            <button type="button" class="btn btn-outline btn-sm" id="btn-add-contacto" style="margin-top: 0.5rem;">+ Agregar otro medio de contacto</button>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-add-contacto">+ Agregar otro medio de contacto</button>
         </fieldset>
-        <fieldset th:if="${tipo == 'juridicos'}" class="api-fields"><legend>Representantes Legales</legend>
+        <fieldset th:if="${tipo == 'juridicos'}" class="form-grid"><legend>Representantes Legales</legend>
             <div id="representantes-container">
-                <div class="card" style="padding: 0.75rem; margin-bottom: 0.75rem; background: var(--color-surface);">
+                <div class="card">
                     <strong>Representante #1 (Principal)</strong>
                     <label>Nombre<input class="form-control" name="representanteNombre" th:value="${form != null ? form.representanteNombre : ''}" required /></label>
                     <label>Apellido<input class="form-control" name="representanteApellido" th:value="${form != null ? form.representanteApellido : ''}" required /></label>
@@ -53,9 +52,9 @@
                     <label>Fecha de nacimiento<input class="form-control" type="date" name="representanteNacimiento" th:value="${form != null ? form.representanteNacimiento : ''}" required /></label>
                     <label>Género<select class="form-control" name="representanteGenero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.representanteGenero == g}"></option></select></label>
                 </div>
-                <div class="card" th:each="rep, posicion : ${representantesExtras}" style="padding:0.75rem; margin-bottom:0.75rem;">
+                <div class="card" th:each="rep, posicion : ${representantesExtras}">
                     <strong th:text="${'Representante #' + (posicion.index + 2)}"></strong>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="this.closest('.card').remove()">Eliminar</button>
+                    <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.closest('.card').remove()" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                     <label>Nombre<input class="form-control" name="repNombre" th:value="${rep.nombre}" required /></label>
                     <label>Apellido<input class="form-control" name="repApellido" th:value="${rep.apellido}" required /></label>
                     <label>DNI<input class="form-control" name="repDocumento" th:value="${rep.documento}" required /></label>
@@ -67,8 +66,8 @@
             </div>
             <button type="button" class="btn btn-outline btn-sm" id="btn-add-representante">+ Agregar otro representante legal</button>
         </fieldset>
-        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-            <button class="btn btn-primary" type="submit">Registrar donante</button>
+        <div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">Registrar donante</button></div>
             <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes}">Cancelar</a>
         </div>
     </form>
@@ -77,19 +76,19 @@
         document.getElementById('btn-add-contacto')?.addEventListener('click', function() {
             const container = document.getElementById('contactos-extra-container');
             const div = document.createElement('div');
-            div.style.cssText = 'display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: flex-end;';
+            div.classList.add('dynamic-fields');
             div.innerHTML = `
-                <label style="flex: 1;">Tipo
+                <label>Tipo
                     <select class="form-control" name="contactoTipo">
                         <option value="EMAIL">EMAIL</option>
                         <option value="SMS">SMS</option>
                         <option value="WHATSAPP">WHATSAPP</option>
                     </select>
                 </label>
-                <label style="flex: 2;">Valor (Email / Número)
+                <label>Valor (Email / Número)
                     <input class="form-control" name="contactoValor" required />
                 </label>
-                <button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()" style="margin-bottom: 2px;">Eliminar</button>
+                <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.parentElement.remove()" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
             `;
             container.appendChild(div);
         });
@@ -99,11 +98,11 @@
             const count = container.children.length + 1;
             const div = document.createElement('div');
             div.className = 'card';
-            div.style.cssText = 'padding: 0.75rem; margin-top: 0.75rem; margin-bottom: 0.75rem; background: var(--color-surface);';
+            div.classList.add('dynamic-fields');
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
                     <strong>Representante #${count}</strong>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="this.closest('.card').remove()">Eliminar</button>
+                    <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.closest('.card').remove()" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                 </div>
                 <label>Nombre<input class="form-control" name="repNombre" required /></label>
                 <label>Apellido<input class="form-control" name="repApellido" required /></label>
@@ -121,4 +120,4 @@
             container.appendChild(div);
         });
     </script>
-</main></body></html>
+</section></body></html>

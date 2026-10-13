@@ -11,7 +11,7 @@
   background: white;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
   overflow-x: auto;
 }
 
@@ -32,7 +32,7 @@
 }
 
 .status-filter-tabs .filter-tab.active {
-  background: linear-gradient(135deg, #2ECC71, #27AE60);
+  background: var(--color-surface, #fff);
   color: white;
 }
 
@@ -45,7 +45,7 @@
 .donations-list-section {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -146,7 +146,7 @@
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
 }
 
 .detail-header {
@@ -257,7 +257,7 @@
 }
 
 .impact-section {
-  background: linear-gradient(135deg, #f0f9f6, #e8f5e9);
+  background: var(--color-surface, #fff);
   border: 1px solid #2ECC71;
   padding: 1.5rem;
   border-radius: 8px;
@@ -273,7 +273,7 @@
 .btn-view-map {
   width: 100%;
   padding: 0.75rem;
-  background: linear-gradient(135deg, #2ECC71, #27AE60);
+  background: var(--color-surface, #fff);
   color: white;
   border: none;
   border-radius: 6px;
@@ -284,8 +284,8 @@
 }
 
 .btn-view-map:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+
+
 }
 
 .empty-state {

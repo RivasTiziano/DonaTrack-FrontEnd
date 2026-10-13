@@ -77,7 +77,7 @@
 .donation-card:hover,
 .beneficiary-card:hover {
   border-color: #2196F3;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+
 }
 
 .donation-card.selected,
@@ -291,7 +291,7 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
   display: flex;
   justify-content: space-between;
   align-items: center;

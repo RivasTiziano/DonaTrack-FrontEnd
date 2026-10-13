@@ -34,7 +34,7 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
 }
 
 .upload-area {
@@ -117,7 +117,7 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
 }
 
 .format-guide h3 {
@@ -236,7 +236,7 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
   border-left: 5px solid;
 }
 

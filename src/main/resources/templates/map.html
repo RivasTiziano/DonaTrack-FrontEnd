@@ -21,7 +21,7 @@
                 <div class="onboarding-hint-content">
                     <div class="onboarding-hint-title">Mapa Público de Transparencia Comunitaria</div>
                     <p class="onboarding-hint-text">
-                        Cualquier persona puede explorar este mapa sin necesidad de registrarse ni iniciar sesión. Cada punto representa una donación real entregada o en camino a escuelas, comedores y hogares, con evidencia fotográfica verificada.
+                        Las ubicaciones de las entregas no se publican para proteger a sus participantes. Podés consultar las entregas habilitadas para publicación en las destacadas y la galería de la página principal.
                     </p>
                 </div>
                 <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -63,8 +63,8 @@
         </section>
 
         <section class="map-page__content" style="padding: 0 1.5rem 2.5rem 1.5rem; max-width: 1280px; margin: 0 auto; width: 100%;">
-            <p class="section-copy" role="status" th:if="${#lists.isEmpty(donations)}">Pronto vas a poder ver acá las donaciones entregadas del último mes.</p>
-            <div class="map-canvas" style="border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-md); position: relative; height: 560px; min-height: 560px; width: 100%;">
+            <p class="section-copy" role="status" th:if="${#lists.isEmpty(donations)}">No se muestran ubicaciones de entregas. Consultá las entregas públicas en la página principal.</p>
+            <div class="map-canvas" style="border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--color-border);  position: relative; height: 560px; min-height: 560px; width: 100%;">
                 <div id="map-leaflet" style="height: 560px; min-height: 560px; width: 100%; z-index: 1;"></div>
             </div>
         </section>
@@ -72,11 +72,11 @@
         <script th:inline="javascript">
             /*<![CDATA[*/
             var donations = /*[[${donations}]]*/ [];
-            
+
             function initPublicDonationsMap() {
                 var mapContainer = document.getElementById('map-leaflet');
                 if (!mapContainer) return;
-                
+
                 if (typeof L === 'undefined') {
                     setTimeout(initPublicDonationsMap, 200);
                     return;
@@ -96,7 +96,7 @@
 
                 var customDonationIcon = L.divIcon({
                     className: 'donation-map-marker',
-                    html: '<div style="background: #e11d48; color: white; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(225,29,72,0.45); border: 2.5px solid white;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>',
+                    html: '<div style="background: #e11d48; color: white; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;  border: 2.5px solid white;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>',
                     iconSize: [36, 36],
                     iconAnchor: [18, 18],
                     popupAnchor: [0, -18]
@@ -105,11 +105,11 @@
                 if (Array.isArray(donations)) {
                     donations.forEach(function(donation) {
                         if (!donation.location || donation.location.lat == null) return;
-                        var imgUrl = donation.image_url || donation.image || '/favicon.svg';
+                        var imgUrl = donation.image_url || donation.image;
                         var entityName = donation.entity_name || '—';
                         var detailUrl = '/explorar-donaciones/' + encodeURIComponent(donation.id);
                         var popupHtml = '<div style="font-family: var(--font-sans); min-width: 210px; padding: 4px;">' +
-                            '<img src="' + imgUrl + '" alt="' + (donation.title || 'Donación') + '" style="width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />' +
+                            (imgUrl ? '<img src="' + imgUrl + '" alt="Fotografía del bien donado" style="width:100%;height:110px;object-fit:cover;border-radius:6px;" />' : '<span class="map-package-icon" aria-label="Bien sin fotografía">📦</span>') +
                             '<h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 2px;">' + (donation.title || 'Donación') + '</h4>' +
                             '<p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;">Entidad: <strong>' + entityName + '</strong></p>' +
                             '<div style="display: flex; justify-content: space-between; align-items: center;">' +

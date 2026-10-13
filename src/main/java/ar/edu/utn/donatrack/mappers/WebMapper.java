@@ -9,14 +9,14 @@ import java.util.*;
 @Component
 public class WebMapper {
     // Foto decorativa del hero (no representa una donación real).
-    private static final String IMAGEN_INSTITUCIONAL = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=900&h=700&fit=crop";
+    private static final String IMAGEN_INSTITUCIONAL = "/img/hero-donaciones.jpg";
 
     public Map<String,Object> landing(List<ApiDtos.Donacion> destacadas) {
         Map<String,Object> model = new LinkedHashMap<>();
         model.put("heroContent", Map.of(
             "kicker", "Donaciones transparentes y verificables",
-            "title", "Cada ayuda cuenta, y cada entrega se puede comprobar.",
-            "description", "DonaTrack conecta personas donantes con entidades beneficiarias de forma transparente, con trazabilidad de punta a punta y evidencia fotográfica pública.",
+            "title", "Cada ayuda cuenta.",
+            "description", "DonaTrack conecta personas donantes con entidades beneficiarias y permite consultar las entregas habilitadas para publicación.",
             "ctaLabel", "Ver cómo funciona",
             "heroImage", IMAGEN_INSTITUCIONAL
         ));
@@ -26,8 +26,8 @@ public class WebMapper {
 
         model.put("landingFeatures", List.of(
             Map.of("title", "Trazabilidad Total", "description", "Seguimiento en tiempo real del estado de cada bien donado desde el depósito hasta su destino final.", "icon", "check-circle"),
-            Map.of("title", "Segmentación Inteligente", "description", "Algoritmos de compatibilidad semántica para emparejar donaciones con necesidades reales.", "icon", "users"),
-            Map.of("title", "Verificación Fotográfica", "description", "Cada entrega queda documentada con fotos públicas subidas por la entidad receptora.", "icon", "camera")
+            Map.of("title", "Segmentación Inteligente", "description", "Conectamos los bienes donados con las necesidades de las entidades.", "icon", "users"),
+            Map.of("title", "Entregas publicadas", "description", "Conocé las entregas compartidas públicamente; las imágenes de prueba se identifican como ilustrativas.", "icon", "camera")
         ));
 
         List<Map<String, Object>> featured = new ArrayList<>();
@@ -37,13 +37,8 @@ public class WebMapper {
         }
         model.put("featuredDonations", featured);
 
-        // PROVISORIO: reemplazar por la galería pública de entregas (pedido backend D1)
-        // Galería ilustrativa de la landing (fotos de referencia, no entregas reales registradas en el sistema).
-        model.put("recentDeliveries", List.of(
-            Map.of("title", "Entrega de útiles escolares", "image", "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300&h=300&fit=crop"),
-            Map.of("title", "Distribución de alimentos", "image", "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=300&h=300&fit=crop"),
-            Map.of("title", "Donación de ropa de abrigo", "image", "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=300&h=300&fit=crop")
-        ));
+        // Sin una API pública de fotografías: no presentar stock como entregas reales.
+        model.put("recentDeliveries", List.of());
 
         model.put("footerQuickLinks", List.of(
             Map.of("label", "Acerca de", "href", "/#about"),
@@ -65,6 +60,39 @@ public class WebMapper {
         ));
 
         return model;
+    }
+
+    public Map<String,Object> entregasLanding(List<ar.edu.utn.donatrack.dto.EntregaPublicaDto> entregas) {
+        var model = landing(List.of());
+        var recientes = entregas.stream().filter(e -> e.fechaEntrega() != null)
+            .sorted(Comparator.comparing(ar.edu.utn.donatrack.dto.EntregaPublicaDto::fechaEntrega).reversed()).toList();
+        var mes = java.time.YearMonth.now(java.time.ZoneId.of("America/Argentina/Buenos_Aires"));
+        model.put("featuredDonations", recientes.stream().filter(e -> java.time.YearMonth.from(e.fechaEntrega()).equals(mes)).limit(3).map(this::publicCard).toList());
+        model.put("recentDeliveries", recientes.stream().filter(e -> e.imagen() != null && !e.imagen().isBlank()).limit(6).map(e -> {
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("id",e.id()); m.put("image",e.imagen()); m.put("title",e.descripcion()); return m;
+        }).toList());
+        return model;
+    }
+
+    private Map<String,Object> publicCard(ar.edu.utn.donatrack.dto.EntregaPublicaDto e) {
+        Map<String,Object> m = new LinkedHashMap<>();
+        m.put("id",e.id());m.put("item",e.descripcion());m.put("image",e.imagen());
+        m.put("date",e.fechaEntrega().toLocalDate().toString());
+        m.put("donorName",null);m.put("beneficiary",null);
+        return m;
+    }
+
+    public Map<String,Object> entregaDetalle(ar.edu.utn.donatrack.dto.EntregaPublicaDto e) {
+        Map<String,Object> model = new LinkedHashMap<>();
+        if(e == null) { model.put("donation",null);return model; }
+        Map<String,Object> d = new LinkedHashMap<>();
+        d.put("id",e.id());d.put("title",e.descripcion());d.put("description",e.descripcion());
+        d.put("delivery_date",e.fechaEntrega().toLocalDate().toString());d.put("total_units",e.cantidad());
+        d.put("image_url",e.imagen());d.put("status","ENTREGADA");d.put("entity_name",null);
+        d.put("location",Map.of("address",""));
+        d.put("items",List.of(Map.of("name",e.descripcion(),"quantity",e.cantidad()+" "+e.unidad())));
+        model.put("donation",d);return model;
     }
 
     public Map<String,Object> legal() {

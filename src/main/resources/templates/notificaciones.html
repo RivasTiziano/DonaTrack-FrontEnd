@@ -1,54 +1,98 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{${audience == 'admin' ? 'fragments/dashboard-admin-layout' : (audience == 'donante' ? 'fragments/dashboard-donor-layout' : 'fragments/dashboard-beneficiary-layout')} :: layout(~{::title}, ~{::main}, 'notificaciones')}">
-<head><title>Notificaciones - DonaTrack</title></head><body><main th:fragment="main" class="api-view">
-    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
-    <h1>Centro de Notificaciones</h1>
-    <section th:if="${audience != 'admin'}" class="card api-panel">
-        <h2>Mis notificaciones</h2>
-        <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
-        <div th:if="${notificaciones != null}">
-            <div class="api-inline">
-                <p role="status"><strong th:text="${noLeidas}">0</strong> sin leer de <span th:text="${notificaciones.size()}">0</span></p>
-                <form th:if="${noLeidas > 0}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/leidas(ruta=${audience})}">
-                    <button class="btn btn-outline btn-sm" type="submit">Marcar todas como leídas</button>
-                </form>
-            </div>
-            <p th:if="${notificaciones.isEmpty()}" role="status">No tenés notificaciones.</p>
-            <ul class="notif-list" th:unless="${notificaciones.isEmpty()}">
-                <li th:each="n : ${notificaciones}" class="notif-item" th:classappend="${!n.leida} ? 'notif-unread' : ''">
-                    <div class="notif-head">
-                        <strong th:text="${n.asunto}">Asunto</strong>
-                        <span th:if="${!n.leida}" class="notif-badge">Nueva</span>
+    th:replace="~{${audience == 'admin' ? 'fragments/dashboard-admin-layout' : (audience == 'donante' ? 'fragments/dashboard-donor-layout' : 'fragments/dashboard-beneficiary-layout')} :: layout(~{::title}, ~{::main}, 'notificaciones')}">
+    <head>
+        <title>Notificaciones - DonaTrack</title>
+    </head>
+    <body>
+        <section th:fragment="main" class="api-view">
+            <link th:if="${audience != 'admin'}" rel="stylesheet" th:href="@{/css/api-views.css}" />
+            <th:block th:if="${audience == 'admin'}">
+                <header th:replace="~{fragments/admin-ui :: header('Notificaciones', 'Estado de conexión y envío manual cuando está habilitado.')}">
+                </header>
+            </th:block>
+            <h1 th:unless="${audience == 'admin'}">Centro de Notificaciones</h1>
+            <section th:if="${audience != 'admin'}" class="card api-panel">
+                <h2>Mis notificaciones</h2>
+                <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error">
+                </p>
+                <div th:if="${notificaciones != null}">
+                    <div class="api-inline">
+                        <p role="status">
+                            <strong th:text="${noLeidas}">0</strong> sin leer de <span th:text="${notificaciones.size()}">0</span>
+                        </p>
+                        <form th:if="${noLeidas > 0}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/leidas(ruta=${audience})}">
+                            <button class="btn btn-outline btn-sm" type="submit">Marcar todas como leídas</button>
+                        </form>
                     </div>
-                    <small class="api-notice" th:text="${n.fecha + ' · ' + n.canal}">Fecha · Canal</small>
-                    <p th:text="${n.cuerpo}">Mensaje</p>
-                    <form th:if="${!n.leida}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/{id}/leida(ruta=${audience},id=${n.id})}">
-                        <button class="btn btn-outline btn-sm" type="submit">Marcar como leída</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-    </section>
-    <section th:if="${audience == 'admin'}" class="card api-panel">
-        <h2>Conexión con Notificaciones</h2>
-        <p th:if="${serviceStatus != null}" th:text="${serviceStatus}" role="status"></p>
-        <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
-        <p th:if="${sendResult != null}" th:text="${sendResult}" role="status" class="api-success"></p>
-        <form method="post" th:action="@{/admin/dashboard/notificaciones/comprobar}"><button class="btn btn-outline" type="submit">Comprobar conexión</button></form>
-        <h2>Envío manual</h2>
-        <p th:unless="${manualEnabled}">Deshabilitado por seguridad hasta incorporar permisos. Para probar en desarrollo local, configurar NOTIFICACIONES_ENVIO_MANUAL_HABILITADO=true. No exponer este entorno públicamente.</p>
-        <form th:if="${manualEnabled}" method="post" th:action="@{/admin/dashboard/notificaciones/enviar}" th:object="${form}"
-              onsubmit="if (!confirm('Este envío puede generar un correo, SMS o WhatsApp real y consumir crédito. ¿Confirmar?')) return false; this.querySelector('button[type=submit]').disabled=true;">
-            <input type="hidden" name="sendToken" th:value="${sendToken}" />
-            <p>Herramienta local de desarrollo: no crea cuentas ni reemplaza el evento de bienvenida.</p>
-            <label>Canal<select class="form-control" th:field="*{medioContacto}"><option value="EMAIL">EMAIL</option><option value="SMS">SMS</option><option value="WHATSAPP">WHATSAPP</option></select></label><p th:errors="*{medioContacto}" class="api-error"></p>
-            <label>Nombre del destinatario<input class="form-control" th:field="*{nombre}" required maxlength="150" /></label><p th:errors="*{nombre}" class="api-error"></p>
-            <label>Email (para EMAIL)<input class="form-control" type="email" th:field="*{email}" /></label><p th:errors="*{email}" class="api-error"></p>
-            <label>Teléfono internacional (para SMS/WhatsApp)<input class="form-control" type="tel" th:field="*{telefono}" placeholder="+5491112345678" /></label><p th:errors="*{telefono}" class="api-error"></p>
-            <label>Asunto<input class="form-control" th:field="*{asunto}" required maxlength="255" /></label><p th:errors="*{asunto}" class="api-error"></p>
-            <label>Mensaje<textarea class="form-control" th:field="*{cuerpo}" required maxlength="10000" rows="5"></textarea></label><p th:errors="*{cuerpo}" class="api-error"></p>
-            <button class="btn btn-primary" type="submit">Solicitar envío real</button>
-        </form>
-    </section>
-</main></body></html>
+                    <p th:if="${notificaciones.isEmpty()}" role="status">No tenés notificaciones.</p>
+                    <ul class="notif-list" th:unless="${notificaciones.isEmpty()}">
+                        <li th:each="n : ${notificaciones}" class="notif-item" th:classappend="${!n.leida} ? 'notif-unread' : ''">
+                            <div class="notif-head">
+                                <strong th:text="${n.asunto}">Asunto</strong>
+                                <span th:if="${!n.leida}" class="notif-badge">Nueva</span>
+                            </div>
+                            <small class="api-notice" th:text="${n.fecha + ' · ' + n.canal}">Fecha · Canal</small>
+                            <p th:text="${n.cuerpo}">Mensaje</p>
+                            <form th:if="${!n.leida}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/{id}/leida(ruta=${audience},id=${n.id})}">
+                                <button class="btn btn-outline btn-sm" type="submit">Marcar como leída</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <section th:if="${audience == 'admin'}" class="card api-panel">
+                <h2>Conexión con Notificaciones</h2>
+                <p th:if="${serviceStatus != null}" th:text="${serviceStatus}" role="status">
+                </p>
+                <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error">
+                </p>
+                <p th:if="${sendResult != null}" th:text="${sendResult}" role="status" class="api-success">
+                </p>
+                <form method="post" th:action="@{/admin/dashboard/notificaciones/comprobar}">
+                    <button class="btn btn-outline" type="submit">Comprobar conexión</button>
+                </form>
+                <details class="form-panel" th:open="${apiError != null}">
+                    <summary>Envío manual</summary>
+                    <p th:unless="${manualEnabled}">Deshabilitado por seguridad hasta incorporar permisos. Para probar en desarrollo local, configurar NOTIFICACIONES_ENVIO_MANUAL_HABILITADO=true. No exponer este entorno públicamente.</p>
+                    <form th:if="${manualEnabled}" method="post" th:action="@{/admin/dashboard/notificaciones/enviar}" th:object="${form}"
+                        onsubmit="if (!confirm('Este envío puede generar un correo, SMS o WhatsApp real y consumir crédito. ¿Confirmar?')) return false; this.querySelector('button[type=submit]').disabled=true;">
+                        <input type="hidden" name="sendToken" th:value="${sendToken}" />
+                        <p>Herramienta local de desarrollo: no crea cuentas ni reemplaza el evento de bienvenida.</p>
+                        <label>Canal<select class="form-control" th:field="*{medioContacto}">
+                            <option value="EMAIL">EMAIL</option>
+                            <option value="SMS">SMS</option>
+                            <option value="WHATSAPP">WHATSAPP</option>
+                        </select>
+                    </label>
+                    <p th:errors="*{medioContacto}" class="api-error">
+                    </p>
+                    <label>Nombre del destinatario<input class="form-control" th:field="*{nombre}" required maxlength="150" />
+                </label>
+                <p th:errors="*{nombre}" class="api-error">
+                </p>
+                <label>Email (para EMAIL)<input class="form-control" type="email" th:field="*{email}" />
+            </label>
+            <p th:errors="*{email}" class="api-error">
+            </p>
+            <label>Teléfono internacional (para SMS/WhatsApp)<input class="form-control" type="tel" th:field="*{telefono}" placeholder="+5491112345678" />
+        </label>
+        <p th:errors="*{telefono}" class="api-error">
+        </p>
+        <label>Asunto<input class="form-control" th:field="*{asunto}" required maxlength="255" />
+    </label>
+    <p th:errors="*{asunto}" class="api-error">
+    </p>
+    <label>Mensaje<textarea class="form-control" th:field="*{cuerpo}" required maxlength="10000" rows="5">
+    </textarea>
+</label>
+<p th:errors="*{cuerpo}" class="api-error">
+</p>
+<div class="form-actions">
+    <button class="btn btn-primary" type="submit">Solicitar envío real</button>
+</div>
+</form>
+</section>
+</section>
+</body>
+</html>

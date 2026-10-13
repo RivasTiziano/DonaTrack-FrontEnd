@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <th:block th:fragment="contenido">
+            <section th:if="${section == 'catalogo'}" class="card api-panel">
+                <h2>Árbol de categorías</h2>
+                <p th:if="${categorias.isEmpty()}">No hay categorías.</p>
+                <details class="catalog-tree" th:each="c : ${categorias}" open>
+                    <summary th:text="${c.nombre}">
+                    </summary>
+                    <ul>
+                        <li th:each="sub : ${c.subCategorias}" th:text="${sub.nombre} + ' · #' + ${sub.id}">
+                        </li>
+                    </ul>
+                </details>
+                <details class="form-panel" id="alta-categoria">
+                    <summary>Nueva categoría</summary>
+                    <form method="post" th:action="@{/admin/dashboard/catalogo/categorias}">
+                        <label>Nombre<input class="form-control" name="nombre" required />
+                    </label>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" type="submit">Crear</button>
+                    </div>
+                </form>
+            </details>
+            <details class="form-panel" id="alta-subcategoria">
+                <summary>Nueva subcategoría</summary>
+                <form method="post" th:action="@{/admin/dashboard/catalogo/subcategorias}">
+                    <label>Categoría<select class="form-control" name="categoriaId" required>
+                        <option value="">Seleccionar</option>
+                        <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}">
+                        </option>
+                    </select>
+                </label>
+                <label>Nombre<input class="form-control" name="nombre" required />
+            </label>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Crear</button>
+            </div>
+        </form>
+    </details>
+</section>
+</th:block>
+</body>
+</html>

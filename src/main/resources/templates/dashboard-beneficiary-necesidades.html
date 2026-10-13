@@ -66,7 +66,7 @@
 
         <!-- Lista de necesidades -->
         <div id="needs-grid" class="dt-cards-grid-3">
-            <article class="need-card" th:each="need : ${needs}" th:data-type="${need.type}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column;">
+            <article class="need-card" th:each="need : ${needs}" th:data-type="${need.type}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;  display: flex; flex-direction: column;">
                 <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
                         <div>
@@ -106,9 +106,8 @@
 
                     <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
                         <form method="post" th:action="@{/entidad/dashboard/necesidades/{id}/eliminar(id=${need.id})}" onsubmit="return confirm('¿Eliminar esta necesidad?');">
-                            <button type="submit" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fee2e2;">
-                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                                <span>Eliminar</span>
+                            <button type="submit" class="btn btn-outline btn-sm action-icon action-delete" aria-label="Eliminar necesidad" title="Eliminar necesidad">
+                                <svg th:replace="~{fragments/ui-icons :: delete}"></svg>
                             </button>
                         </form>
                     </div>

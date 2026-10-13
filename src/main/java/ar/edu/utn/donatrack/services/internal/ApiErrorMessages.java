@@ -20,9 +20,9 @@ public class ApiErrorMessages {
             try {
                 var json = mapper.readTree(response.getResponseBodyAsString());
                 String message = primerTexto(json, "message", "mensaje", "detail", "title");
-                if (!message.isBlank()) return message;
+                if (!message.isBlank() && !message.matches("(?is).*\\b(?:java|sql|jdbc|exception|stacktrace|localhost|http|endpoint)\\b.*")) return message;
             } catch (Exception ignored) { /* No exponemos HTML, trazas ni cuerpos sin interpretar. */ }
-            return "El servicio rechazó la solicitud (HTTP " + response.getStatusCode().value() + "). Revisá los datos y sus restricciones.";
+            return "No se pudo completar la solicitud. Revisá los datos ingresados.";
         }
         return "No se pudo comunicar con el servicio. No se confirmó la operación; verificá el resultado antes de reintentar.";
     }

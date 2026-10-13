@@ -64,7 +64,7 @@
   background: white;
   border-radius: 12px;
   padding: 50px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
   cursor: pointer;
   transition: all 0.3s;
   border: 2px solid transparent;
@@ -72,8 +72,8 @@
 }
 
 .truck-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+
+
 }
 
 .truck-card.selected {
@@ -132,19 +132,19 @@
 }
 
 .status-badge.available {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: var(--color-surface, #fff);
 }
 
 .status-badge.in-route {
-  background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
+  background: var(--color-surface, #fff);
 }
 
 .status-badge.maintenance {
-  background: linear-gradient(135deg, #F44336 0%, #da190b 100%);
+  background: var(--color-surface, #fff);
 }
 
 .status-badge.out-of-service {
-  background: linear-gradient(135deg, #9E9E9E 0%, #707070 100%);
+  background: var(--color-surface, #fff);
 }
 
 .truck-info {
@@ -189,7 +189,7 @@
 }
 
 .fuel-level {
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  background: var(--color-surface, #fff);
   height: 100%;
   border-radius: 3px;
 }
@@ -221,7 +221,7 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
   margin-top: 30px;
 }
 
@@ -307,7 +307,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: conic-gradient(#4caf50 0deg, #4caf50 calc(var(--percentage, 50) * 3.6deg), #eee calc(var(--percentage, 50) * 3.6deg));
+  background: var(--color-surface, #fff);
   display: flex;
   align-items: center;
   justify-content: center;

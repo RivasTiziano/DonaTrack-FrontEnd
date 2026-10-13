@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component;
 public class AccesoValidator {
     public static final int LONGITUD_MINIMA = 12;
 
+    public void validarEmail(String email) {
+        if(email==null || email.length()>255 || !email.trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
+            throw new FormularioInvalidoException("Ingresá un email válido.");
+    }
+
     public void validar(String password, String confirmacion) {
         if (password == null || password.length() < LONGITUD_MINIMA)
             throw new FormularioInvalidoException("La contraseña debe tener al menos " + LONGITUD_MINIMA + " caracteres.");

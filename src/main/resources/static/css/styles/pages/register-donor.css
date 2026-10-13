@@ -59,7 +59,7 @@
 .modal-content {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
@@ -124,7 +124,7 @@
 .form-group select:focus {
   outline: none;
   border-color: #2196F3;
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+
 }
 
 .form-row {
@@ -174,7 +174,7 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
 }
 
 .donors-table {

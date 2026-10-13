@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <nav th:fragment="menu(activeTab,compacto)" th:class="${compacto ? 'dashboard-bottom-nav' : 'sidebar-nav admin-nav'}" aria-label="Módulos administrativos">
+            <a class="sidebar-link" th:classappend="${activeTab == 'inicio'} ? 'active'" th:href="@{/admin/dashboard}">
+                <i aria-hidden="true" data-lucide="layout-dashboard">
+                </i>
+                <span>Resumen</span>
+            </a>
+            <th:block th:unless="${compacto}">
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('GESTIONAR_DONANTES') or sesion.tiene('REGISTRAR_DONACIONES') or sesion.tiene('IMPORTAR_DONANTES_CSV'))}">
+                    <h2>DEPÓSITO</h2>
+                    <a th:if="${sesion.tiene('GESTIONAR_DONANTES')}" class="sidebar-link" th:classappend="${activeTab == 'donors'} ? 'active'" th:href="@{/admin/dashboard/donantes}">
+                        <i aria-hidden="true" data-lucide="users">
+                        </i>
+                        <span>Donantes</span>
+                    </a>
+                    <a th:if="${sesion.tiene('REGISTRAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'donations'} ? 'active'" th:href="@{/admin/dashboard/donaciones}">
+                        <i aria-hidden="true" data-lucide="package">
+                        </i>
+                        <span>Donaciones</span>
+                    </a>
+                    <a th:if="${sesion.tiene('IMPORTAR_DONANTES_CSV')}" class="sidebar-link" th:classappend="${activeTab == 'import'} ? 'active'" th:href="@{/admin/dashboard/importar}">
+                        <i aria-hidden="true" data-lucide="file-up">
+                        </i>
+                        <span>Importar CSV</span>
+                    </a>
+                </section>
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('VER_ENTIDADES_BENEFICIARIAS') or sesion.tiene('ASIGNAR_DONACIONES'))}">
+                    <h2>ENTIDADES</h2>
+                    <a th:if="${sesion.tiene('VER_ENTIDADES_BENEFICIARIAS')}" class="sidebar-link" th:classappend="${activeTab == 'beneficiarios'} ? 'active'" th:href="@{/admin/dashboard/beneficiarios}">
+                        <i aria-hidden="true" data-lucide="building-2">
+                        </i>
+                        <span>Beneficiarios</span>
+                    </a>
+                    <a th:if="${sesion.tiene('ASIGNAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'necesidades'} ? 'active'" th:href="@{/admin/dashboard/necesidades}">
+                        <i aria-hidden="true" data-lucide="list-checks">
+                        </i>
+                        <span>Necesidades</span>
+                    </a>
+                </section>
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('ASIGNAR_DONACIONES'))}">
+                    <h2>ASIGNACIÓN</h2>
+                    <a th:if="${sesion.tiene('ASIGNAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'assign'} ? 'active'" th:href="@{/admin/dashboard/asignar}">
+                        <i aria-hidden="true" data-lucide="git-merge">
+                        </i>
+                        <span>Matchmaking</span>
+                    </a>
+                </section>
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('GESTIONAR_CAMIONES') or sesion.tiene('SEGUIR_ENTREGAS'))}">
+                    <h2>LOGÍSTICA</h2>
+                    <a th:if="${sesion.tiene('GESTIONAR_CAMIONES')}" class="sidebar-link" th:classappend="${activeTab == 'trucks'} ? 'active'" th:href="@{/admin/dashboard/camiones}">
+                        <i aria-hidden="true" data-lucide="truck">
+                        </i>
+                        <span>Camiones</span>
+                    </a>
+                    <a th:if="${sesion.tiene('GESTIONAR_CAMIONES')}" class="sidebar-link" th:classappend="${activeTab == 'rutas'} ? 'active'" th:href="@{/admin/dashboard/rutas}">
+                        <i aria-hidden="true" data-lucide="route">
+                        </i>
+                        <span>Rutas</span>
+                    </a>
+                    <a th:if="${sesion.tiene('SEGUIR_ENTREGAS')}" class="sidebar-link" th:classappend="${activeTab == 'entregas'} ? 'active'" th:href="@{/admin/dashboard/entregas}">
+                        <i aria-hidden="true" data-lucide="package-check">
+                        </i>
+                        <span>Entregas</span>
+                    </a>
+                    <a th:if="${sesion.tiene('SEGUIR_ENTREGAS')}" class="sidebar-link" th:classappend="${activeTab == 'seguimiento'} ? 'active'" th:href="@{/admin/dashboard/seguimiento}">
+                        <i aria-hidden="true" data-lucide="map-pin">
+                        </i>
+                        <span>Seguimiento GPS</span>
+                    </a>
+                </section>
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('VER_RANKINGS') or sesion.tiene('GESTIONAR_MISIONES'))}">
+                    <h2>INCENTIVOS</h2>
+                    <a th:if="${sesion.tiene('VER_RANKINGS')}" class="sidebar-link" th:classappend="${activeTab == 'rankings'} ? 'active'" th:href="@{/admin/dashboard/rankings}">
+                        <i aria-hidden="true" data-lucide="trophy">
+                        </i>
+                        <span>Rankings</span>
+                    </a>
+                    <a th:if="${sesion.tiene('GESTIONAR_MISIONES')}" class="sidebar-link" th:classappend="${activeTab == 'incentivos'} ? 'active'" th:href="@{/admin/dashboard/incentivos}">
+                        <i aria-hidden="true" data-lucide="medal">
+                        </i>
+                        <span>Categorías y misiones</span>
+                    </a>
+                    <a th:if="${sesion.tiene('VER_RANKINGS')}" class="sidebar-link" th:classappend="${activeTab == 'consultaIncentivos'} ? 'active'" th:href="@{/admin/dashboard/incentivos/donantes}">
+                        <i aria-hidden="true" data-lucide="search">
+                        </i>
+                        <span>Consulta por donante</span>
+                    </a>
+                </section>
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('REGISTRAR_DONACIONES'))}">
+                    <h2>CATÁLOGO</h2>
+                    <a th:if="${sesion.tiene('REGISTRAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'catalogo'} ? 'active'" th:href="@{/admin/dashboard/catalogo}">
+                        <i aria-hidden="true" data-lucide="folder-tree">
+                        </i>
+                        <span>Categorías</span>
+                    </a>
+                    <a th:if="${sesion.tiene('REGISTRAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'bienes'} ? 'active'" th:href="@{/admin/dashboard/bienes}">
+                        <i aria-hidden="true" data-lucide="boxes">
+                        </i>
+                        <span>Bienes</span>
+                    </a>
+                </section>
+                <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('GESTIONAR_USUARIOS'))}">
+                    <h2>SISTEMA</h2>
+                    <a th:if="${sesion.tiene('GESTIONAR_USUARIOS')}" class="sidebar-link" th:classappend="${activeTab == 'notificaciones'} ? 'active'" th:href="@{/admin/dashboard/notificaciones}">
+                        <i aria-hidden="true" data-lucide="bell">
+                        </i>
+                        <span>Notificaciones</span>
+                    </a>
+                </section>
+                
+            </th:block>
+            <th:block th:if="${compacto}">
+                <a class="sidebar-link" th:if="${sesion != null and sesion.tiene('REGISTRAR_DONACIONES')}" th:classappend="${activeTab == 'donations'} ? 'active'" th:href="@{/admin/dashboard/donaciones}">
+                    <i aria-hidden="true" data-lucide="package">
+                    </i>
+                    <span>Donaciones</span>
+                </a>
+                <a class="sidebar-link" th:if="${sesion != null and sesion.tiene('ASIGNAR_DONACIONES')}" th:classappend="${activeTab == 'assign'} ? 'active'" th:href="@{/admin/dashboard/asignar}">
+                    <i aria-hidden="true" data-lucide="git-merge">
+                    </i>
+                    <span>Matchmaking</span>
+                </a>
+                <a class="sidebar-link" th:if="${sesion != null and sesion.tiene('GESTIONAR_CAMIONES')}" th:classappend="${activeTab == 'trucks' or activeTab == 'rutas' or activeTab == 'entregas' or activeTab == 'seguimiento'} ? 'active'" th:href="@{/admin/dashboard/camiones}">
+                    <i aria-hidden="true" data-lucide="truck">
+                    </i>
+                    <span>Logística</span>
+                </a>
+                <button type="button" class="dashboard-menu-open sidebar-link" aria-label="Abrir menú completo">
+                    <i aria-hidden="true" data-lucide="menu">
+                    </i>
+                    <span>Menú</span>
+                </button>
+            </th:block>
+        </nav>
+    </body>
+</html>

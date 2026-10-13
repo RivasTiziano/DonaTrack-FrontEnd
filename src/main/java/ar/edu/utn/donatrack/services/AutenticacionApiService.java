@@ -43,6 +43,14 @@ public class AutenticacionApiService {
     }
 
     /** Requiere el token de un ADMIN (GESTIONAR_USUARIOS): por eso usa WebApiCallerService, que agrega el Bearer. */
+    public record Existencia(boolean existe) {}
+
+    public boolean existeUsuario(String rol, Long referenciaId) {
+        Existencia respuesta = http.get(url + "/auth/usuarios/existe?rol=" + rol + "&referenciaId=" + referenciaId, Existencia.class);
+        if (respuesta == null) throw new IllegalStateException("No se pudo consultar la cuenta.");
+        return respuesta.existe();
+    }
+
     public AuthDtos.Usuario crearUsuario(AuthDtos.CrearUsuario request) {
         return http.post(url + "/auth/usuarios", request, AuthDtos.Usuario.class);
     }

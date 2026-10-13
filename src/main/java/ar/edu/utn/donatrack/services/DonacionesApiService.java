@@ -71,6 +71,10 @@ public class DonacionesApiService {
         http.update(HttpMethod.PUT, url + "/donantes/juridicos/" + id, request);
     }
 
+    public void completarEmail(String tipo,Long id,String email) {
+        http.update(HttpMethod.PATCH,url + "/donantes/" + tipo + "/" + id + "/contacto-email",Map.of("email",email));
+    }
+
     public ApiDtos.Importacion importar(MultipartFile file) {
         return http.upload(url + "/donantes/importar", file, ApiDtos.Importacion.class);
     }

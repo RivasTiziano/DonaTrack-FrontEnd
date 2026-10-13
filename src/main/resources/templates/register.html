@@ -4,7 +4,7 @@
     <title>DonaTrack - Registro</title>
 </head>
 <body>
-    <main style="max-width: 900px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
+    <main class="registration-page" style="max-width: 900px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
         <!-- Breadcrumbs -->
         <nav class="dt-breadcrumbs" aria-label="Migas de pan">
             <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
@@ -21,9 +21,7 @@
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-            <a th:each="option : ${registrationOptions}" th:href="@{${option.path}}" style="background: #ffffff; border: 2px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; box-shadow: var(--shadow-xs); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);"
-               onmouseover="this.style.borderColor='var(--color-primary)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';"
-               onmouseout="this.style.borderColor='var(--color-border)'; this.style.transform='none'; this.style.boxShadow='var(--shadow-xs)';">
+            <a th:each="option : ${registrationOptions}" th:href="@{${option.path}}" style="background: #ffffff; border: 2px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
                 <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); display: grid; place-items: center;">
                     <i th:attr="data-lucide=${option.icon}" style="width: 32px; height: 32px;"></i>
                 </div>
@@ -39,7 +37,7 @@
         </div>
 
         <div style="text-align: center; font-size: 0.9375rem; color: var(--color-muted);">
-            ¿Ya tienes una cuenta registrada? 
+            ¿Ya tienes una cuenta registrada?
             <a th:href="@{/login}" style="color: var(--color-primary); font-weight: 700;">Inicia sesión aquí</a>
         </div>
     </main>

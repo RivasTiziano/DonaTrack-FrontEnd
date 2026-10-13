@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <th:block th:fragment="contenido">
+            <section th:if="${section == 'donaciones'}" class="card api-panel">
+                <div class="toolbar">
+                    <label>Buscar donación<input class="form-control" type="search" data-filter-table="tabla-donaciones" placeholder="ID, descripción o donante"/>
+                </label>
+                <a class="btn btn-primary" href="/admin/dashboard/donaciones/nueva">Registrar donación</a>
+            </div>
+            <th:block th:if="${donaciones.isEmpty() and apiError == null}">
+                <div th:replace="~{fragments/admin-ui :: vacio('No hay donaciones registradas.', '/admin/dashboard/donaciones/nueva', 'Crear nuevo registro')}">
+                </div>
+            </th:block>
+            <div class="api-table">
+                <table class="data-table" id="tabla-donaciones">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Donante</th>
+                            <th scope="col">Descripción</th>
+                            <th scope="col">Bien</th>
+                            <th scope="col">Disponible</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${donaciones}" data-record>
+                            <td data-label="ID" class="identifier">
+                                <span th:text="${item.id}">
+                                </span>
+                            </td>
+                            <td data-label="Donante">
+                                <span th:text="${nombresDonantes != null and nombresDonantes[item.donanteId] != null ? nombresDonantes[item.donanteId] : '#' + item.donanteId}">
+                                </span>
+                            </td>
+                            <td data-label="Descripción">
+                                <span th:text="${item.descripcionGeneral}">
+                                </span>
+                            </td>
+                            <td data-label="Bien">
+                                <span th:text="${item.bien.descripcion}">
+                                </span>
+                            </td>
+                            <td data-label="Disponible" class="numeric">
+                                <span th:text="${item.bien.cantidadDisponible + ' ' + item.bien.unidadMedida}">
+                                </span>
+                            </td>
+                            <td data-label="Estado">
+                                <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
+                                </span>
+                            </td>
+                            <td data-label="Fecha">
+                                <span th:text="${item.fechaRecepcion}">
+                                </span>
+                            </td>
+                            <td data-label="Acciones">
+                                <div class="row-actions">
+                                    <a class="btn btn-outline" th:href="@{/admin/dashboard/donaciones/{id}(id=${item.id})}">Detalle</a>
+                                    <details class="row-menu">
+                                        <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
+                                        <div class="menu-content">
+                                            <button type="button" class="btn btn-outline" th:data-dialog-open="'estado-donacion-' + ${item.id}">Cambiar estado</button>
+                                            <a class="btn btn-outline" th:href="@{/admin/dashboard/donaciones/{id}/contactos(id=${item.id})}">Contactos</a>
+                                            <form method="post" th:action="@{/admin/dashboard/donaciones/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar esta donación? ');">
+                                                <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+                                            </form>
+                                        </div>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <th:block th:each="item : ${donaciones}">
+                <dialog class="dialog" th:id="'estado-donacion-' + ${item.id}" th:attr="aria-labelledby='estado-donacion-title-' + ${item.id}">
+                    <div class="dialog-header">
+                        <h2 th:id="'estado-donacion-title-' + ${item.id}">Cambiar estado</h2>
+                        <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
+                    </div>
+                    <form method="post" th:action="@{/admin/dashboard/donaciones/{id}/estado(id=${item.id})}">
+                        <label>Nuevo estado<select name="estado" class="form-control">
+                            <option value="EN_DEPOSITO">En depósito</option>
+                            <option value="ASIGNACION_REALIZADA">Asignada</option>
+                            <option value="VENCIDA">Vencida</option>
+                        </select>
+                    </label>
+                    <label>Justificación<input name="justificacion" class="form-control" required />
+                </label>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Actualizar</button>
+                </div>
+            </form>
+        </dialog>
+    </th:block>
+    
+</section>
+<section th:if="${section == 'detalle'}" class="card api-panel">
+    <div th:if="${donacion != null}" th:with="item=${donacion}">
+        <h2 th:text="${donacion.descripcionGeneral}">
+        </h2>
+        <p th:text="'Donación #' + ${donacion.id}">
+        </p>
+        <span th:replace="~{fragments/admin-ui :: estado(${donacion.estado})}">
+        </span>
+        <p th:text="${donacion.bien.descripcion} + ' · Disponible: ' + ${donacion.bien.cantidadDisponible} + ' ' + ${donacion.bien.unidadMedida}">
+        </p>
+        <div class="toolbar">
+            <a class="btn btn-outline" th:href="@{/admin/dashboard/donaciones/{id}/contactos(id=${donacion.id})}">Consultar contactos</a>
+            <button type="button" class="btn btn-outline" th:data-dialog-open="'estado-detalle-' + ${item.id}">Cambiar estado</button>
+        </div>
+        <dialog class="dialog" th:id="'estado-detalle-' + ${item.id}" th:attr="aria-labelledby='estado-detalle-title-' + ${item.id}">
+            <div class="dialog-header">
+                <h2 th:id="'estado-detalle-title-' + ${item.id}">Cambiar estado</h2>
+                <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
+            </div>
+            <form method="post" th:action="@{/admin/dashboard/donaciones/{id}/estado(id=${donacion.id})}">
+                <label>Estado<select class="form-control" name="estado">
+                    <option value="EN_DEPOSITO">En depósito</option>
+                    <option value="ASIGNACION_REALIZADA">Asignada</option>
+                    <option value="VENCIDA">Vencida</option>
+                </select>
+            </label>
+            <label>Justificación<input class="form-control" name="justificacion" required/>
+        </label>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Actualizar</button>
+        </div>
+    </form>
+</dialog>
+</div>
+<h2>Asignaciones de esta donación</h2>
+<p th:if="${asignaciones.isEmpty() and apiError == null}">Todavía no hay asignaciones.</p>
+<div class="api-table">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Necesidad</th>
+                <th scope="col">Entidad</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Camión</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${asignaciones}">
+                <td data-label="ID">
+                    <a th:href="@{/admin/dashboard/asignaciones/{id}/contactos(id=${item.id})}" th:text="${item.id}">
+                    </a>
+                </td>
+                <td data-label="Necesidad">
+                    <span th:text="${item.necesidadId}">
+                    </span>
+                </td>
+                <td data-label="Entidad">
+                    <span th:text="${item.entidadBeneficiariaId}">
+                    </span>
+                </td>
+                <td data-label="Cantidad" class="numeric">
+                    <span th:text="${item.cantidadAsignada}">
+                    </span>
+                </td>
+                <td data-label="Estado">
+                    <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
+                    </span>
+                </td>
+                <td data-label="Camión">
+                    <span th:text="${item.camionId}">
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</section>
+<section th:if="${section == 'bienes'}" class="card api-panel">
+    <div class="toolbar">
+        <label>Buscar<input type="search" class="form-control" data-filter-table="tabla-bienes"/>
+    </label>
+    <a class="btn btn-primary" href="#alta-bienes">Nuevo registro</a>
+</div>
+<th:block th:if="${bienes.isEmpty() and apiError == null}">
+    <div th:replace="~{fragments/admin-ui :: vacio('No hay bienes registrados.', '#alta-bienes', 'Crear nuevo registro')}">
+    </div>
+</th:block>
+<div class="api-table">
+    <table class="data-table" id="tabla-bienes">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Disponible</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${bienes}" data-record>
+                <td data-label="ID">
+                    <span th:text="${item.id}">
+                    </span>
+                </td>
+                <td data-label="Descripción">
+                    <span th:text="${item.descripcion}">
+                    </span>
+                </td>
+                <td data-label="Cantidad" class="numeric">
+                    <span th:text="${item.cantidad}">
+                    </span>
+                </td>
+                <td data-label="Disponible" class="numeric">
+                    <span th:text="${item.cantidadDisponible}">
+                    </span>
+                </td>
+                <td data-label="Unidad">
+                    <span th:text="${item.unidadMedida}">
+                    </span>
+                </td>
+                <td data-label="Tipo">
+                    <span th:text="${item.tipoBien}">
+                    </span>
+                </td>
+                <td data-label="Acciones">
+                    <div class="row-actions">
+                        <a class="btn btn-outline" th:href="@{/admin/dashboard/bienes/{id}(id=${item.id})}">Detalle</a>
+                        <button type="button" class="btn btn-outline action-icon action-edit" th:data-dialog-open="'editar-bien-' + ${item.id}" aria-label="Editar" title="Editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></button>
+                        <details class="row-menu">
+                            <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
+                            <div class="menu-content">
+                                <form method="post" th:action="@{/admin/dashboard/bienes/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar este bien? ');">
+                                    <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+                                </form>
+                            </div>
+                        </details>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<th:block th:each="item : ${bienes}">
+    <dialog class="dialog" th:id="'editar-bien-' + ${item.id}" th:attr="aria-labelledby='editar-bien-title-' + ${item.id}">
+        <div class="dialog-header">
+            <h2 th:id="'editar-bien-title-' + ${item.id}">Editar bien</h2>
+            <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
+        </div>
+        <form method="post" th:action="@{/admin/dashboard/bienes/{id}(id=${item.id})}" th:with="editableBien=${item}">
+            <p th:if="${item.categoria != null}" th:text="'Categoría actual: ' + ${item.categoria.nombreCategoria} + '. Seleccioná la subcategoría para confirmar la edición.'">
+            </p>
+            <fieldset th:replace="~{fragments/api-bien-form :: campos}">
+            </fieldset>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Guardar</button>
+            </div>
+        </form>
+    </dialog>
+</th:block>
+<details class="form-panel" id="alta-bienes">
+    <summary>Crear bien</summary>
+    <form method="post" th:action="@{/admin/dashboard/bienes}">
+        <fieldset th:replace="~{fragments/api-bien-form :: campos}">
+        </fieldset>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Crear</button>
+        </div>
+    </form>
+</details>
+</section>
+<section th:if="${section == 'importar'}" class="card api-panel">
+    <h2>Importar personas desde CSV</h2>
+    
+    <form method="post" enctype="multipart/form-data" th:action="@{/admin/dashboard/importar}">
+        <label>Archivo CSV (máximo 20 MB)<input class="form-control" name="archivo" type="file" accept=".csv,text/csv" required />
+    </label>
+    <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Importar archivo</button>
+    </div>
+</form>
+<div th:if="${importacion != null}" role="status">
+    <h2>Resultado de la importación</h2>
+    <div class="panel-kpis">
+        <article class="kpi-card">
+            <h3>Procesadas</h3>
+            <strong class="kpi-value" th:text="${importacion.filasProcesadas}">
+            </strong>
+        </article>
+        <article class="kpi-card">
+            <h3>Creadas</h3>
+            <strong class="kpi-value" th:text="${importacion.donantesCreados}">
+            </strong>
+        </article>
+        <article class="kpi-card">
+            <h3>Actualizadas</h3>
+            <strong class="kpi-value" th:text="${importacion.donantesActualizados}">
+            </strong>
+        </article>
+        <article class="kpi-card">
+            <h3>Rechazadas</h3>
+            <strong class="kpi-value" th:text="${importacion.filasRechazadas}">
+            </strong>
+        </article>
+    </div>
+    <div class="api-table">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Fila</th>
+                    <th scope="col">Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="e : ${importacion.errores}">
+                    <td data-label="Fila">
+                        <span th:text="${e.fila}">
+                        </span>
+                    </td>
+                    <td data-label="Error">
+                        <span th:text="${e.mensaje}">
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes}">Ver donantes importados</a>
+</div>
+</section>
+<template id="template-bien-extra">
+    <div class="card api-panel bien-extra-item">
+        <div>
+            <strong>Bien adicional</strong>
+            <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.closest('.bien-extra-item').remove()" aria-label="Eliminar bien" title="Eliminar bien"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+        </div>
+        <fieldset class="form-grid">
+            <label>Descripción del bien<input class="form-control" name="bienDescripcion" required maxlength="255" />
+        </label>
+        <label>Foto (URL opcional)<input class="form-control" name="bienFoto" type="url" />
+    </label>
+    <label>Cantidad<input class="form-control" name="bienCantidad" type="number" min="0.001" step="any" required />
+</label>
+<label>Subcategoría<select class="form-control" name="bienSubCategoriaId" required>
+    <option value="">Seleccionar</option>
+    <optgroup th:each="c : ${categorias}" th:label="${c.nombre}">
+        <option th:each="s : ${c.subCategorias}" th:if="${s.activo}" th:value="${s.id}" th:text="${s.nombre}">
+        </option>
+    </optgroup>
+</select>
+</label>
+<label>Unidad<select class="form-control" name="bienUnidadMedida" required>
+    <option th:each="u : ${ {'KILOGRAMO','GRAMO','LITRO','UNIDAD'} }" th:value="${u}" th:text="${u}">
+    </option>
+</select>
+</label>
+<label>Tipo de bien<select class="form-control" name="bienTipoBien" required>
+    <option th:each="t : ${ {'PERECEDERO','DURABLE'} }" th:value="${t}" th:text="${t}">
+    </option>
+</select>
+</label>
+<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" />
+</label>
+<label>Condición (durables)<select class="form-control" name="bienFueUsado">
+    <option value="">No corresponde</option>
+    <option value="false">Nuevo</option>
+    <option value="true">Usado</option>
+</select>
+</label>
+</fieldset>
+</div>
+</template>
+</th:block>
+</body>
+</html>

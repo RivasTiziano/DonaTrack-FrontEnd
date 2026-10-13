@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donations')}"><head><title>Registrar donación - DonaTrack</title></head><body><section th:fragment="main" class="api-view"><h1>Registrar donación</h1><a class="btn btn-outline" th:href="@{/admin/dashboard/donaciones}">Volver a donaciones</a><div th:replace="~{fragments/admin-ui :: mensajes}"></div><section class="card api-panel">
+        
+        <form method="post" th:action="@{/admin/dashboard/donaciones}">
+            <label>ID del donante<input class="form-control" type="number" name="donanteId" th:value="${campos != null ? campos.getFirst('donanteId') : ''}" min="1" required />
+        </label>
+        <label>Descripción general<input class="form-control" name="descripcionGeneral" th:value="${campos != null ? campos.getFirst('descripcionGeneral') : ''}" required />
+    </label>
+    <fieldset th:replace="~{fragments/api-bien-form :: campos}">
+    </fieldset>
+    <div id="bienes-extra-container"><th:block th:if="${campos != null and campos.containsKey('bienDescripcion')}" th:each="descripcion, fila : ${campos != null ? campos.get('bienDescripcion') : {}}">
+    <div class="card api-panel bien-extra-item">
+        <div>
+            <strong>Bien adicional</strong>
+            <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.closest('.bien-extra-item').remove()" aria-label="Eliminar bien" title="Eliminar bien"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+        </div>
+        <fieldset class="form-grid">
+            <label>Descripción del bien<input class="form-control" name="bienDescripcion" required maxlength="255" th:value="${campos.get('bienDescripcion') != null and campos.get('bienDescripcion').size() > fila.index ? campos.get('bienDescripcion')[fila.index] : ''}">
+        </label>
+        <label>Foto (URL opcional)<input class="form-control" name="bienFoto" type="url" th:value="${campos.get('bienFoto') != null and campos.get('bienFoto').size() > fila.index ? campos.get('bienFoto')[fila.index] : ''}">
+    </label>
+    <label>Cantidad<input class="form-control" name="bienCantidad" type="number" min="0.001" step="any" required th:value="${campos.get('bienCantidad') != null and campos.get('bienCantidad').size() > fila.index ? campos.get('bienCantidad')[fila.index] : ''}">
+</label>
+<label>Subcategoría<select class="form-control" name="bienSubCategoriaId" required>
+    <option value="">Seleccionar</option>
+    <optgroup th:each="c : ${categorias}" th:label="${c.nombre}">
+        <option th:each="s : ${c.subCategorias}" th:if="${s.activo}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${campos.get('bienSubCategoriaId') != null and campos.get('bienSubCategoriaId').size() > fila.index and campos.get('bienSubCategoriaId')[fila.index] == #strings.toString(s.id)}">
+        </option>
+    </optgroup>
+</select>
+</label>
+<label>Unidad<select class="form-control" name="bienUnidadMedida" required>
+    <option th:each="u : ${ {'KILOGRAMO','GRAMO','LITRO','UNIDAD'} }" th:value="${u}" th:text="${u}" th:selected="${campos.get('bienUnidadMedida') != null and campos.get('bienUnidadMedida').size() > fila.index and campos.get('bienUnidadMedida')[fila.index] == #strings.toString(u)}">
+    </option>
+</select>
+</label>
+<label>Tipo de bien<select class="form-control" name="bienTipoBien" required>
+    <option th:each="t : ${ {'PERECEDERO','DURABLE'} }" th:value="${t}" th:text="${t}" th:selected="${campos.get('bienTipoBien') != null and campos.get('bienTipoBien').size() > fila.index and campos.get('bienTipoBien')[fila.index] == #strings.toString(t)}">
+    </option>
+</select>
+</label>
+<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" th:value="${campos.get('bienFechaDeVencimiento') != null and campos.get('bienFechaDeVencimiento').size() > fila.index ? campos.get('bienFechaDeVencimiento')[fila.index] : ''}">
+</label>
+<label>Condición (durables)<select class="form-control" name="bienFueUsado">
+    <option value="">No corresponde</option>
+    <option value="false" th:selected="${campos != null and campos.get('bienFueUsado') != null and campos.get('bienFueUsado').size() > fila.index and campos.get('bienFueUsado')[fila.index] == 'false'}">Nuevo</option>
+    <option value="true" th:selected="${campos != null and campos.get('bienFueUsado') != null and campos.get('bienFueUsado').size() > fila.index and campos.get('bienFueUsado')[fila.index] == 'true'}">Usado</option>
+</select>
+</label>
+</fieldset>
+</div>
+</th:block>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" id="btn-add-bien">+ Agregar otro bien a la donación</button>
+    <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Registrar donación</button>
+    </div>
+</form>
+</section><template id="template-bien-extra">
+    <div class="card api-panel bien-extra-item">
+        <div>
+            <strong>Bien adicional</strong>
+            <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.closest('.bien-extra-item').remove()" aria-label="Eliminar bien" title="Eliminar bien"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+        </div>
+        <fieldset class="form-grid">
+            <label>Descripción del bien<input class="form-control" name="bienDescripcion" required maxlength="255" />
+        </label>
+        <label>Foto (URL opcional)<input class="form-control" name="bienFoto" type="url" />
+    </label>
+    <label>Cantidad<input class="form-control" name="bienCantidad" type="number" min="0.001" step="any" required />
+</label>
+<label>Subcategoría<select class="form-control" name="bienSubCategoriaId" required>
+    <option value="">Seleccionar</option>
+    <optgroup th:each="c : ${categorias}" th:label="${c.nombre}">
+        <option th:each="s : ${c.subCategorias}" th:if="${s.activo}" th:value="${s.id}" th:text="${s.nombre}">
+        </option>
+    </optgroup>
+</select>
+</label>
+<label>Unidad<select class="form-control" name="bienUnidadMedida" required>
+    <option th:each="u : ${ {'KILOGRAMO','GRAMO','LITRO','UNIDAD'} }" th:value="${u}" th:text="${u}">
+    </option>
+</select>
+</label>
+<label>Tipo de bien<select class="form-control" name="bienTipoBien" required>
+    <option th:each="t : ${ {'PERECEDERO','DURABLE'} }" th:value="${t}" th:text="${t}">
+    </option>
+</select>
+</label>
+<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" />
+</label>
+<label>Condición (durables)<select class="form-control" name="bienFueUsado">
+    <option value="">No corresponde</option>
+    <option value="false">Nuevo</option>
+    <option value="true">Usado</option>
+</select>
+</label>
+</fieldset>
+</div>
+</template></section></body></html>

@@ -7,9 +7,7 @@
     <header th:fragment="header" class="dt-header" role="banner">
         <div class="dt-header-row">
             <a class="brand" th:href="@{/}" aria-label="DonaTrack - Inicio">
-                <span class="brand-mark" aria-hidden="true">
-                    <i data-lucide="heart" style="width: 22px; height: 22px;"></i>
-                </span>
+                <img th:replace="~{fragments/brand :: mark}" />
                 <span>DonaTrack</span>
             </a>
 
@@ -21,12 +19,8 @@
             </nav>
 
             <div class="auth-actions">
-                <a th:href="@{/login}" class="nav-auth-link">
-                    <button type="button" class="btn btn-ghost-primary">Iniciar sesión</button>
-                </a>
-                <a th:href="@{/registro}" class="nav-auth-link">
-                    <button type="button" class="btn btn-primary">Registrarse</button>
-                </a>
+                <a th:href="@{/login}" class="nav-auth-link btn btn-ghost-primary">Iniciar sesión</a>
+                <a th:href="@{/registro}" class="nav-auth-link btn btn-primary">Registrarse</a>
             </div>
 
             <!-- Mobile Hamburger Toggle Button -->
@@ -42,16 +36,14 @@
         <aside class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menú móvil">
             <div class="mobile-drawer-header">
                 <div class="brand">
-                    <span class="brand-mark" aria-hidden="true">
-                        <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
-                    </span>
+                    <img th:replace="~{fragments/brand :: mark}" />
                     <span>DonaTrack</span>
                 </div>
                 <button type="button" class="mobile-drawer-close btn-icon" aria-label="Cerrar menú" style="background: none; border: none; cursor: pointer; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-sm);">
                     <i data-lucide="x" style="width: 22px; height: 22px;"></i>
                 </button>
             </div>
-            
+
             <div class="mobile-drawer-links">
                 <a th:href="@{/#about}"><i data-lucide="info" style="width: 18px; height: 18px;"></i> Acerca de</a>
                 <a th:href="@{/#donations}"><i data-lucide="package" style="width: 18px; height: 18px;"></i> Donaciones</a>
@@ -61,12 +53,8 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
-                <a th:href="@{/login}" style="width: 100%; text-decoration: none;">
-                    <button type="button" class="btn btn-outline" style="width: 100%;">Iniciar sesión</button>
-                </a>
-                <a th:href="@{/registro}" style="width: 100%; text-decoration: none;">
-                    <button type="button" class="btn btn-primary" style="width: 100%;">Registrarse</button>
-                </a>
+                <a th:href="@{/login}" style="width: 100%; text-decoration: none;" class="btn btn-outline">Iniciar sesión</a>
+                <a th:href="@{/registro}" style="width: 100%; text-decoration: none;" class="btn btn-primary">Registrarse</a>
             </div>
         </aside>
     </div>

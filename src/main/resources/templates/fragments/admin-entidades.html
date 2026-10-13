@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <th:block th:fragment="contenido">
+            <section th:if="${section == 'beneficiarios'}" class="card api-panel">
+                <div class="toolbar">
+                    <label>Buscar entidad<input class="form-control" type="search" data-filter-table="tabla-beneficiarios"/>
+                </label>
+                <a class="btn btn-outline" th:href="@{/admin/dashboard/beneficiarios/nuevo}">Registrar entidad beneficiaria</a>
+            </div>
+            <th:block th:if="${beneficiarios.isEmpty() and apiError == null}">
+                <div th:replace="~{fragments/admin-ui :: vacio('Todavía no hay entidades.', '/admin/dashboard/beneficiarios/nuevo', 'Crear nuevo registro')}">
+                </div>
+            </th:block>
+            <div class="api-table">
+                <table class="data-table" id="tabla-beneficiarios">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Razón social</th>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Rubro</th>
+                            <th scope="col">Ciudad</th>
+                            <th scope="col">Activo</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${beneficiarios}" data-record>
+                            <td data-label="ID">
+                                <span th:text="${item.id}">
+                                </span>
+                            </td>
+                            <td data-label="Razón social">
+                                <span th:text="${item.razonSocial}">
+                                </span>
+                            </td>
+                            <td data-label="Tipo">
+                                <span th:text="${item.tipoEntidad}">
+                                </span>
+                            </td>
+                            <td data-label="Rubro">
+                                <span th:text="${item.rubro}">
+                                </span>
+                            </td>
+                            <td data-label="Ciudad" th:text="${item.direccion != null ? item.direccion.ciudad : '—'}">
+                            </td>
+                            <td data-label="Activo">
+                                <span class="status-chip" th:text="${item.activo ? 'Sí' : 'No'}" th:classappend="${item.activo ? 'chip-success' : 'chip-neutral'}">
+                                </span>
+                            </td>
+                            <td data-label="Acciones">
+                                <div class="row-actions">
+                                    <a class="btn btn-outline action-icon action-edit" th:href="@{/admin/dashboard/beneficiarios/{id}(id=${item.id})}" aria-label="Ver o editar" title="Ver o editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></a>
+                                    <a class="btn btn-outline" th:href="@{/admin/dashboard/beneficiarios/{id}/acceso(id=${item.id})}">Crear acceso</a>
+                                    <details class="row-menu">
+                                        <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
+                                        <div class="menu-content">
+                                            <a class="btn btn-outline" th:href="@{/admin/dashboard/asignaciones(entidadBeneficiariaId=${item.id})}">Asignaciones</a>
+                                            <form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar esta entidad? ');">
+                                                <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+                                            </form>
+                                        </div>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section th:if="${section == 'necesidades'}" class="card api-panel">
+            <div class="toolbar">
+                <label>Buscar<input type="search" class="form-control" data-filter-table="tabla-necesidades"/>
+            </label>
+            <a class="btn btn-primary" href="#alta-necesidades">Nuevo registro</a>
+        </div>
+        <div class="toolbar">
+            <label>Entidad<select class="form-control" data-filter-table="tabla-necesidades" data-field="entidad">
+                <option value="">Todas</option>
+                <option th:each="e : ${beneficiarios}" th:value="${e.id}" th:text="${e.razonSocial}">
+                </option>
+            </select>
+        </label>
+        <label>Tipo<select class="form-control" data-filter-table="tabla-necesidades" data-field="tipo">
+            <option value="">Todos</option>
+            <option value="RECURRENTE">Recurrente</option>
+            <option value="EXTRAORDINARIA">Extraordinaria</option>
+        </select>
+    </label>
+    <label>Estado<select class="form-control" data-filter-table="tabla-necesidades" data-field="estado">
+        <option value="">Todos</option>
+        <option th:each="estado : ${ {'PENDIENTE','EN_PROGRESO','SATISFECHA'} }" th:value="${estado}" th:text="${@adminEstados.etiqueta(estado)}">
+        </option>
+    </select>
+</label>
+</div>
+<th:block th:if="${necesidades.isEmpty() and apiError == null}">
+    <div th:replace="~{fragments/admin-ui :: vacio('No hay necesidades registradas.', '#alta-necesidades', 'Crear nuevo registro')}">
+    </div>
+</th:block>
+<div class="api-table">
+    <table class="data-table" id="tabla-necesidades">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Entidad</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Período</th>
+                <th scope="col">Progreso</th>
+                <th scope="col">Restante</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${necesidades}" data-record th:data-tipo="${item.tipoNecesidad}" th:data-estado="${item.estado}" th:data-entidad="${item.entidadBeneficiariaId}">
+                <td data-label="ID">
+                    <span th:text="${item.necesidadId}">
+                    </span>
+                </td>
+                <td data-label="Entidad">
+                    <span th:text="${item.entidadBeneficiariaId}">
+                    </span>
+                </td>
+                <td data-label="Descripción">
+                    <span th:text="${item.descripcion}">
+                    </span>
+                </td>
+                <td data-label="Tipo">
+                    <span th:text="${item.tipoNecesidad}">
+                    </span>
+                </td>
+                <td data-label="Período">
+                    <span th:text="${item.periodo}">
+                    </span>
+                </td>
+                <td data-label="Progreso">
+                    <progress aria-label="Cantidad recibida respecto de lo solicitado" class="progress-track" th:value="${item.cantidadRecibida == null ? 0 : item.cantidadRecibida}" th:max="${item.bien.cantidad > 0 ? item.bien.cantidad : 1}">
+                    </progress>
+                    <small th:text="${item.cantidadRecibida} + ' / ' + ${item.bien.cantidad}">
+                    </small>
+                </td>
+                <td data-label="Restante" class="numeric">
+                    <span th:text="${item.cantidadRestante}">
+                    </span>
+                </td>
+                <td data-label="Estado">
+                    <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
+                    </span>
+                </td>
+                <td data-label="Acciones">
+                    <div class="row-actions">
+                        <a class="btn btn-outline" th:href="@{/admin/dashboard/necesidades/{id}(id=${item.necesidadId})}">Detalle</a>
+                        <button type="button" class="btn btn-outline action-icon action-edit" th:data-dialog-open="'editar-necesidad-' + ${item.necesidadId}" aria-label="Editar" title="Editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></button>
+                        <details class="row-menu">
+                            <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
+                            <div class="menu-content">
+                                <form method="post" th:action="@{/admin/dashboard/necesidades/{id}/eliminar(id=${item.necesidadId})}" onsubmit="return confirm('¿Eliminar esta necesidad? ');">
+                                    <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+                                </form>
+                            </div>
+                        </details>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<th:block th:each="item : ${necesidades}">
+    <dialog class="dialog" th:id="'editar-necesidad-' + ${item.necesidadId}" th:attr="aria-labelledby='editar-necesidad-title-' + ${item.necesidadId}">
+        <div class="dialog-header">
+            <h2 th:id="'editar-necesidad-title-' + ${item.necesidadId}">Editar necesidad</h2>
+            <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
+        </div>
+        <form method="post" th:action="@{/admin/dashboard/necesidades/{id}(id=${item.necesidadId})}" th:with="editableBien=${item.bien}">
+            <label>Descripción de la necesidad<input class="form-control" name="descripcionNecesidad" th:value="${item.descripcion}" required />
+        </label>
+        <label>Tipo<select class="form-control" name="tipoNecesidad" required>
+            <option th:each="t : ${ {'RECURRENTE','EXTRAORDINARIA'} }" th:value="${t}" th:text="${t}" th:selected="${item.tipoNecesidad == t}">
+            </option>
+        </select>
+    </label>
+    <label>Período ISO 8601 (recurrentes)<input class="form-control" name="periodo" th:value="${item.periodo}" placeholder="P1M" />
+</label>
+<fieldset th:replace="~{fragments/api-bien-form :: campos}">
+</fieldset>
+<div class="form-actions">
+    <button class="btn btn-primary" type="submit">Guardar</button>
+</div>
+</form>
+</dialog>
+</th:block>
+<details class="form-panel" id="alta-necesidades">
+    <summary>Crear necesidad</summary>
+    <form method="post" th:action="@{/admin/dashboard/necesidades}">
+        <label>Entidad beneficiaria<select class="form-control" name="entidadBeneficiariaId" required>
+            <option value="">Seleccionar</option>
+            <option th:each="b : ${beneficiarios}" th:value="${b.id}" th:text="${b.razonSocial} + ' (ID ' + ${b.id} + ')'">
+            </option>
+        </select>
+    </label>
+    <label>Descripción de la necesidad<input class="form-control" name="descripcionNecesidad" required />
+</label>
+<label>Tipo<select class="form-control" name="tipoNecesidad" required>
+    <option value="RECURRENTE">RECURRENTE</option>
+    <option value="EXTRAORDINARIA">EXTRAORDINARIA</option>
+</select>
+</label>
+<label>Período ISO 8601 (recurrentes)<input class="form-control" name="periodo" placeholder="P1M" />
+</label>
+<fieldset th:replace="~{fragments/api-bien-form :: campos}">
+</fieldset>
+<div class="form-actions">
+    <button class="btn btn-primary" type="submit">Crear</button>
+</div>
+</form>
+</details>
+</section>
+</th:block>
+</body>
+</html>

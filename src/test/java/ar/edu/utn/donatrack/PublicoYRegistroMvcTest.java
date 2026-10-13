@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PublicoYRegistroMvcTest {
     @Autowired MockMvc mvc;
     @MockBean DonacionesApiService donaciones;
+    @MockBean ar.edu.utn.donatrack.services.PublicoService publico;
     @MockBean AutenticacionApiService autenticacion;
     @MockBean IncentivosApiService incentivos;
     @MockBean LogisticaApiService logistica;
@@ -31,13 +32,14 @@ class PublicoYRegistroMvcTest {
         verifyNoInteractions(donaciones, autenticacion, incentivos, logistica, notificaciones);
     }
 
-    // La foto del hero y la galería son ilustrativas; las donaciones destacadas siguen sin datos inventados.
-    @Test void landingNoLlamaALaApiYMuestraGaleriaIlustrativa() throws Exception {
+    // Solo el hero es decorativo. Galería y destacadas esperan datos públicos reales.
+    @Test void landingNoLlamaALaApiYNoInventaEntregas() throws Exception {
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Entrega de útiles escolares")))
+                .andExpect(content().string(not(containsString("Entrega de útiles escolares"))))
+                .andExpect(content().string(containsString("/img/hero-donaciones.jpg")))
                 .andExpect(content().string(not(containsString("100% trazabilidad verificada"))))
-                .andExpect(content().string(containsString("Pronto vas a poder ver acá las donaciones entregadas del último mes.")));
+                .andExpect(content().string(containsString("La transparencia empieza con datos reales")));
         sinLlamadasALaApi();
     }
 
@@ -45,14 +47,14 @@ class PublicoYRegistroMvcTest {
         mvc.perform(get("/explorar-donaciones"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))))
-                .andExpect(content().string(containsString("Pronto vas a poder ver acá las donaciones entregadas del último mes.")));
+                .andExpect(content().string(containsString("No se muestran ubicaciones de entregas. Consultá las entregas públicas en la página principal.")));
         sinLlamadasALaApi();
     }
 
     @Test void detallePublicoSinDatosMuestraEstadoVacio() throws Exception {
         mvc.perform(get("/explorar-donaciones/15"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Esta donación no está disponible públicamente.")))
+                .andExpect(content().string(containsString("Este registro no está habilitado para consulta pública.")))
                 .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))));
         sinLlamadasALaApi();
     }

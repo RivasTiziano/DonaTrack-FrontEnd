@@ -56,7 +56,7 @@ class AutenticacionMvcTest {
                 .andReturn();
         var sesion = sesionGuardada(result);
         assertThat(sesion.esAdmin()).isTrue();
-        assertThat(sesion.getNombreVisible()).isEqualTo("admin@example.com");
+        assertThat(sesion.getNombreVisible()).isEqualTo("Administración");
         assertThat(sesion.getAccessToken()).isEqualTo("access-de-prueba");
     }
 
@@ -96,7 +96,7 @@ class AutenticacionMvcTest {
         when(auth.login("ana@example.com", CLAVE)).thenReturn(token("DONANTE_HUMANO", 1L));
         when(donaciones.humano(1L)).thenThrow(new ResourceAccessException("offline"));
         var result = mvc.perform(login("ana@example.com", CLAVE)).andExpect(redirectedUrl("/donante/dashboard")).andReturn();
-        assertThat(sesionGuardada(result).getNombreVisible()).isEqualTo("ana@example.com");
+        assertThat(sesionGuardada(result).getNombreVisible()).isEqualTo("Donante");
     }
 
     @Test void credencialesIncorrectasMuestranErrorYConservanElEmailSinLaClave() throws Exception {

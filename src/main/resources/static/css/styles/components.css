@@ -32,28 +32,28 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: var(--color-surface, #fff);
   color: #ffffff;
-  box-shadow: 0 4px 14px 0 rgba(var(--color-primary-rgb), 0.35);
+
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 6px 20px 0 rgba(var(--color-primary-rgb), 0.45);
-  transform: translateY(-1px);
+
+
 }
 
 .btn-outline {
   background: #ffffff;
   color: var(--color-ink);
   border-color: var(--color-border);
-  box-shadow: var(--shadow-xs);
+
 }
 
 .btn-outline:hover:not(:disabled) {
   background: #f8fafc;
   border-color: var(--color-border-hover);
   color: var(--color-primary);
-  transform: translateY(-1px);
+
 }
 
 .btn-ghost-primary {
@@ -103,14 +103,11 @@
 }
 
 .brand-mark {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  color: white;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.3);
+  width: 48px;
+  height: 48px;
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .dt-header {
@@ -124,7 +121,7 @@
   -webkit-backdrop-filter: blur(16px);
   background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+
 }
 
 body.has-fixed-header {
@@ -227,7 +224,7 @@ body.drawer-open {
     height: 100dvh !important;
     background: #ffffff !important;
     z-index: 99999 !important;
-    box-shadow: -8px 0 25px rgba(0, 0, 0, 0.15) !important;
+
     flex-direction: column !important;
     padding: 1.5rem !important;
     overflow-y: auto !important;
@@ -359,7 +356,7 @@ body.drawer-open {
    ONBOARDING HINT / CONTEXTUAL HELP CARDS
    ========================================================================== */
 .onboarding-hint {
-  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+  background: var(--color-surface, #fff);
   border: 1px solid #bbf7d0;
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.5rem;
@@ -368,17 +365,17 @@ body.drawer-open {
   gap: 1rem;
   align-items: flex-start;
   position: relative;
-  box-shadow: var(--shadow-xs);
+
   transition: all 0.2s ease;
 }
 
 .onboarding-hint.hint-amber {
-  background: linear-gradient(135deg, #fefce8 0%, #fff7ed 100%);
+  background: var(--color-surface, #fff);
   border-color: #fde047;
 }
 
 .onboarding-hint.hint-indigo {
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+  background: var(--color-surface, #fff);
   border-color: #c7d2fe;
 }
 
@@ -391,7 +388,7 @@ body.drawer-open {
   place-items: center;
   color: var(--color-primary);
   flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
+
 }
 
 .onboarding-hint-content {
@@ -526,7 +523,7 @@ body.drawer-open {
   width: max-content;
   max-width: 220px;
   text-align: center;
-  box-shadow: var(--shadow-md);
+
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
@@ -537,7 +534,7 @@ body.drawer-open {
 [data-tooltip]:hover::after,
 [data-tooltip]:focus-visible::after {
   opacity: 1;
-  transform: translateX(-50%) scale(1);
+
 }
 
 /* ==========================================================================
@@ -561,7 +558,7 @@ body.drawer-open {
   color: var(--color-ink);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
   border-left: 5px solid var(--color-primary);
   display: flex;
   align-items: flex-start;
@@ -664,7 +661,7 @@ body.drawer-open {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-xl);
+
   z-index: 1;
   transform: translateY(20px) scale(0.95);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -722,7 +719,7 @@ body.drawer-open {
    SKELETON SCREENS & LOADERS
    ========================================================================== */
 .skeleton {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 37%, #f1f5f9 63%);
+  background: var(--color-surface, #fff);
   background-size: 400% 100%;
   animation: skeletonLoading 1.4s ease infinite;
   border-radius: var(--radius-sm);
@@ -809,7 +806,7 @@ body.drawer-open {
 .form-control:focus, .form-input:focus, .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+
 }
 
 .form-hint {
@@ -910,7 +907,7 @@ body.drawer-open {
   font-weight: 700;
   font-size: 0.875rem;
   transition: all 0.25s ease;
-  box-shadow: var(--shadow-xs);
+
 }
 
 .dt-step-label {
@@ -936,7 +933,7 @@ body.drawer-open {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: #ffffff;
-  box-shadow: 0 0 0 4px var(--color-primary-soft);
+
 }
 
 .dt-step.active .dt-step-label {
@@ -979,7 +976,7 @@ body.drawer-open {
   display: grid;
   place-items: center;
   margin-bottom: 1.25rem;
-  box-shadow: var(--shadow-xs);
+
 }
 
 .dt-empty-state-title {
@@ -1007,11 +1004,11 @@ body.drawer-open {
   gap: 1rem;
   padding: 1rem 1.25rem;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  background: var(--color-surface, #fff);
   border: 1px solid #fde68a;
   color: #92400e;
   margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-xs);
+
   flex-wrap: wrap;
 }
 

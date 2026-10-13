@@ -25,3 +25,5 @@
 @import './styles/pages/notifications-center.css';
 @import './styles/pages/register-donor.css';
 @import './styles/pages/register-needs.css';
+@import './styles/pages/admin.css';
+@import url('./styles/clean-ui.css');

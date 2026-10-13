@@ -54,6 +54,8 @@ public class DonacionesService {
     }
     public PerfilForm nuevoBeneficiario() { return mapper.nuevoBeneficiario(); }
 
+    public void completarEmail(String tipo,Long id,String email) { api.completarEmail(tipo,id,email); }
+
     public void guardarDonante(String tipo,Long id,PerfilForm form) {
         var errors=new BeanPropertyBindingResult(form,"form");
         validator.validarPerfil(tipo,form,id,errors); check(errors);

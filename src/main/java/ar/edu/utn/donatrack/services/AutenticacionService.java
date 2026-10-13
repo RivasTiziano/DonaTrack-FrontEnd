@@ -30,11 +30,12 @@ public class AutenticacionService {
     }
 
     /**
-     * Nombre para mostrar: razón social o nombre del donante o de la entidad, y el email para ADMIN.
-     * Si el perfil no se puede leer, queda el email. Necesita que la sesión con el token ya esté guardada.
+     * Nombre para mostrar: razón social o nombre del donante o de la entidad, Administración para ADMIN.
+     * Si el perfil no se puede leer, queda la etiqueta del rol. Necesita que la sesión con el token ya esté guardada.
      */
     public String nombreVisible(String email, AuthDtos.Token token) {
-        if (token.referenciaId() == null) return email;
+        String fallback = switch (token.rol()) { case "ADMIN" -> "Administración"; case "DONANTE_JURIDICO" -> "Donante jurídico"; case "BENEFICIARIA" -> "Entidad beneficiaria"; default -> "Donante"; };
+        if ("ADMIN".equals(token.rol()) || token.referenciaId() == null) return fallback;
         try {
             String nombre = switch (token.rol()) {
                 case "DONANTE_HUMANO" -> {
@@ -45,9 +46,9 @@ public class AutenticacionService {
                 case "BENEFICIARIA" -> donaciones.beneficiario(token.referenciaId()).razonSocial();
                 default -> null;
             };
-            return nombre == null || nombre.isBlank() ? email : nombre;
+            return nombre == null || nombre.isBlank() ? fallback : nombre;
         } catch (RestClientException | IllegalStateException exception) {
-            return email;
+            return fallback;
         }
     }
 

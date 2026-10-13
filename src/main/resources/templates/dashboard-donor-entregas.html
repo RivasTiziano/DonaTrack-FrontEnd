@@ -39,7 +39,7 @@
         </div>
 
         <!-- Search & Filter Bar -->
-        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);">
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; ">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
                 <div style="grid-column: span 1 / -1;">
                     <label for="delivery-search" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
@@ -74,7 +74,7 @@
 
         <div th:unless="${activeDonorDeliveries.isEmpty()}" class="dt-grid-1-8-1">
             <!-- Mapa: solo el destino, si la entidad tiene coordenadas -->
-            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; min-height: 480px;">
+            <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden;  display: flex; flex-direction: column; min-height: 480px;">
                 <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                     <strong style="font-size: 0.9375rem; color: var(--color-ink);" id="map-title">Destino de la entrega</strong>
                 </div>
@@ -83,7 +83,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <!-- Selector de entregas -->
-                <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
+                <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; ">
                     <h3 style="font-size: 0.9375rem; font-weight: 800; color: var(--color-ink); margin-bottom: 0.75rem;">
                         <i data-lucide="list" style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; color: var(--color-primary);"></i> Seleccionar entrega:
                     </h3>
@@ -112,7 +112,7 @@
                 </div>
 
                 <!-- Detalle de la entrega seleccionada -->
-                <div class="card" id="telematics-panel" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
+                <div class="card" id="telematics-panel" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem;  display: flex; flex-direction: column; gap: 1rem;">
                     <div>
                         <span class="status-badge" id="delivery-status" th:classappend="${activeDonorDeliveries[0].status_badge}" th:text="${activeDonorDeliveries[0].status_label}">Estado</span>
                         <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-ink); margin-top: 6px;" id="delivery-title" th:text="${activeDonorDeliveries[0].donationTitle ?: 'Donación'}">Donación</h3>

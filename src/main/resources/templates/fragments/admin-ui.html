@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <header th:fragment="header(titulo,descripcion)" class="page-header">
+            <div>
+                <nav class="dt-breadcrumbs" aria-label="Migas de pan">
+                    <a th:href="@{/admin/dashboard}">Administración</a>
+                    <span aria-hidden="true">/</span>
+                    <span th:text="${titulo}">
+                    </span>
+                </nav>
+                <h1 th:text="${titulo}">
+                </h1>
+                <p th:text="${descripcion}">
+                </p>
+            </div>
+        </header>
+        <div th:fragment="mensajes">
+            <p th:if="${apiError != null}" th:text="${apiError}" th:data-admin-message="${apiError}" data-kind="error" role="alert" class="api-error">
+            </p>
+            <p th:if="${success != null}" th:text="${success}" th:data-admin-message="${success}" data-kind="success" role="status" class="api-success">
+            </p>
+        </div>
+        <span th:fragment="estado(valor)" class="status-chip" th:data-estado="${valor}" th:classappend="${@adminEstados.tono(valor)}" th:text="${@adminEstados.etiqueta(valor)}">
+        </span>
+        <div th:fragment="vacio(texto,enlace,accion)" class="empty-state" role="status">
+            <i data-lucide="inbox" aria-hidden="true">
+            </i>
+            <p th:text="${texto}">
+            </p>
+            <a class="btn btn-outline" th:href="${enlace}" th:text="${accion}">
+            </a>
+        </div>
+        <nav th:fragment="matchTabs(actual)" class="tabs" aria-label="Matchmaking">
+            <a th:classappend="${actual == 'asignar'} ? 'active'" th:href="@{/admin/dashboard/asignar}">Sugerir y asignar</a>
+            <a th:classappend="${actual == 'sugerencias' or actual == 'sugerencia'} ? 'active'" th:href="@{/admin/dashboard/sugerencias}">Sugerencias guardadas</a>
+            <a th:classappend="${actual == 'asignaciones'} ? 'active'" th:href="@{/admin/dashboard/asignaciones}">Por entidad</a>
+        </nav>
+        <nav th:fragment="rankingTabs(actual)" class="tabs" aria-label="Rankings">
+            <a th:classappend="${actual == 'rankings'} ? 'active'" th:href="@{/admin/dashboard/rankings}">Mes actual</a>
+            <a th:classappend="${actual == 'historialRanking'} ? 'active'" th:href="@{/admin/dashboard/incentivos/historial}">Historial</a>
+        </nav>
+    </body>
+</html>

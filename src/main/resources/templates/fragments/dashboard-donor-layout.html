@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:replace="${title}">DonaTrack - Panel Donante</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" />
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon.png}" />
     <!-- Local Leaflet & CSS -->
     <link rel="stylesheet" th:href="@{/vendor/leaflet/leaflet.css}" />
     <link rel="stylesheet" th:href="@{/css/index.css}" />
@@ -21,34 +21,21 @@
                 <i data-lucide="menu" style="width: 22px; height: 22px;"></i>
             </button>
             <a class="brand" th:href="@{/}" aria-label="DonaTrack - Inicio">
-                <span class="brand-mark" aria-hidden="true">
-                    <i data-lucide="heart" style="width: 22px; height: 22px;"></i>
-                </span>
+                <img th:replace="~{fragments/brand :: mark}" />
                 <span>DonaTrack</span>
             </a>
-            <span class="role-badge">
-                <i data-lucide="user-check" style="width: 12px; height: 12px;"></i>
-                Donante
-            </span>
+
         </div>
 
         <div class="dashboard-header-right">
-            <div class="user-profile-summary">
-                <span class="user-profile-name" th:text="${sesion != null ? sesion.nombreVisible : ''}"></span>
-                <span class="user-profile-role" th:if="${user != null and user.category != null}" th:text="'Categoría: ' + ${user.category}"></span>
-            </div>
+
 
             <a th:href="@{/donante/dashboard/notificaciones}" class="header-icon-btn" aria-label="Ver notificaciones" data-tooltip="Notificaciones">
                 <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
                 <span class="notification-count-badge" th:if="${notificacionesNoLeidas != null and notificacionesNoLeidas > 0}" th:text="${notificacionesNoLeidas}"></span>
             </a>
 
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="btn btn-outline btn-sm" style="color: var(--color-ink-light);" data-tooltip="Cerrar sesión">
-                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
-                    <span>Salir</span>
-                </button>
-            </form>
+            <details th:replace="~{fragments/account-menu :: menu}"></details>
         </div>
     </header>
 
@@ -57,9 +44,7 @@
     <aside class="dashboard-mobile-drawer" role="dialog" aria-modal="true" aria-label="Menú lateral móvil">
         <div class="dashboard-drawer-header">
             <div class="brand">
-                <span class="brand-mark" aria-hidden="true">
-                    <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
-                </span>
+                <img th:replace="~{fragments/brand :: mark}" />
                 <span>DonaTrack</span>
             </div>
             <button type="button" class="dashboard-drawer-close" aria-label="Cerrar menú">
@@ -100,10 +85,7 @@
                 <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
                 <span>Notificaciones</span>
             </a>
-            <a th:href="@{/explorar-donaciones}" class="sidebar-link" style="margin-top: 0.5rem; border-top: 1px dashed var(--color-border); padding-top: 0.85rem;">
-                <i data-lucide="map" style="width: 20px; height: 20px;"></i>
-                <span>Mapa Público</span>
-            </a>
+
         </nav>
 
         <div class="dashboard-drawer-footer">
@@ -147,10 +129,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <a th:href="@{/explorar-donaciones}" class="btn btn-outline" style="width: 100%; font-size: 0.8125rem; min-height: 40px;">
-                    <i data-lucide="map" style="width: 16px; height: 16px;"></i>
-                    <span>Mapa Público</span>
-                </a>
+
             </div>
         </aside>
 
@@ -191,6 +170,7 @@
 
     <!-- Scripts -->
     <script th:src="@{/js/app-usability.js}"></script>
+<script th:src="@{/js/ui-controls.js}"></script>
     <script>
       if (window.lucide) {
         lucide.createIcons();

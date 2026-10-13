@@ -20,7 +20,9 @@ public class IncentivosService {
         validator.mision(tipo,objetivo); api.agregarMision(id,mapper.mision(tipo,objetivo));
     }
     public List<IncentivosDtos.FilaRanking> rankingConNombres(Map<Long,String> nombres) {
-        return mapper.ranking(api.ranking(), nombres);
+        var ranking = api.ranking();
+        if (ranking == null) throw new IllegalStateException("Ranking no disponible");
+        return mapper.ranking(ranking, nombres);
     }
 
     public List<IncentivosDtos.FilaHistorial> historialConNombres(Map<Long,String> nombres) {
@@ -52,7 +54,7 @@ public class IncentivosService {
     }
 
     public List<IncentivosDtos.Categoria> categorias() {
-        return api.categorias();
+        return mapper.ordenarCategorias(api.categorias());
     }
 
     public IncentivosDtos.Categoria categoria(Long id) {

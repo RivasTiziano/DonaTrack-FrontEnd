@@ -41,6 +41,23 @@ public class AccesoController {
         return crear(service.perfil(tipo, id), password, confirmacion, model, flash, LISTADO_DONANTES);
     }
 
+    @PostMapping("/admin/dashboard/donantes/{tipo:humanos|juridicos}/{id}/acceso/contacto")
+    public String completarContacto(@PathVariable String tipo,@PathVariable Long id,
+                                    @RequestParam(defaultValue="") String email,
+                                    Model model,RedirectAttributes flash) {
+        try {
+            service.completarEmail(tipo,id,email);
+            flash.addFlashAttribute("success","Email de contacto guardado.");
+            return "redirect:/admin/dashboard/donantes/" + tipo + "/" + id + "/acceso";
+        } catch(FormularioInvalidoException exception) { model.addAttribute("apiError",exception.getMessage()); }
+        catch(RestClientException exception) { model.addAttribute("apiError",errors.describe(exception)); }
+        model.addAttribute("tipo",tipo);
+        model.addAttribute("id",id);
+        model.addAttribute("completarContacto",true);
+        model.addAttribute("emailContacto",email);
+        return "admin-perfil";
+    }
+
     @GetMapping("/admin/dashboard/beneficiarios/{id}/acceso")
     public String formularioEntidad(@PathVariable Long id, Model model) {
         return formulario(model, service.perfil("beneficiarios", id), LISTADO_ENTIDADES);
@@ -55,6 +72,8 @@ public class AccesoController {
     }
 
     private String formulario(Model model, Acceso perfil, String volver) {
+        if (!service.habilitado(perfil.tipo(), perfil.id())) return "redirect:" + volver;
+        if (perfil.email() == null) return "redirect:" + ("beneficiarios".equals(perfil.tipo()) ? "/admin/dashboard/beneficiarios/" + perfil.id() : "/admin/dashboard/donantes/" + perfil.tipo() + "/" + perfil.id()) + "?completarContacto=true";
         cargar(model, perfil, volver);
         return "admin-acceso";
     }

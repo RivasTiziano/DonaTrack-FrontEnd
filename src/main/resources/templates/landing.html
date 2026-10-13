@@ -8,15 +8,13 @@
         <section class="hero">
             <div class="container hero-grid">
                 <div>
-                    <span class="kicker" th:text="${heroContent.kicker}">Kicker</span>
+
                     <h1 th:text="${heroContent.title}">Title</h1>
                     <p th:text="${heroContent.description}">Description</p>
                     <div class="hero-actions">
-                        <a th:href="@{/registro}" style="text-decoration: none;">
-                            <button type="button" class="btn btn-primary">Empezar a donar</button>
-                        </a>
+                        <a th:href="@{/registro}" class="btn btn-primary">Empezar a donar</a>
                         <a href="#como-funciona" class="btn btn-outline hero-link-button">
-                            <span>Ver cómo funciona</span> 
+                            <span>Ver cómo funciona</span>
                             <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
                         </a>
                     </div>
@@ -28,7 +26,8 @@
                     </div>
                 </div>
                 <div class="hero-visual">
-                    <img th:src="${heroContent.heroImage}" alt="Voluntarios preparando donaciones" />
+                    <!-- Foto decorativa: Maria Lin Kim / Unsplash. Crédito y licencia: static/img/CREDITOS.md -->
+                    <img th:src="${heroContent.heroImage}" alt="Bolsas de alimentos con frutas, verduras y pan" width="1200" height="900" fetchpriority="high" />
                 </div>
             </div>
         </section>
@@ -36,7 +35,7 @@
         <!-- Process Section: Cómo Funciona en 4 Pasos -->
         <section class="section" id="como-funciona" style="background: #ffffff; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
             <div class="container">
-                <span class="kicker">Proceso Transparente</span>
+
                 <h2 style="margin-top: 0.5rem;">¿Cómo Funciona DonaTrack?</h2>
                 <p class="section-copy">
                     Garantizamos la trazabilidad integral de cada aporte desde el ingreso físico hasta la entrega final verificada.
@@ -81,7 +80,7 @@
                         </div>
                         <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Traslado con GPS</h3>
                         <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.5;">
-                            La flota logística transporta la donación con monitoreo de ubicación en tiempo real visible para el donante y la entidad.
+                            La flota logística transporta las donaciones y registra su ubicación para organizar y seguir los traslados.
                         </p>
                     </div>
 
@@ -93,9 +92,9 @@
                             </div>
                             <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-muted);">04</span>
                         </div>
-                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Evidencia Fotográfica</h3>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink);">Entregas publicadas</h3>
                         <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.5;">
-                            Al recibir los bienes, la entidad sube fotos que se publican de inmediato en el mapa de transparencia sin requerir login.
+                            Las entregas autorizadas para publicación se pueden consultar sin iniciar sesión, protegiendo los datos personales.
                         </p>
                     </div>
                 </div>
@@ -123,7 +122,7 @@
         <section class="section" id="donations">
             <div class="container">
                 <h2>Donaciones destacadas del mes</h2>
-                <p class="section-copy">Ejemplos de entregas recientes con su trazabilidad.</p>
+                <p class="section-copy">Entregas habilitadas para consulta pública.</p>
                 <div class="donation-grid">
                     <article class="donation-card" th:each="donation : ${featuredDonations}">
                         <img th:if="${donation.image != null}" th:src="${donation.image}" th:alt="${donation.item}" />
@@ -133,42 +132,38 @@
                         </p>
                         <p class="meta" th:if="${donation.date != null}" th:text="${donation.date}">Date</p>
                         <p class="meta" th:if="${donation.beneficiary != null}">Beneficiario: <span th:text="${donation.beneficiary}">Beneficiary</span></p>
-                        <button type="button" class="btn btn-outline">Ver detalles</button>
+                        <a class="btn btn-outline" th:href="@{/explorar-donaciones/{id}(id=${donation.id})}">Ver detalles</a>
                     </article>
                 </div>
-                <p class="section-copy" role="status" th:if="${#lists.isEmpty(featuredDonations)}">Pronto vas a poder ver acá las donaciones entregadas del último mes.</p>
+                <div class="landing-empty" role="status" th:if="${#lists.isEmpty(featuredDonations)}"><i data-lucide="package-search" aria-hidden="true"></i><h3>La transparencia empieza con datos reales</h3><p>Las entregas aparecerán aquí cuando esté disponible su registro público. No mostramos fotos de ejemplo como donaciones.</p><a class="btn btn-outline" th:href="@{/explorar-donaciones}">Explorar el mapa</a></div>
             </div>
         </section>
 
         <section class="section" id="gallery">
             <div class="container">
                 <h2>Galeria de donaciones</h2>
-                <p class="section-copy">Consulta entregas reales sin necesidad de iniciar sesion.</p>
+                <p class="section-copy">Consultá entregas publicadas sin necesidad de iniciar sesión. Los registros “Prueba” y sus fotos ilustrativas no representan entregas reales.</p>
                 <div class="gallery-grid">
                     <figure class="gallery-item" th:each="item : ${recentDeliveries}">
                         <img th:src="${item.image}" th:alt="${item.title}" />
-                        <figcaption th:text="${item.title}">Title</figcaption>
+                        <figcaption><a th:href="@{/explorar-donaciones/{id}(id=${item.id})}" th:text="${item.title}">Entrega</a></figcaption>
                     </figure>
                 </div>
-                <p class="section-copy" role="status" th:if="${#lists.isEmpty(recentDeliveries)}">Pronto vas a poder ver acá las donaciones entregadas del último mes.</p>
+                <div class="landing-empty" role="status" th:if="${#lists.isEmpty(recentDeliveries)}"><i data-lucide="package-search" aria-hidden="true"></i><h3>La transparencia empieza con datos reales</h3><p>Las entregas aparecerán aquí cuando esté disponible su registro público. No mostramos fotos de ejemplo como donaciones.</p><a class="btn btn-outline" th:href="@{/explorar-donaciones}">Explorar el mapa</a></div>
             </div>
         </section>
 
         <section class="cta">
             <div class="container">
                 <div class="cta-box">
-                    <h2>Sumate a una red de ayuda con evidencia real</h2>
+                    <h2>Sumate a una red de ayuda</h2>
                     <p>
                         Registra tus donaciones o solicita apoyo en una plataforma clara,
                         colaborativa y centrada en el impacto social.
                     </p>
                     <div class="cta-actions">
-                        <a th:href="@{/registro}" style="text-decoration: none;">
-                            <button type="button" class="btn btn-outline">Registrarme como donante</button>
-                        </a>
-                        <a th:href="@{/registro/entidad-beneficiaria}" style="text-decoration: none;">
-                            <button type="button" class="btn btn-outline">Registrarme como beneficiario</button>
-                        </a>
+                        <a th:href="@{/registro}" class="btn btn-outline">Registrarme como donante</a>
+                        <a th:href="@{/registro/entidad-beneficiaria}" class="btn btn-outline">Registrarme como beneficiario</a>
                     </div>
                 </div>
             </div>
@@ -179,9 +174,7 @@
                 <div class="footer-grid">
                     <div>
                         <div class="brand">
-                            <span class="brand-mark" aria-hidden="true">
-                                <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
-                            </span>
+                            <img th:replace="~{fragments/brand :: mark}" />
                             DonaTrack
                         </div>
                         <p>Transparencia para transformar la confianza en ayuda concreta.</p>
@@ -208,16 +201,15 @@
                     <div>
                         <h4>Contacto</h4>
                         <ul>
-                            <li><i data-lucide="mail" style="width: 14px; height: 14px;"></i> info@donatrack.org</li>
-                            <li><i data-lucide="phone" style="width: 14px; height: 14px;"></i> +52 55 1234 5678</li>
-                            <li><i data-lucide="map-pin" style="width: 14px; height: 14px;"></i> Buenos Aires, Argentina</li>
+                            <li>info@donatrack.org</li>
+                            <li>+52 55 1234 5678</li>
+                            <li>Buenos Aires, Argentina</li>
                         </ul>
                     </div>
+<div><h4><a th:href="@{/legal}">Términos y condiciones</a></h4></div>
                 </div>
 
-                <div class="legal">
-                    <a th:each="link : ${footerLegalLinks}" th:href="${link.href}" th:text="${link.label}">Label</a>
-                </div>
+
             </div>
         </footer>
     </main>

@@ -58,7 +58,7 @@ class AdminMvcTest {
                 .andExpect(content().string(containsString("Persona Real Prueba")))
                 .andExpect(content().string(containsString("Empresa Real")))
                 .andExpect(content().string(containsString("real@example.com")))
-                .andExpect(content().string(containsString("COMPLETO")))
+                .andExpect(content().string(containsString("Completo")))
                 .andExpect(content().string(containsString("data-type=\"Jurídica\"")))
                 .andExpect(content().string(not(containsString("Juan Pérez"))));
     }
@@ -102,7 +102,9 @@ class AdminMvcTest {
         mvc.perform(multipart("/admin/dashboard/importar").file(file).session(TestSesiones.admin()))
                 .andExpect(status().is3xxRedirection()).andExpect(flash().attribute("importacion", result));
         mvc.perform(get("/admin/dashboard/importar").session(TestSesiones.admin()).flashAttr("importacion", result))
-                .andExpect(content().string(containsString("Fila 11: Email en uso")));
+                .andExpect(content().string(containsString("data-label=\"Fila\"")))
+                .andExpect(content().string(containsString(">11</span>")))
+                .andExpect(content().string(containsString("Email en uso")));
     }
 
     @Test void csvEmptyNeverCallsApi() throws Exception {

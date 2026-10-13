@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:replace="${title}">DonaTrack</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" />
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon.png}" />
     <!-- Local Leaflet & App CSS -->
     <link rel="stylesheet" th:href="@{/vendor/leaflet/leaflet.css}" />
     <link rel="stylesheet" th:href="@{/css/index.css}" />
@@ -28,6 +28,7 @@
 
     <!-- Script de Usabilidad Global -->
     <script th:src="@{/js/app-usability.js}"></script>
+<script th:src="@{/js/ui-controls.js}"></script>
     <script>
       if (window.lucide) {
         lucide.createIcons();

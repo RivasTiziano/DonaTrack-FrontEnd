@@ -27,7 +27,10 @@ public class ApiViewSupport {
     public String adminPage(Model model, String title, String section, String activeTab) {
         model.addAttribute("pageTitle", title);
         model.addAttribute("section", section);
-        model.addAttribute("activeTab", activeTab);
+        model.addAttribute("activeTab", switch (section) {
+            case "rutas", "entregas", "catalogo", "bienes", "beneficiarios", "necesidades" -> section;
+            default -> activeTab;
+        });
         return "admin-api";
     }
 
@@ -51,7 +54,7 @@ public class ApiViewSupport {
     public String write(RedirectAttributes flash, String redirect, Runnable operation) {
         try {
             operation.run();
-            flash.addFlashAttribute("success", "Operación confirmada por el servicio.");
+            flash.addFlashAttribute("success", "Cambios guardados correctamente.");
         } catch (ar.edu.utn.donatrack.exceptions.FormularioInvalidoException exception) {
             flash.addFlashAttribute("apiError", exception.getMessage());
         } catch (RestClientException | IllegalStateException exception) {
@@ -64,6 +67,22 @@ public class ApiViewSupport {
     public String page(Model model, String title, String section) {
         model.addAttribute("pageTitle", title);
         model.addAttribute("section", section);
+        model.addAttribute("activeTab", activeTab(section));
         return "admin-complementos";
+    }
+    private String activeTab(String section) {
+        return switch(section) {
+            case "bien" -> "bienes";
+            case "necesidad" -> "necesidades";
+            case "asignaciones", "sugerencias", "sugerencia", "contactos" -> "assign";
+            case "camion" -> "trucks";
+            case "ruta", "parada", "paradas" -> "rutas";
+            case "entrega" -> "entregas";
+            case "ubicacion", "seguimiento" -> "seguimiento";
+            case "historialRanking" -> "rankings";
+            case "seleccionarIncentivos", "donanteIncentivos" -> "consultaIncentivos";
+            case "misiones", "incentivos" -> "incentivos";
+            default -> section;
+        };
     }
 }

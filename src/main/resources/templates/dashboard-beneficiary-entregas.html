@@ -45,7 +45,7 @@
         </div>
 
         <!-- Filtros -->
-        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);" aria-label="Filtros de envíos">
+        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; " aria-label="Filtros de envíos">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
                 <div>
                     <label for="incoming-search" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
@@ -81,7 +81,7 @@
         <div class="dt-cards-grid-3" id="incoming-grid">
             <article class="incoming-card" th:each="inc : ${incomingDeliveries}"
                      th:attr="data-status=${inc.status}"
-                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 0.75rem;">
+                     style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem;  display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
                     <strong style="font-size: 0.95rem; color: var(--color-ink);" th:text="${inc.title ?: 'Donación'}">Donación</strong>
                     <span class="status-badge" th:classappend="${inc.status_badge}" style="font-size: 0.7rem; font-weight: 800;" th:text="${inc.status_label}">En traslado</span>

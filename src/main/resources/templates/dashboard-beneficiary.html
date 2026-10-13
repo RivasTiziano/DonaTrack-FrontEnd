@@ -49,7 +49,7 @@
 
         <!-- Quick Stats Grid -->
         <div class="dt-stats-grid">
-            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border);  display: flex; align-items: center; gap: 1.25rem;">
                 <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #e0e7ff; display: grid; place-items: center; flex-shrink: 0;">
                     <i data-lucide="clipboard-list" style="width: 26px; height: 26px; color: #4338ca;"></i>
                 </div>
@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border);  display: flex; align-items: center; gap: 1.25rem;">
                 <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #ecfeff; display: grid; place-items: center; flex-shrink: 0;">
                     <i data-lucide="truck" style="width: 26px; height: 26px; color: #0891b2;"></i>
                 </div>
@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1.25rem;">
+            <div class="stat-card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border);  display: flex; align-items: center; gap: 1.25rem;">
                 <div class="stat-icon" style="width: 52px; height: 52px; border-radius: var(--radius-md); background-color: #ecfdf5; display: grid; place-items: center; flex-shrink: 0;">
                     <i data-lucide="package-check" style="width: 26px; height: 26px; color: #059669;"></i>
                 </div>
@@ -83,7 +83,7 @@
         <!-- Active Needs & Incoming Layout -->
         <div class="dt-grid-2-1">
             <!-- Necesidades -->
-            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs);">
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); ">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
                     <h2 style="font-size: 1.25rem; font-weight: 700;">Mis Necesidades</h2>
                     <a th:href="@{/entidad/dashboard/necesidades}" class="btn btn-primary btn-sm">
@@ -116,7 +116,7 @@
             </div>
 
             <!-- Llegadas en curso -->
-            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1.25rem;">
+            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border);  display: flex; flex-direction: column; gap: 1.25rem;">
                 <h2 style="font-size: 1.25rem; font-weight: 700;">Próximas Llegadas</h2>
 
                 <p th:if="${incomingDeliveries.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">No hay entregas en camino a tu sede.</p>

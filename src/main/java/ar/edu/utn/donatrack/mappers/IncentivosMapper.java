@@ -31,6 +31,29 @@ public class IncentivosMapper {
         return filas;
     }
 
+    /** Orden visual categoría → siguiente; conserva ramas y ciclos sin perder tarjetas. */
+    public List<IncentivosDtos.Categoria> ordenarCategorias(List<IncentivosDtos.Categoria> categorias) {
+        if (categorias == null) return List.of();
+        Map<Long,IncentivosDtos.Categoria> porId = new LinkedHashMap<>();
+        Set<Long> siguientes = new HashSet<>();
+        for (var categoria : categorias) {
+            porId.put(categoria.id(), categoria);
+            if (categoria.categoriaSiguienteId() != null) siguientes.add(categoria.categoriaSiguienteId());
+        }
+        List<IncentivosDtos.Categoria> resultado = new ArrayList<>();
+        Set<Long> visitadas = new HashSet<>();
+        var orden = new ArrayList<>(categorias.stream().filter(c -> !siguientes.contains(c.id())).toList());
+        orden.addAll(categorias);
+        for (var inicio : orden) {
+            var actual = inicio;
+            while (actual != null && visitadas.add(actual.id())) {
+                resultado.add(actual);
+                actual = porId.get(actual.categoriaSiguienteId());
+            }
+        }
+        return resultado;
+    }
+
     private static String nombre(Map<Long,String> nombres, Long id) {
         if (id == null) return "Sin referencia";
         return nombres.getOrDefault(id, "Donante #" + id);

@@ -70,7 +70,7 @@
   content: '';
   position: absolute;
   inset: -20px;
-  background: linear-gradient(45deg, #ffd8c7, #fff0e8);
+  background: var(--color-surface, #fff);
   border-radius: 2rem;
   z-index: 0;
 }
@@ -179,14 +179,14 @@
 }
 
 .gallery-item:hover img {
-  transform: scale(1.05);
+
 }
 
 .gallery-item figcaption {
   position: absolute;
   inset: auto 0 0;
   color: white;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent);
+  background: var(--color-surface, #fff);
   padding: 1.1rem 0.9rem 0.8rem;
   font-size: 0.88rem;
 }
@@ -196,7 +196,7 @@
 }
 
 .cta-box {
-  background: linear-gradient(120deg, #ef4444, #f97316);
+  background: var(--color-surface, #fff);
   color: white;
   border-radius: 1.5rem;
   padding: 2rem;

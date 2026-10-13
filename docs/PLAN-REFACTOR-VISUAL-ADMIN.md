@@ -1,6 +1,6 @@
 # Plan — Refactor visual del panel de Administración (y arreglos de la landing)
 
-Estado: **plan, sin aplicar**. Se ejecuta después del desmaquetado (rama `entrega5-desmaquetado-front`).
+Estado: **implementado en el frontend, 12/10/2026**, en `entrega5-desmaquetado-front`. Ver [informe de verificación](VERIFICACION-REFACTOR-VISUAL-ADMIN.md). La prueba integral con los microservicios reales sigue pendiente; no se realizaron commits ni push.
 
 Objetivo: que el panel de admin sea legible y coherente **sin perder ninguna funcionalidad**, y cumpla las
 "Consideraciones para el maquetado" de la Entrega 4:
@@ -213,15 +213,15 @@ Opcional, si la plantilla `admin-api.html` queda inmanejable: partirla en una pl
 
 ## 8. Checklist de verificación
 
-- [ ] Toda ruta `/admin/**` del inventario (§0.1) es alcanzable desde la UI y funciona: alta, edición, cambio de estado y baja donde corresponda.
-- [ ] No queda la fila `api-links` en ninguna pantalla.
-- [ ] Ningún botón de formulario ocupa toda una celda de la grilla, y ninguna celda de tabla contiene un formulario completo.
-- [ ] Los enums se ven como chips legibles.
-- [ ] 375 px: sin scroll horizontal de página (las tablas pasan a tarjetas), el drawer y la barra inferior funcionan, y los targets miden ≥ 48 px.
-- [ ] Foco visible, `aria-label` en los botones de ícono, contraste AA y `role="alert"` en los errores.
-- [ ] Spinner (`simulateAsyncAction` existente) en los envíos que tardan más de 300 ms.
-- [ ] `mvn -q test` en verde, con los tests nuevos del panel.
-- [ ] Hero con foto y estados vacíos prolijos en la landing.
+- [ ] Prueba integral de altas, ediciones, estados y bajas con los microservicios reales. Se conservaron las 74 declaraciones GET/POST administrativas y los contratos, y se verificaron mediante tests MVC con APIs simuladas.
+- [x] No queda la fila `api-links` en las pantallas administrativas.
+- [x] Campos y acciones separados; edición mediante diálogos, sin formularios completos en celdas.
+- [x] Estados presentados como chips con etiquetas legibles.
+- [x] 16 pantallas renderizadas en 375, 768 y 1280 px sin desborde horizontal; tablas móviles, drawer y barra inferior comprobados. Controles administrativos con tamaño mínimo de 48 px.
+- [ ] Auditoría completa WCAG AA. Se incorporaron foco visible, etiquetas accesibles, avisos y manejo de foco del drawer; esto no equivale a certificar toda la aplicación.
+- [x] Feedback de espera a partir de 300 ms en los envíos reales, sin simular éxito.
+- [x] `mvn -q test` en verde: 156 tests, incluidos los nuevos del panel.
+- [x] Hero con foto local autorizada, dimensiones y crédito; estados vacíos sin fotos que simulen donaciones reales.
 
 ---
 
