@@ -67,13 +67,18 @@ public class DonacionesService {
     public void guardarBeneficiario(Long id,PerfilForm form,List<String> nombres,List<String> telefonos,List<String> emails) {
         var errors=new BeanPropertyBindingResult(form,"form");
         validator.validarPerfil("beneficiarios",form,id,errors);
-        if(id==null) validator.validarRepresentantesBeneficiario(nombres,telefonos,emails,errors);
-        check(errors);
-        if(id==null) api.crearBeneficiario(mapper.beneficiario(form,nombres,telefonos,emails));
-        else {
-            var actual=api.beneficiario(id);
-            api.actualizarBeneficiario(id,mapper.beneficiario(form,actual));
+        if(id==null) {
+            validator.validarRepresentantesBeneficiario(nombres,telefonos,emails,errors);
+            check(errors);
+            api.crearBeneficiario(mapper.beneficiario(form,nombres,telefonos,emails));
+            return;
         }
+        // Lectura previa (no escribe): si la entidad no tiene representantes, el PUT necesita uno cargado.
+        var actual=api.beneficiario(id);
+        if(actual.representantes()==null || actual.representantes().isEmpty())
+            validator.validarRepresentantesBeneficiario(nombres,telefonos,emails,errors);
+        check(errors);
+        api.actualizarBeneficiario(id,mapper.beneficiario(form,actual,nombres,telefonos,emails));
     }
 
     public void donar(Long donanteId,String descripcion,BienForm inicial,BienesAdicionalesForm adicionales) {

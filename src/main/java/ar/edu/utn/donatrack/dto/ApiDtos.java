@@ -33,9 +33,13 @@ public final class ApiDtos {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Camion(Long id, String patente, Float capacidadVolumen, Float altura,
                          Float capacidadCarga, String estado) {}
+    /** Bien transportado en una entrega (BienDto del back: no informa unidad de medida). */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record BienEntrega(String descripcion, Float cantidad) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Entrega(Long id, Long asignacionId, String estado, String justificacion,
-                          List<String> fotos, Long camionId, String camionPatente, Long entidadBeneficiariaId) {}
+                          List<String> fotos, Long camionId, String camionPatente, Long entidadBeneficiariaId,
+                          Long donanteId, LogisticaDetalles.Direccion direccion, List<BienEntrega> bienes) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Ruta(Long id, String chofer, LocalDate fecha, String estado,
                        Long camionId, Double totalDistanciaKm, Integer totalDuracionMins) {}

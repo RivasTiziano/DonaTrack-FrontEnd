@@ -1,5 +1,6 @@
 package ar.edu.utn.donatrack.services;
 import ar.edu.utn.donatrack.dto.*;
+import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 import ar.edu.utn.donatrack.mappers.LogisticaMapper;
 import ar.edu.utn.donatrack.validators.LogisticaValidator;
 import ar.edu.utn.donatrack.validators.RecepcionValidator;
@@ -83,10 +84,11 @@ public class LogisticaService {
 
     /**
      * Confirma la recepción de una entrega en tránsito. RECIBIDA exige fotos (URL); NO_RECIBIDA exige justificación.
-     * Las fotos solo viajan con RECIBIDA. PROVISORIO: la entidad no puede obtener el entregaId (hallazgo backend X1 → pedido C3).
+     * Las fotos solo viajan con RECIBIDA. El entregaId lo resuelve PanelEntidadService a partir de la asignación.
      */
     public void confirmarRecepcion(Long entregaId,String resultado,List<String> fotos,String justificacion) {
-        recepcion.validar(entregaId,resultado,fotos,justificacion);
+        if (entregaId == null) throw new FormularioInvalidoException("Esta entrega ya no está pendiente de confirmación.");
+        recepcion.validarContenido(resultado,fotos,justificacion);
         boolean recibida=RecepcionValidator.RECIBIDA.equals(resultado);
         String motivo=justificacion==null||justificacion.isBlank()?null:justificacion.trim();
         api.actualizarEstadoEntrega(entregaId,new LogisticaDetalles.ActualizarEntrega(

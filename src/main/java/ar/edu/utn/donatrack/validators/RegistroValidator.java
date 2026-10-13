@@ -23,6 +23,7 @@ public class RegistroValidator {
     private static final Set<String> TIPOS_DOCUMENTO = Set.of("DNI", "CUIT");
     private static final String AVISO_CONTRASENIA = "La contraseña debe tener al menos " + AccesoValidator.LONGITUD_MINIMA + " caracteres.";
     private static final String REPRESENTANTE_INCOMPLETO = "Completá todos los datos de cada representante cargado.";
+    private static final String REPRESENTANTE_ENTIDAD_INCOMPLETO = "Cada representante necesita nombre y teléfono.";
 
     public void validarHumano(RegistroForm f, Errors errors) {
         requerido(f.getNombre(), "nombre", "Ingresá tu nombre.", errors);
@@ -85,19 +86,22 @@ public class RegistroValidator {
         else if (!completo) errors.rejectValue("representantes", "required", "Cargá al menos una persona representante con todos sus datos.");
     }
 
-    // Los representantes de la entidad son opcionales; si se carga uno, necesita nombre y un correo o teléfono.
+    // Al menos un representante con nombre y teléfono (NOT NULL en Donaciones). El correo es opcional; si se carga, tiene que ser válido.
     private void representantesEntidad(RegistroForm f, Errors errors) {
+        boolean completo = false;
         for (Representante r : f.getRepresentantes()) {
             if (vacio(r)) continue;
-            if (blank(r.getNombre()) || (blank(r.getTelefono()) && blank(r.getCorreo()))) {
-                errors.rejectValue("representantes", "incomplete", "Cada representante necesita nombre y un correo o un teléfono.");
+            if (blank(r.getNombre()) || blank(r.getTelefono())) {
+                errors.rejectValue("representantes", "incomplete", REPRESENTANTE_ENTIDAD_INCOMPLETO);
                 return;
             }
             if (!blank(r.getCorreo()) && !EMAIL.matcher(r.getCorreo().trim()).matches()) {
                 errors.rejectValue("representantes", "format", "Ingresá un correo válido para el representante.");
                 return;
             }
+            completo = true;
         }
+        if (!completo) errors.rejectValue("representantes", "required", "Cargá al menos una persona representante con nombre y teléfono.");
     }
 
     private void clave(RegistroForm f, Errors errors) {
@@ -127,7 +131,7 @@ public class RegistroValidator {
     private static boolean completoJuridico(Representante r) {
         return !blank(r.getNombre()) && !blank(r.getApellido()) && !blank(r.getDocumento())
                 && fecha(r.getFechaNacimiento()) != null && pertenece(GENEROS, r.getGenero())
-                && (blank(r.getTipoDocumento()) || pertenece(TIPOS_DOCUMENTO, r.getTipoDocumento()));
+                && pertenece(TIPOS_DOCUMENTO, r.getTipoDocumento());
     }
 
     private static boolean vacio(Representante r) {

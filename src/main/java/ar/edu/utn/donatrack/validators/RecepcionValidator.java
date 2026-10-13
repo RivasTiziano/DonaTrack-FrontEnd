@@ -11,8 +11,13 @@ public class RecepcionValidator {
     public static final String RECIBIDA = "RECIBIDA";
     public static final String NO_RECIBIDA = "NO_RECIBIDA";
 
-    public void validar(Long entregaId, String resultado, List<String> fotos, String justificacion) {
-        if (entregaId == null) throw new FormularioInvalidoException("Indicá el número de entrega.");
+    /** La entidad indica la asignación; el entregaId lo resuelve el servidor, nunca el formulario. */
+    public void validar(Long asignacionId, String resultado, List<String> fotos, String justificacion) {
+        if (asignacionId == null) throw new FormularioInvalidoException("Indicá la donación a confirmar.");
+        validarContenido(resultado, fotos, justificacion);
+    }
+
+    public void validarContenido(String resultado, List<String> fotos, String justificacion) {
         if (!RECIBIDA.equals(resultado) && !NO_RECIBIDA.equals(resultado))
             throw new FormularioInvalidoException("Indicá si la entrega fue recibida o no.");
         if (RECIBIDA.equals(resultado)) {

@@ -51,7 +51,7 @@ class DistribucionControllersMvcTest {
     @Test void confirmarSoloLeeAsignacionesDeLaEntidad() throws Exception {
         mvc.perform(pedir("/entidad/dashboard/confirmar")).andExpect(status().isOk())
                 .andExpect(handler().handlerType(LogisticaController.class));
-        verify(donaciones).asignacionesEntidad(1L,"");
+        verify(donaciones).asignacionesEntidad(1L,"EN_TRASLADO");
         verify(donaciones,never()).donaciones();
         verify(donaciones,never()).beneficiarios();
         verifyNoInteractions(logistica,incentivos);

@@ -43,7 +43,7 @@ public class RegistroMapper {
     }
 
     private DonanteRequests.Representante representanteJuridico(Representante r) {
-        return new DonanteRequests.Representante(null, t(r.getNombre()), t(r.getApellido()), n(r.getTipoDocumento()),
+        return new DonanteRequests.Representante(null, t(r.getNombre()), t(r.getApellido()), t(r.getTipoDocumento()),
                 t(r.getDocumento()), fecha(r.getFechaNacimiento()), r.getGenero());
     }
 

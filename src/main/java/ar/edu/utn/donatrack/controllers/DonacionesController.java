@@ -11,6 +11,7 @@ import ar.edu.utn.donatrack.validators.DonacionesValidator;
 import ar.edu.utn.donatrack.forms.BienesAdicionalesForm;
 import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Controller;
@@ -320,6 +321,11 @@ public class DonacionesController {
             @ModelAttribute("form") PerfilForm form,BindingResult binding,
             @RequestParam MultiValueMap<String,String> params,Model model,RedirectAttributes flash) {
         prepare(model,"beneficiarios",id);
+        // En edición, la vista necesita saber si la entidad ya tiene representantes (para mostrar el bloque o no) también al volver con errores.
+        if(id!=null) {
+            try { model.addAttribute("representantes",service.perfilBeneficiario(id).representantes()); }
+            catch(RestClientException | IllegalStateException e) { model.addAttribute("apiError",errors.describe(e)); }
+        }
         model.addAttribute("repNombre",params.get("repNombre"));
         model.addAttribute("repTelefono",params.get("repTelefono"));
         model.addAttribute("repEmail",params.get("repEmail"));
@@ -421,10 +427,38 @@ public class DonacionesController {
     private String invalid(RedirectAttributes flash,String path) { return views.invalid(flash,path); }
     // Pantallas personales: conservan sus URL y no requieren prefijo administrativo.
 
+    /** Historial del donante con filtros. Los valores inválidos se ignoran y se avisan; el dueño sale de la sesión. */
     @GetMapping("/donante/dashboard/donaciones")
-    public String donorDonations(Model model) {
-        model.addAllAttributes(panelDonante.donaciones());
+    public String donorDonations(@RequestParam(required = false) String estado,
+                                 @RequestParam(required = false) String categoriaId,
+                                 @RequestParam(required = false) String subcategoriaId,
+                                 Model model) {
+        List<String> ignorados = new ArrayList<>();
+        var filtro = new PanelDonanteService.FiltroDonaciones(estadoFiltro(estado, ignorados),
+                idFiltro(categoriaId, "categoría", ignorados), idFiltro(subcategoriaId, "subcategoría", ignorados));
+        model.addAllAttributes(panelDonante.donaciones(filtro));
+        if (!ignorados.isEmpty())
+            model.addAttribute("avisoFiltros", "No aplicamos estos filtros porque no son válidos: " + String.join(", ", ignorados) + ".");
         return "dashboard-donor-donaciones";
+    }
+
+    private static String estadoFiltro(String valor, List<String> ignorados) {
+        if (valor == null || valor.isBlank()) return null;
+        if (PanelDonanteService.FiltroDonaciones.ESTADOS.contains(valor)) return valor;
+        ignorados.add("estado");
+        return null;
+    }
+
+    private static Long idFiltro(String valor, String nombre, List<String> ignorados) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            long id = Long.parseLong(valor.trim());
+            if (id > 0) return id;
+        } catch (NumberFormatException ignorado) {
+            // Se avisa abajo, igual que un id fuera de rango.
+        }
+        ignorados.add(nombre);
+        return null;
     }
 
     @GetMapping("/donante/dashboard/entidades")

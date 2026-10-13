@@ -61,6 +61,16 @@ public class LogisticaApiService {
         return http.getList(url + "/entregas", ApiDtos.Entrega.class);
     }
 
+    /** Entregas filtradas por el back. Los parámetros nulos o vacíos no se envían. */
+    public List<ApiDtos.Entrega> entregas(Long entidadBeneficiariaId, Long donanteId, Long asignacionId, String estado) {
+        var uri = UriComponentsBuilder.fromUriString(url + "/entregas");
+        if (entidadBeneficiariaId != null) uri.queryParam("entidadBeneficiariaId", entidadBeneficiariaId);
+        if (donanteId != null) uri.queryParam("donanteId", donanteId);
+        if (asignacionId != null) uri.queryParam("asignacionId", asignacionId);
+        if (estado != null && !estado.isBlank()) uri.queryParam("estado", estado);
+        return http.getList(uri.build().encode().toUriString(), ApiDtos.Entrega.class);
+    }
+
     public ApiDtos.Entrega entrega(Long id) {
         return http.get(url + "/entregas/" + id, ApiDtos.Entrega.class);
     }

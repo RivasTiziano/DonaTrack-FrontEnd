@@ -54,7 +54,8 @@ public class PanelDonanteMapper {
         var primera = asignaciones.isEmpty() ? null : asignaciones.get(0);
         var reciente = masReciente(asignaciones, ApiDtos.Asignacion::fechaAsignacion);
         String estado = reciente != null ? reciente.estado() : d.estado();
-        Long entidadId = primera == null ? null : primera.entidadBeneficiariaId();
+        var base = reciente != null ? reciente : primera;
+        Long entidadId = base == null ? null : base.entidadBeneficiariaId();
         ApiDtos.Beneficiario entidad = entidadId == null ? null : entidades.get(entidadId);
         String entidadNombre = entidadId == null ? null
                 : (entidad != null ? entidad.razonSocial() : "Entidad #" + entidadId);
@@ -81,18 +82,18 @@ public class PanelDonanteMapper {
                 "fecha_entrega", reciente == null ? null : fecha(reciente.fechaEntrega()));
     }
 
-    /** Categorías y subcategorías activas del catálogo, para los combos de filtro. */
+    /** Categorías y subcategorías activas del catálogo, con id, para los combos de filtro. */
     public Map<String, Object> filtrosCatalogo(List<ApiDtos.Categoria> categorias) {
-        List<String> nombres = new ArrayList<>();
+        List<Map<String, Object>> cats = new ArrayList<>();
         List<Map<String, Object>> subcategorias = new ArrayList<>();
         for (var c : categorias) {
             if (!c.activo()) continue;
-            nombres.add(c.nombre());
+            cats.add(mapa("id", c.id(), "nombre", c.nombre()));
             if (c.subCategorias() == null) continue;
             for (var s : c.subCategorias())
-                if (s.activo()) subcategorias.add(mapa("nombre", s.nombre(), "categoria", c.nombre()));
+                if (s.activo()) subcategorias.add(mapa("id", s.id(), "nombre", s.nombre(), "categoria", c.nombre()));
         }
-        return mapa("categoriasFiltro", nombres, "subcategoriasFiltro", subcategorias);
+        return mapa("categoriasFiltro", cats, "subcategoriasFiltro", subcategorias);
     }
 
     // ---------- Entidades ----------

@@ -58,7 +58,7 @@ class CoberturaMvcTest {
         when(donaciones.necesidad(1L)).thenReturn(new ApiDtos.Necesidad(1L,3L,null,"Alimentos","EXTRAORDINARIA",null,0f,20f,"PENDIENTE"));
         var camion = new ApiDtos.Camion(1L,"AA123BB",20f,3f,1000f,"DISPONIBLE");
         when(logistica.camion(1L)).thenReturn(camion);
-        var entrega = new ApiDtos.Entrega(1L,5L,"PENDIENTE",null,List.of("https://example.com/foto.jpg"),null,null,null);
+        var entrega = new ApiDtos.Entrega(1L,5L,"PENDIENTE",null,List.of("https://example.com/foto.jpg"),null,null,null,null,null,null);
         when(logistica.entrega(1L)).thenReturn(entrega);
         var parada = new LogisticaDetalles.Parada(1L,1,
                 new LogisticaDetalles.Direccion("Calle","1","CABA","BA",-34.0,-58.0),List.of(entrega),"10:00");
@@ -116,9 +116,9 @@ class CoberturaMvcTest {
     @Test void beneficiaryCreationAndUpdateMatchDistinctContracts() throws Exception {
         mvc.perform(profile("/admin/dashboard/beneficiarios/nuevo").session(TestSesiones.admin()).param("razonSocial","Entidad")
                 .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
-                .param("contactoValor","entidad@example.com").param("repNombre","").param("repTelefono","").param("repEmail",""))
+                .param("contactoValor","entidad@example.com").param("repNombre","Referente").param("repTelefono","+5491112345678").param("repEmail",""))
                 .andExpect(status().is3xxRedirection());
-        verify(donaciones).crearBeneficiario(argThat(r -> r.representantes().isEmpty()));
+        verify(donaciones).crearBeneficiario(argThat(r -> r.representantes().size()==1 && r.representantes().get(0).correos().isEmpty()));
         mvc.perform(profile("/admin/dashboard/beneficiarios/3").session(TestSesiones.admin()).param("razonSocial","Entidad Editada")
                 .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
                 .param("contactoValor","entidad@example.com").param("activo","false"))
@@ -169,9 +169,56 @@ class CoberturaMvcTest {
                 .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
                 .param("contactoValor","entidad@example.com").param("repNombre","Referente")
                 .param("repTelefono","").param("repEmail",""))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("Completá nombre y email")))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Completá nombre y teléfono")))
                 .andExpect(content().string(containsString("Referente")));
         verify(donaciones,never()).crearBeneficiario(any());
+    }
+
+    @Test void altaDeEntidadSinRepresentanteNoLlamaALaApi() throws Exception {
+        mvc.perform(profile("/admin/dashboard/beneficiarios/nuevo").session(TestSesiones.admin()).param("razonSocial","Entidad")
+                .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
+                .param("contactoValor","entidad@example.com").param("repNombre","").param("repTelefono","").param("repEmail",""))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Ingresá al menos un representante con nombre y teléfono.")));
+        verify(donaciones,never()).crearBeneficiario(any());
+    }
+
+    @Test void entidadSinRepresentantesMuestraElBloqueDeCarga() throws Exception {
+        when(donaciones.beneficiario(4L)).thenReturn(new DonacionesDetalles.Beneficiario(4L, "Sin Representante", "ONG", "Alimentos",
+                direccion, email, List.of(), true));
+        mvc.perform(get("/admin/dashboard/beneficiarios/4").session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("name=\"repNombre\"")))
+                .andExpect(content().string(containsString("name=\"repTelefono\"")));
+    }
+
+    @Test void entidadConRepresentantesNoMuestraElBloqueDeCarga() throws Exception {
+        mvc.perform(get("/admin/dashboard/beneficiarios/3").session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("name=\"repNombre\""))));
+    }
+
+    @Test void edicionSinRepresentanteCargadoNoLlamaALaApi() throws Exception {
+        when(donaciones.beneficiario(4L)).thenReturn(new DonacionesDetalles.Beneficiario(4L, "Sin Representante", "ONG", "Alimentos",
+                direccion, email, List.of(), true));
+        mvc.perform(profile("/admin/dashboard/beneficiarios/4").session(TestSesiones.admin())
+                .param("razonSocial","Sin Representante").param("tipoEntidad","ONG").param("rubro","Alimentos")
+                .param("contactoTipo","EMAIL").param("contactoValor","entidad@example.com").param("activo","true"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ingresá al menos un representante con nombre y teléfono.")));
+        verify(donaciones,never()).actualizarBeneficiario(anyLong(), any());
+    }
+
+    @Test void edicionConRepresentanteCargadoLoIncluyeEnElPut() throws Exception {
+        when(donaciones.beneficiario(4L)).thenReturn(new DonacionesDetalles.Beneficiario(4L, "Sin Representante", "ONG", "Alimentos",
+                direccion, email, List.of(), true));
+        mvc.perform(profile("/admin/dashboard/beneficiarios/4").session(TestSesiones.admin())
+                .param("razonSocial","Sin Representante").param("tipoEntidad","ONG").param("rubro","Alimentos")
+                .param("contactoTipo","EMAIL").param("contactoValor","entidad@example.com").param("activo","true")
+                .param("repNombre","Referente Nuevo").param("repTelefono","+5491112345678").param("repEmail",""))
+                .andExpect(status().is3xxRedirection());
+        verify(donaciones).actualizarBeneficiario(eq(4L), argThat(r -> r.representantes().size()==1
+                && "Referente Nuevo".equals(r.representantes().get(0).nombre())
+                && r.representantes().get(0).correos().isEmpty()));
     }
 
     @Test void incentiveManagementUsesCorrectPayloadsAndDoesNotRegisterDonations() throws Exception {

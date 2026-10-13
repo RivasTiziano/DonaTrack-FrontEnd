@@ -25,5 +25,8 @@ public record DonanteForm(
         List<String> repApellido,
         List<String> repDocumento,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> repNacimiento,
-        List<String> repGenero
+        List<String> repGenero,
+        // Tipo de documento de cada representante (DNI o CUIT, obligatorio en jurídicos)
+        String representanteTipoDocumento,
+        List<String> repTipoDocumento
 ) {}

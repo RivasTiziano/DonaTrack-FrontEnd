@@ -134,8 +134,8 @@
                                     <input class="form-control" type="text" th:id="|rep-${st.index}-apellido|" th:name="|representantes[${st.index}].apellido|" th:value="${rep.apellido}" placeholder="Ej. García" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" th:for="|rep-${st.index}-tipoDocumento|">Tipo de documento</label>
-                                    <select class="form-control" th:id="|rep-${st.index}-tipoDocumento|" th:name="|representantes[${st.index}].tipoDocumento|">
+                                    <label class="form-label" th:for="|rep-${st.index}-tipoDocumento|">Tipo de documento <span class="required">*</span></label>
+                                    <select class="form-control" th:id="|rep-${st.index}-tipoDocumento|" th:name="|representantes[${st.index}].tipoDocumento|" th:required="${st.first}">
                                         <option value="" th:selected="${rep.tipoDocumento == null or rep.tipoDocumento == ''}">Sin indicar</option>
                                         <option value="DNI" th:selected="${rep.tipoDocumento == 'DNI'}">DNI</option>
                                         <option value="CUIT" th:selected="${rep.tipoDocumento == 'CUIT'}">CUIT</option>

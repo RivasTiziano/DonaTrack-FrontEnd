@@ -9,7 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -17,7 +21,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/** Panel de la entidad: el dueño es siempre el de la sesión; confirmación de recepción validada. */
+/** Panel de la entidad: el dueño es siempre el de la sesión; confirmación de recepción por asignación. */
 @SpringBootTest
 @AutoConfigureMockMvc
 class PanelEntidadMvcTest {
@@ -25,6 +29,16 @@ class PanelEntidadMvcTest {
     @MockBean DonacionesApiService donaciones;
     @MockBean IncentivosApiService incentivos;
     @MockBean LogisticaApiService logistica;
+
+    private static final String SIN_PENDIENTE = "Esta entrega ya no está pendiente de confirmación.";
+
+    private static ApiDtos.Entrega entregaEnTraslado(long id, long asignacionId, long entidadId) {
+        return new ApiDtos.Entrega(id, asignacionId, "EN_TRASLADO", null, List.of(), null, null, entidadId, null, null, null);
+    }
+
+    private static ApiDtos.Asignacion asignacionEnTraslado(long id) {
+        return new ApiDtos.Asignacion(id, 40L, 50L, 3L, 10f, "EN_TRASLADO", null, "Donación de prueba", null, null, null, null);
+    }
 
     @Test void altaDeNecesidadUsaLaEntidadDeLaSesionAunqueElFormularioMandeOtra() throws Exception {
         mvc.perform(post("/entidad/dashboard/necesidades").session(TestSesiones.entidad(3L))
@@ -54,33 +68,122 @@ class PanelEntidadMvcTest {
         verify(donaciones).eliminarNecesidad(6L);
     }
 
-    @Test void confirmacionRecibidaArmaElPatchConLaEntregaYLasFotos() throws Exception {
+    @Test void confirmarUsaUnaSolaConsultaAEntregasEnTraslado() throws Exception {
+        when(donaciones.asignacionesEntidad(3L, "EN_TRASLADO")).thenReturn(List.of(asignacionEnTraslado(5L)));
+        when(logistica.entregas(3L, null, null, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(7L, 5L, 3L)));
+        mvc.perform(get("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("name=\"asignacionId\"")))
+                .andExpect(content().string(containsString("value=\"5\"")))
+                .andExpect(content().string(not(containsString("Número de entrega"))));
+        verify(logistica, times(1)).entregas(3L, null, null, "EN_TRASLADO");
+        verify(logistica, never()).entregas();
+    }
+
+    @Test void sinEntregaEnTrasladoLaFilaNoMuestraAcciones() throws Exception {
+        when(donaciones.asignacionesEntidad(3L, "EN_TRASLADO")).thenReturn(List.of(asignacionEnTraslado(5L)));
+        when(logistica.entregas(3L, null, null, "EN_TRASLADO")).thenReturn(List.of());
+        mvc.perform(get("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("todavía no está disponible para confirmar")))
+                .andExpect(content().string(not(containsString("name=\"resultado\""))));
+    }
+
+    @Test void recibidaArmaElPatchConLaEntregaDelServidorYLasFotos() throws Exception {
+        when(logistica.entregas(3L, null, 5L, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(7L, 5L, 3L)));
         mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
-                        .param("entregaId", "7").param("resultado", "RECIBIDA")
+                        .param("asignacionId", "5").param("resultado", "RECIBIDA")
                         .param("fotos", "https://ejemplo.org/1.jpg\n\nhttps://ejemplo.org/2.jpg"))
                 .andExpect(status().is3xxRedirection());
         verify(logistica).actualizarEstadoEntrega(eq(7L), argThat(b -> "ENTREGADA".equals(b.estado())
                 && b.fotos().equals(List.of("https://ejemplo.org/1.jpg", "https://ejemplo.org/2.jpg"))));
     }
 
-    @Test void confirmacionSinFotosNoLlegaALaApi() throws Exception {
+    @Test void entregaIdQueLlegaEnElFormularioSeIgnora() throws Exception {
+        when(logistica.entregas(3L, null, 5L, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(7L, 5L, 3L)));
         mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
-                        .param("entregaId", "7").param("resultado", "RECIBIDA").param("fotos", ""))
+                        .param("asignacionId", "5").param("entregaId", "999").param("resultado", "RECIBIDA")
+                        .param("fotos", "https://ejemplo.org/1.jpg"))
+                .andExpect(status().is3xxRedirection());
+        verify(logistica).actualizarEstadoEntrega(eq(7L), any());
+        verify(logistica, never()).actualizarEstadoEntrega(eq(999L), any());
+    }
+
+    @Test void recibidaSinFotosNoLlegaALaApi() throws Exception {
+        mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
+                        .param("asignacionId", "5").param("resultado", "RECIBIDA").param("fotos", ""))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attribute("apiError", containsString("al menos una foto")));
+        verify(logistica, never()).entregas(anyLong(), any(), any(), any());
+        verify(logistica, never()).actualizarEstadoEntrega(anyLong(), any());
+    }
+
+    @Test void sinAsignacionNoLlegaALaApi() throws Exception {
+        mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
+                        .param("resultado", "RECIBIDA").param("fotos", "https://ejemplo.org/1.jpg"))
+                .andExpect(flash().attribute("apiError", containsString("la donación a confirmar")));
         verify(logistica, never()).actualizarEstadoEntrega(anyLong(), any());
     }
 
     @Test void noRecibidaExigeJustificacionYEnviaNoRecibida() throws Exception {
+        when(logistica.entregas(3L, null, 8L, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(18L, 8L, 3L)));
         mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
-                        .param("entregaId", "8").param("resultado", "NO_RECIBIDA").param("justificacion", " "))
+                        .param("asignacionId", "8").param("resultado", "NO_RECIBIDA").param("justificacion", " "))
                 .andExpect(flash().attribute("apiError", containsString("Explicá")));
         verify(logistica, never()).actualizarEstadoEntrega(anyLong(), any());
         mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
-                        .param("entregaId", "8").param("resultado", "NO_RECIBIDA").param("justificacion", "Llegó dañada"))
+                        .param("asignacionId", "8").param("resultado", "NO_RECIBIDA").param("justificacion", "Llegó dañada"))
                 .andExpect(status().is3xxRedirection());
-        verify(logistica).actualizarEstadoEntrega(eq(8L), argThat(b -> "NO_RECIBIDA".equals(b.estado())
+        verify(logistica).actualizarEstadoEntrega(eq(18L), argThat(b -> "NO_RECIBIDA".equals(b.estado())
                 && "Llegó dañada".equals(b.justificacion())));
+    }
+
+    @Test void asignacionSinEntregaEnTrasladoNoHacePatch() throws Exception {
+        when(logistica.entregas(3L, null, 5L, "EN_TRASLADO")).thenReturn(List.of());
+        mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
+                        .param("asignacionId", "5").param("resultado", "RECIBIDA")
+                        .param("fotos", "https://ejemplo.org/1.jpg"))
+                .andExpect(flash().attribute("apiError", SIN_PENDIENTE));
+        verify(logistica, never()).actualizarEstadoEntrega(anyLong(), any());
+    }
+
+    @Test void entregaAjenaNoHacePatch() throws Exception {
+        when(logistica.entregas(3L, null, 5L, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(7L, 5L, 9L)));
+        mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
+                        .param("asignacionId", "5").param("resultado", "NO_RECIBIDA")
+                        .param("justificacion", "Llegó dañada"))
+                .andExpect(flash().attribute("apiError", SIN_PENDIENTE));
+        verify(logistica, never()).actualizarEstadoEntrega(anyLong(), any());
+    }
+
+    @Test void forbiddenDelBackSeTraduce() throws Exception {
+        when(logistica.entregas(3L, null, 5L, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(7L, 5L, 3L)));
+        doThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN)).when(logistica).actualizarEstadoEntrega(eq(7L), any());
+        mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
+                        .param("asignacionId", "5").param("resultado", "RECIBIDA")
+                        .param("fotos", "https://ejemplo.org/1.jpg"))
+                .andExpect(flash().attribute("apiError", "No podés confirmar esta entrega."));
+    }
+
+    @Test void transicionInvalidaDelBackSeTraduce() throws Exception {
+        when(logistica.entregas(3L, null, 5L, "EN_TRASLADO")).thenReturn(List.of(entregaEnTraslado(7L, 5L, 3L)));
+        var cuerpo = "{\"message\":\"Transición de estado inválida\"}".getBytes(StandardCharsets.UTF_8);
+        doThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad Request", HttpHeaders.EMPTY, cuerpo, StandardCharsets.UTF_8))
+                .when(logistica).actualizarEstadoEntrega(eq(7L), any());
+        mvc.perform(post("/entidad/dashboard/confirmar").session(TestSesiones.entidad(3L))
+                        .param("asignacionId", "5").param("resultado", "RECIBIDA")
+                        .param("fotos", "https://ejemplo.org/1.jpg"))
+                .andExpect(flash().attribute("apiError", "Esta entrega ya no está en traslado; actualizá la página."));
+    }
+
+    @Test void necesidadesSeConsultanConLaEntidadDeLaSesion() throws Exception {
+        when(donaciones.necesidades(3L, null)).thenReturn(List.of(new ApiDtos.Necesidad(5L, 3L, null, "Fideos del comedor",
+                "RECURRENTE", "P1M", 0f, 10f, "PENDIENTE")));
+        mvc.perform(get("/entidad/dashboard/necesidades").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Fideos del comedor")));
+        verify(donaciones).necesidades(3L, null);
+        verify(donaciones, never()).necesidades();
     }
 
     @Test void resumenNoListaBeneficiariosNiMuestraDatosDeMaqueta() throws Exception {

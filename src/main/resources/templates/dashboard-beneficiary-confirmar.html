@@ -36,71 +36,51 @@
             </button>
         </div>
 
-        <div class="dt-grid-1-1-3">
-            <!-- Entregas en traslado -->
-            <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border);  display: flex; flex-direction: column; gap: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="font-size: 1.15rem; font-weight: 700;">En traslado a tu sede</h2>
-                    <span class="status-badge badge-traslado" th:text="${assignedDonations.size()} + ' en traslado'">0 en traslado</span>
-                </div>
-
-                <p th:if="${assignedDonations.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">No hay entregas en traslado para confirmar.</p>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div class="confirm-item-card" th:each="donation : ${assignedDonations}"
-                         style="padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: #f8fafc;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-                            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-ink);" th:text="${donation.title ?: 'Donación'}">Donación</h4>
-                            <span class="status-badge badge-traslado" th:text="${donation.status_label}">En traslado</span>
-                        </div>
-                        <p style="font-size: 0.8125rem; color: var(--color-muted);">
-                            <span th:text="${donation.items_count != null ? donation.items_count + ' ' + donation.unit : '—'}">50 unidades</span>
-                        </p>
-                    </div>
-                </div>
+        <!-- Entregas en traslado: cada asignación tiene su propio formulario de Recibida o No recibida -->
+        <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 1.15rem; font-weight: 700;">En traslado a tu sede</h2>
+                <span class="status-badge badge-traslado" th:text="${assignedDonations.size()} + ' en traslado'">0 en traslado</span>
             </div>
 
-            <!-- Formulario de confirmación -->
-            <div class="card" style="background: #ffffff; padding: 1.75rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); ">
-                <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem;">Confirmar entrega</h2>
-
-                <form method="post" th:action="@{/entidad/dashboard/confirmar}">
-                    <div class="form-group">
-                        <!-- PROVISORIO: la entidad no puede obtener el entregaId (hallazgo backend X1 → pedido C3) -->
-                        <label class="form-label" for="entregaId">Número de entrega <span class="required">*</span></label>
-                        <input type="number" id="entregaId" name="entregaId" class="form-control" min="1" required />
-                        <span class="form-hint">Por ahora el número de entrega lo informa la administración; próximamente se completará automáticamente.</span>
+            <p th:if="${assignedDonations.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">No hay entregas en traslado para confirmar.</p>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div class="confirm-item-card" th:each="donation : ${assignedDonations}"
+                     style="padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: #f8fafc;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-ink);" th:text="${donation.title ?: 'Donación'}">Donación</h4>
+                        <span class="status-badge badge-traslado" th:text="${donation.status_label}">En traslado</span>
                     </div>
+                    <p style="font-size: 0.8125rem; color: var(--color-muted);">
+                        <span th:text="${donation.items_count != null ? donation.items_count + ' ' + donation.unit : '—'}">50 unidades</span>
+                    </p>
 
-                    <fieldset class="form-group" style="border: none; padding: 0;">
-                        <legend class="form-label">Resultado <span class="required">*</span></legend>
-                        <label style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
-                            <input type="radio" name="resultado" value="RECIBIDA" checked />
-                            <span>Recibida</span>
-                        </label>
-                        <label style="display: flex; gap: 0.5rem; align-items: center;">
-                            <input type="radio" name="resultado" value="NO_RECIBIDA" />
-                            <span>No recibida</span>
-                        </label>
-                    </fieldset>
+                    <p th:if="${donation.entregaId == null}" class="form-hint">La entrega todavía no está disponible para confirmar.</p>
 
-                    <div class="form-group">
-                        <label class="form-label" for="fotos">Fotos de los bienes recibidos (una URL http o https por línea)</label>
-                        <textarea id="fotos" name="fotos" class="form-control" rows="4" placeholder="https://..."></textarea>
-                        <span class="form-hint">Obligatorio si la entrega fue recibida.</span>
+                    <div th:if="${donation.entregaId != null}">
+                        <!-- Recibida: exige al menos una foto (URL) -->
+                        <form method="post" th:action="@{/entidad/dashboard/confirmar}" class="form-group">
+                            <input type="hidden" name="asignacionId" th:value="${donation.id}" />
+                            <input type="hidden" name="resultado" value="RECIBIDA" />
+                            <label class="form-label" th:for="'fotos-' + ${donation.id}">Fotos de los bienes recibidos (una URL http o https por línea)</label>
+                            <textarea th:id="'fotos-' + ${donation.id}" name="fotos" class="form-control" rows="3" placeholder="https://..." required></textarea>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Recibida</button>
+                            </div>
+                        </form>
+
+                        <!-- No recibida: exige justificación; queda para revisión del admin -->
+                        <form method="post" th:action="@{/entidad/dashboard/confirmar}" class="form-group">
+                            <input type="hidden" name="asignacionId" th:value="${donation.id}" />
+                            <input type="hidden" name="resultado" value="NO_RECIBIDA" />
+                            <label class="form-label" th:for="'justificacion-' + ${donation.id}">Justificación (por qué no fue recibida)</label>
+                            <textarea th:id="'justificacion-' + ${donation.id}" name="justificacion" class="form-control" rows="2" required></textarea>
+                            <div>
+                                <button type="submit" class="btn">No recibida</button>
+                            </div>
+                        </form>
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="justificacion">Justificación (si no fue recibida)</label>
-                        <textarea id="justificacion" name="justificacion" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
-                        <button type="submit" class="btn btn-primary">
-                            <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
-                            <span>Enviar confirmación</span>
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </main>

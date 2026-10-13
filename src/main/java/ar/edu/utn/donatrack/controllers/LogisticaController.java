@@ -177,14 +177,14 @@ public class LogisticaController {
         return "dashboard-beneficiary-entregas";
     }
 
-    /** Confirmación de recepción. PROVISORIO: la entidad no puede obtener el entregaId (hallazgo backend X1 → pedido C3). */
+    /** Confirmación de recepción por asignación. El entregaId no se acepta: lo resuelve el servidor. */
     @PostMapping("/entidad/dashboard/confirmar")
-    public String confirmarRecepcion(@RequestParam(required = false) Long entregaId,
+    public String confirmarRecepcion(@RequestParam(required = false) Long asignacionId,
                                      @RequestParam(required = false) String resultado,
                                      @RequestParam(required = false) String fotos,
                                      @RequestParam(required = false) String justificacion,
                                      RedirectAttributes flash) {
         return views.write(flash, "/entidad/dashboard/confirmar",
-                () -> service.confirmarRecepcion(entregaId, resultado, fotosRecepcion.resolver(fotos), justificacion));
+                () -> panelEntidad.confirmarRecepcion(asignacionId, resultado, fotosRecepcion.resolver(fotos), justificacion));
     }
 }

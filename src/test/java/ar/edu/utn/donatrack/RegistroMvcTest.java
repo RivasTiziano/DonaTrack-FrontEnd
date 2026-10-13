@@ -75,6 +75,7 @@ class RegistroMvcTest {
         d.put("razonSocial", "Comedor Sol"); d.put("tipoEntidad", "ONG"); d.put("rubro", "Comedor comunitario");
         d.put("calle", "Av. Rivadavia"); d.put("numero", "5678"); d.put("ciudad", "CABA"); d.put("provincia", "Buenos Aires");
         d.put("email", "sol@example.org");
+        d.put("representantes[0].nombre", "Ana Referente"); d.put("representantes[0].telefono", "+5491112345678");
         d.put("password", PASS); d.put("confirmacion", PASS);
         return d;
     }
@@ -200,5 +201,65 @@ class RegistroMvcTest {
                 .andExpect(content().string(containsString("name=\"representantes[0].nombre\"")))
                 .andExpect(content().string(containsString("name=\"representantes[1].nombre\"")))
                 .andExpect(content().string(containsString("data-registro-agregar")));
+    }
+
+    // Regla a: el contacto EMAIL es obligatorio en el registro de persona humana (el back lo exige).
+    @Test void humanoSinEmailNoLlamaALaApi() throws Exception {
+        Map<String, String> datos = datosHumano();
+        datos.put("email", "");
+        mvc.perform(enviar(RUTA_HUMANO, datos))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ingresá un email de contacto.")));
+        verifyNoInteractions(registro);
+    }
+
+    // Regla b: el predeterminado tiene que ser un medio cargado; SMS sin teléfono no se envía.
+    @Test void predeterminadoSmsSinTelefonoNoLlamaALaApi() throws Exception {
+        Map<String, String> datos = datosHumano();
+        datos.put("telefono", "");
+        datos.put("predeterminado", "SMS");
+        mvc.perform(enviar(RUTA_HUMANO, datos))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Elegí como predeterminado un medio de contacto que hayas cargado.")));
+        verifyNoInteractions(registro);
+    }
+
+    // Regla c: el tipo de documento de cada representante jurídico es obligatorio (DNI o CUIT).
+    @Test void juridicoConRepresentanteSinTipoDocumentoNoLlamaALaApi() throws Exception {
+        Map<String, String> datos = datosJuridico();
+        datos.remove("representantes[0].tipoDocumento");
+        mvc.perform(enviar(RUTA_JURIDICO, datos))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Cargá al menos una persona representante con todos sus datos.")));
+        verifyNoInteractions(registro);
+    }
+
+    // Regla d: nombre y teléfono del representante de entidad son NOT NULL; sin teléfono no se llama a la API.
+    @Test void entidadConRepresentanteSinTelefonoNoLlamaALaApi() throws Exception {
+        Map<String, String> datos = datosEntidad();
+        datos.put("representantes[0].telefono", "");
+        mvc.perform(enviar(RUTA_ENTIDAD, datos))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Cada representante necesita nombre y teléfono.")));
+        verifyNoInteractions(registro);
+    }
+
+    @Test void entidadSinRepresentanteNoLlamaALaApi() throws Exception {
+        Map<String, String> datos = datosEntidad();
+        datos.keySet().removeIf(clave -> clave.startsWith("representantes"));
+        mvc.perform(enviar(RUTA_ENTIDAD, datos))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Cargá al menos una persona representante con nombre y teléfono.")));
+        verifyNoInteractions(registro);
+    }
+
+    @Test void entidadConNombreYTelefonoSinCorreoEnviaCorreosVacios() throws Exception {
+        when(registro.registrarEntidad(any())).thenReturn(new RegistroDtos.Registrado(3L, "BENEFICIARIA", "sol@example.org"));
+        mvc.perform(enviar(RUTA_ENTIDAD, datosEntidad()))
+                .andExpect(redirectedUrl("/login?registrado"));
+        verify(registro).registrarEntidad(argThat(r -> r.perfil().representantes().size() == 1
+                && "Ana Referente".equals(r.perfil().representantes().get(0).nombre())
+                && "+5491112345678".equals(r.perfil().representantes().get(0).telefono())
+                && r.perfil().representantes().get(0).correos().isEmpty()));
     }
 }

@@ -88,19 +88,19 @@
                 </div>
 
                 <fieldset class="registro-fieldset" data-registro-representantes data-registro-minimo="0">
-                    <legend>Personas representantes (opcional)</legend>
-                    <p class="form-hint">Si cargás una persona, indicá su nombre y un correo o un teléfono.</p>
+                    <legend>Personas representantes <span class="required">*</span></legend>
+                    <p class="form-hint">Cargá al menos una persona representante con su nombre y un teléfono. El correo es opcional.</p>
                     <div data-registro-bloques>
                         <fieldset class="registro-fieldset" data-registro-bloque th:each="rep, st : *{representantes}">
                             <legend>Persona representante <span data-registro-numero th:text="${st.count}">1</span></legend>
                             <div class="registro-grid">
                                 <div class="form-group">
-                                    <label class="form-label" th:for="|rep-${st.index}-nombre|">Nombre y apellido</label>
-                                    <input class="form-control" type="text" th:id="|rep-${st.index}-nombre|" th:name="|representantes[${st.index}].nombre|" th:value="${rep.nombre}" placeholder="Ej. Ana García" />
+                                    <label class="form-label" th:for="|rep-${st.index}-nombre|">Nombre y apellido <span class="required" th:if="${st.first}">*</span></label>
+                                    <input class="form-control" type="text" th:id="|rep-${st.index}-nombre|" th:name="|representantes[${st.index}].nombre|" th:value="${rep.nombre}" placeholder="Ej. Ana García" th:required="${st.first}" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" th:for="|rep-${st.index}-telefono|">Teléfono</label>
-                                    <input class="form-control" type="tel" th:id="|rep-${st.index}-telefono|" th:name="|representantes[${st.index}].telefono|" th:value="${rep.telefono}" placeholder="+54 11 1234-5678" />
+                                    <label class="form-label" th:for="|rep-${st.index}-telefono|">Teléfono <span class="required" th:if="${st.first}">*</span></label>
+                                    <input class="form-control" type="tel" th:id="|rep-${st.index}-telefono|" th:name="|representantes[${st.index}].telefono|" th:value="${rep.telefono}" placeholder="+54 11 1234-5678" th:required="${st.first}" />
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" th:for="|rep-${st.index}-correo|">Correo</label>

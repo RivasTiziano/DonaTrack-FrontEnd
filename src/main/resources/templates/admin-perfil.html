@@ -86,13 +86,13 @@
 </select>
 </label>
 </fieldset>
-<fieldset th:if="${tipo == 'beneficiarios' and id == null}" class="form-grid">
-    <legend>Representante (opcional)</legend>
-    <label>Nombre<input class="form-control" name="repNombre" th:value="${repNombre != null and !repNombre.isEmpty() ? repNombre[0] : ''}" />
+<fieldset th:if="${tipo == 'beneficiarios' and (id == null or representantes == null or representantes.isEmpty())}" class="form-grid">
+    <legend th:text="${id == null} ? 'Representante' : 'Representante (la entidad no tiene ninguno)'">Representante</legend>
+    <label>Nombre <span class="required">*</span><input class="form-control" name="repNombre" required th:value="${repNombre != null and !repNombre.isEmpty() ? repNombre[0] : ''}" />
 </label>
-<label>Teléfono<input class="form-control" name="repTelefono" th:value="${repTelefono != null and !repTelefono.isEmpty() ? repTelefono[0] : ''}" />
+<label>Teléfono <span class="required">*</span><input class="form-control" name="repTelefono" required th:value="${repTelefono != null and !repTelefono.isEmpty() ? repTelefono[0] : ''}" />
 </label>
-<label>Email<input class="form-control" type="email" name="repEmail" th:value="${repEmail != null and !repEmail.isEmpty() ? repEmail[0] : ''}" />
+<label>Email (opcional)<input class="form-control" type="email" name="repEmail" th:value="${repEmail != null and !repEmail.isEmpty() ? repEmail[0] : ''}" />
 </label>
 </fieldset>
 <p th:if="${id != null}">Esta edición conserva los contactos y representantes existentes. No los reemplaza por listas vacías.</p>

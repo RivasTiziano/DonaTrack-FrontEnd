@@ -48,91 +48,43 @@
             </button>
         </div>
 
-        <!-- Comprehensive Filter Toolbar (Punto 1 de Consigna) -->
-        <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; " aria-label="Filtros de donaciones">
+        <!-- Filtros del historial: formulario GET que resuelve el back (estado, categoría y subcategoría) -->
+        <form method="get" th:action="@{/donante/dashboard/donaciones}" class="card" aria-label="Filtros de donaciones" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
-                <!-- Search text -->
-                <div>
-                    <label for="filter-search" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
-                        <i data-lucide="search" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Buscar por bien o entidad
-                    </label>
-                    <input type="text" id="filter-search" class="form-control" placeholder="Ej: Fideos, Camperas, Fundación Despierta..." style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);" oninput="applyDonationFilters()" />
+                <div class="form-group">
+                    <label class="form-label" for="filtro-estado">Estado de la donación</label>
+                    <select id="filtro-estado" name="estado" class="form-control">
+                        <option value="">Todos los estados</option>
+                        <option value="EN_DEPOSITO" th:selected="${filtroEstado == 'EN_DEPOSITO'}">En depósito</option>
+                        <option value="ASIGNACION_REALIZADA" th:selected="${filtroEstado == 'ASIGNACION_REALIZADA'}">Asignada</option>
+                        <option value="VENCIDA" th:selected="${filtroEstado == 'VENCIDA'}">Vencida</option>
+                    </select>
                 </div>
-
-                <!-- Category Filter -->
-                <div>
-                    <label for="filter-category" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
-                        <i data-lucide="layers" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Categoría de Bien
-                    </label>
-                    <select id="filter-category" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="onCategoryChange()">
+                <div class="form-group">
+                    <label class="form-label" for="filtro-categoria">Categoría de bien</label>
+                    <select id="filtro-categoria" name="categoriaId" class="form-control">
                         <option value="">Todas las categorías</option>
-                        <option th:each="cat : ${categoriasFiltro}" th:value="${cat}" th:text="${cat}">Categoría</option>
+                        <option th:each="cat : ${categoriasFiltro}" th:value="${cat.id}" th:text="${cat.nombre}" th:selected="${cat.id == filtroCategoriaId}">Categoría</option>
                     </select>
                 </div>
-
-                <!-- Subcategory Filter -->
-                <div>
-                    <label for="filter-subcategory" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
-                        <i data-lucide="tag" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Subcategoría
-                    </label>
-                    <select id="filter-subcategory" class="form-control" style="width: 100%; font-size: 0.875rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: #ffffff;" onchange="applyDonationFilters()">
+                <div class="form-group">
+                    <label class="form-label" for="filtro-subcategoria">Subcategoría</label>
+                    <select id="filtro-subcategoria" name="subcategoriaId" class="form-control">
                         <option value="">Todas las subcategorías</option>
-                        <!-- Dynamic options filled or filtered by JS -->
-                        <option th:each="sub : ${subcategoriasFiltro}" th:value="${sub.nombre}" th:attr="data-cat=${sub.categoria}" th:text="${sub.nombre}">Subcategoría</option>
+                        <option th:each="sub : ${subcategoriasFiltro}" th:value="${sub.id}" th:text="${sub.categoria + ' · ' + sub.nombre}" th:selected="${sub.id == filtroSubcategoriaId}">Subcategoría</option>
                     </select>
                 </div>
-
-                <!-- Reset Button -->
                 <div>
-                    <button type="button" class="btn btn-outline" style="width: 100%; font-size: 0.875rem; padding: 0.5rem;" onclick="resetDonationFilters()">
-                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
-                        <span>Limpiar Filtros</span>
-                    </button>
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a th:href="@{/donante/dashboard/donaciones}" class="btn btn-outline">Limpiar</a>
                 </div>
             </div>
-
-            <!-- State Segmented Buttons -->
-            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
-                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-muted); display: block; margin-bottom: 0.5rem;">Filtrar por Estado de Donación:</span>
-                <div class="filter-tabs" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem;">
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn active" data-status="" onclick="setStatusFilter('', this)">Todas (<span th:text="${userDonations.size()}">8</span>)</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="EN_DEPOSITO" onclick="setStatusFilter('EN_DEPOSITO', this)">En Depósito</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="ASIGNACION_REALIZADA" onclick="setStatusFilter('ASIGNACION_REALIZADA', this)">Asignadas</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="PENDIENTE_RUTA" onclick="setStatusFilter('PENDIENTE_RUTA', this)">Pendientes de ruta</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="LISTA_PARA_ENTREGAR" onclick="setStatusFilter('LISTA_PARA_ENTREGAR', this)">Listas para entregar</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="EN_TRASLADO" onclick="setStatusFilter('EN_TRASLADO', this)">En Traslado</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="ENTREGADA" onclick="setStatusFilter('ENTREGADA', this)">Entregadas</button>
-                    <button type="button" class="btn btn-outline btn-sm status-filter-btn" data-status="ENTREGA_FALLIDA" onclick="setStatusFilter('ENTREGA_FALLIDA', this)">Entrega fallida</button>
-                </div>
-            </div>
-
-            <!-- Active Filter Chips / Counter Bar -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.875rem; font-size: 0.8125rem; color: var(--color-muted); flex-wrap: wrap; gap: 0.5rem;">
-                <div>
-                    Mostrando <strong id="filter-count" style="color: var(--color-ink);" th:text="${userDonations.size()}">8</strong> de <span th:text="${userDonations.size()}">8</span> donaciones realizadas
-                </div>
-                <div id="active-filter-tags" style="display: flex; gap: 0.35rem; flex-wrap: wrap;"></div>
-            </div>
-        </section>
-
-        <!-- Empty State (hidden by default) -->
-        <div id="no-donations-found" class="card" style="display: none; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); margin-bottom: 2rem;">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: grid; place-items: center; margin: 0 auto 1rem auto; color: var(--color-muted);">
-                <i data-lucide="filter-x" style="width: 28px; height: 28px;"></i>
-            </div>
-            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.5rem;">No se encontraron donaciones</h3>
-            <p style="color: var(--color-muted); font-size: 0.875rem; max-width: 440px; margin: 0 auto 1.25rem auto;">
-                No existen registros que coincidan con la combinación de filtros seleccionada. Prueba cambiando de categoría o subcategoría.
-            </p>
-            <button type="button" class="btn btn-primary btn-sm" onclick="resetDonationFilters()" style="margin: 0 auto;">
-                <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
-                <span>Restablecer Filtros</span>
-            </button>
-        </div>
+            <p class="form-hint" th:if="${avisoFiltros}" th:text="${avisoFiltros}">Filtro ignorado.</p>
+            <p class="form-hint">Mostrando <strong th:text="${userDonations.size()}">0</strong> donaciones.</p>
+        </form>
 
         <!-- Donations Grid -->
-        <!-- PROVISORIO: bloqueado hasta GET /donaciones?donanteId (pedido backend C1, bloqueante) -->
-        <p th:if="${userDonations.isEmpty()}" class="card" style="padding: 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-muted); font-size: 0.875rem; margin-bottom: 2rem;">Todavía no podemos mostrar tu historial de donaciones.</p>
+        <p th:if="${userDonations.isEmpty()}" class="card" style="padding: 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-muted); font-size: 0.875rem; margin-bottom: 2rem;">No tenés donaciones con esos filtros.</p>
         <div class="dt-cards-grid-3" id="donations-grid">
             <article class="donation-card-box" th:each="donation : ${userDonations}"
                      th:attr="data-id=${donation.id},
@@ -255,107 +207,6 @@
 
         <!-- Dynamic Filter & Modal Controller Script -->
         <script th:inline="javascript">
-            let currentStatusFilter = '';
-
-            function onCategoryChange() {
-                const categorySelect = document.getElementById('filter-category');
-                const subcategorySelect = document.getElementById('filter-subcategory');
-                const selectedCat = categorySelect.value;
-
-                // Filter subcategory options based on chosen category
-                const options = subcategorySelect.querySelectorAll('option');
-                options.forEach(opt => {
-                    if (opt.value === '') {
-                        opt.style.display = '';
-                    } else {
-                        const cat = opt.getAttribute('data-cat');
-                        if (!selectedCat || cat === selectedCat) {
-                            opt.style.display = '';
-                        } else {
-                            opt.style.display = 'none';
-                        }
-                    }
-                });
-
-                // If selected subcategory no longer belongs to category, reset it
-                const selectedSubOpt = subcategorySelect.querySelector('option:checked');
-                if (selectedSubOpt && selectedSubOpt.value !== '' && selectedCat && selectedSubOpt.getAttribute('data-cat') !== selectedCat) {
-                    subcategorySelect.value = '';
-                }
-
-                applyDonationFilters();
-            }
-
-            function setStatusFilter(status, btnElement) {
-                currentStatusFilter = status;
-                document.querySelectorAll('.status-filter-btn').forEach(btn => btn.classList.remove('active'));
-                if (btnElement) {
-                    btnElement.classList.add('active');
-                }
-                applyDonationFilters();
-            }
-
-            function applyDonationFilters() {
-                const searchQuery = document.getElementById('filter-search').value.toLowerCase().trim();
-                const selectedCategory = document.getElementById('filter-category').value;
-                const selectedSubcategory = document.getElementById('filter-subcategory').value;
-
-                const cards = document.querySelectorAll('.donation-card-box');
-                let visibleCount = 0;
-
-                cards.forEach(card => {
-                    const title = (card.getAttribute('data-title') || '').toLowerCase();
-                    const entity = (card.getAttribute('data-entity') || '').toLowerCase();
-                    const category = card.getAttribute('data-category') || '';
-                    const subcategory = card.getAttribute('data-subcategory') || '';
-                    const status = card.getAttribute('data-status') || '';
-
-                    // Match criteria
-                    const matchSearch = !searchQuery || title.includes(searchQuery) || entity.includes(searchQuery) || subcategory.toLowerCase().includes(searchQuery);
-                    const matchCat = !selectedCategory || category === selectedCategory;
-                    const matchSub = !selectedSubcategory || subcategory === selectedSubcategory;
-                    const matchStatus = !currentStatusFilter || status === currentStatusFilter;
-
-                    if (matchSearch && matchCat && matchSub && matchStatus) {
-                        card.style.display = '';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                // Update counter
-                const countElem = document.getElementById('filter-count');
-                if (countElem) countElem.textContent = visibleCount;
-
-                // Empty state display
-                const emptyState = document.getElementById('no-donations-found');
-                const grid = document.getElementById('donations-grid');
-                if (visibleCount === 0) {
-                    if (emptyState) emptyState.style.display = 'block';
-                    if (grid) grid.style.display = 'none';
-                } else {
-                    if (emptyState) emptyState.style.display = 'none';
-                    if (grid) grid.style.display = 'grid';
-                }
-            }
-
-            function resetDonationFilters() {
-                document.getElementById('filter-search').value = '';
-                document.getElementById('filter-category').value = '';
-                document.getElementById('filter-subcategory').value = '';
-                currentStatusFilter = '';
-                document.querySelectorAll('.status-filter-btn').forEach((btn, idx) => {
-                    if (idx === 0) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                });
-                onCategoryChange();
-                applyDonationFilters();
-                if (window.showToast) {
-                    showToast('Filtros restablecidos', 'Se muestran todas las donaciones registradas.', 'info');
-                }
-            }
-
             function badgeDeEstado(status) {
                 if (status === 'ENTREGADA') return 'badge-entregada';
                 if (status === 'EN_TRASLADO') return 'badge-traslado';
@@ -432,7 +283,6 @@
             }
 
             document.addEventListener('DOMContentLoaded', function() {
-                applyDonationFilters();
                 const urlModal = new URLSearchParams(window.location.search).get('modal');
                 if (urlModal) openDonationDetailModal(urlModal);
             });

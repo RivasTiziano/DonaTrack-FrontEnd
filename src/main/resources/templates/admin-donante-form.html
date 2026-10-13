@@ -48,6 +48,7 @@
                     <strong>Representante #1 (Principal)</strong>
                     <label>Nombre<input class="form-control" name="representanteNombre" th:value="${form != null ? form.representanteNombre : ''}" required /></label>
                     <label>Apellido<input class="form-control" name="representanteApellido" th:value="${form != null ? form.representanteApellido : ''}" required /></label>
+                    <label>Tipo de documento<select class="form-control" name="representanteTipoDocumento" required><option value="">Seleccionar</option><option value="DNI" th:selected="${form != null and form.representanteTipoDocumento == 'DNI'}">DNI</option><option value="CUIT" th:selected="${form != null and form.representanteTipoDocumento == 'CUIT'}">CUIT</option></select></label>
                     <label>DNI<input class="form-control" name="representanteDocumento" th:value="${form != null ? form.representanteDocumento : ''}" required /></label>
                     <label>Fecha de nacimiento<input class="form-control" type="date" name="representanteNacimiento" th:value="${form != null ? form.representanteNacimiento : ''}" required /></label>
                     <label>Género<select class="form-control" name="representanteGenero" required><option value="">Seleccionar</option><option th:each="g : ${ {'FEMENINO','MASCULINO','NO_BINARIO','OTRO','PREFIERE_NO_INFORMAR'} }" th:text="${g}" th:value="${g}" th:selected="${form != null and form.representanteGenero == g}"></option></select></label>
@@ -57,6 +58,7 @@
                     <button type="button" class="btn btn-outline btn-sm action-icon action-delete" onclick="this.closest('.card').remove()" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                     <label>Nombre<input class="form-control" name="repNombre" th:value="${rep.nombre}" required /></label>
                     <label>Apellido<input class="form-control" name="repApellido" th:value="${rep.apellido}" required /></label>
+                    <label>Tipo de documento<select class="form-control" name="repTipoDocumento" required><option value="">Seleccionar</option><option value="DNI" th:selected="${rep.tipoDocumento == 'DNI'}">DNI</option><option value="CUIT" th:selected="${rep.tipoDocumento == 'CUIT'}">CUIT</option></select></label>
                     <label>DNI<input class="form-control" name="repDocumento" th:value="${rep.documento}" required /></label>
                     <label>Fecha de nacimiento<input class="form-control" type="date" name="repNacimiento" th:value="${rep.nacimiento}" required /></label>
                     <label>Género<select class="form-control" name="repGenero" required><option value="">Seleccionar</option>
@@ -106,6 +108,11 @@
                 </div>
                 <label>Nombre<input class="form-control" name="repNombre" required /></label>
                 <label>Apellido<input class="form-control" name="repApellido" required /></label>
+                <label>Tipo de documento<select class="form-control" name="repTipoDocumento" required>
+                    <option value="">Seleccionar</option>
+                    <option value="DNI">DNI</option>
+                    <option value="CUIT">CUIT</option>
+                </select></label>
                 <label>DNI<input class="form-control" name="repDocumento" required /></label>
                 <label>Fecha de nacimiento<input class="form-control" type="date" name="repNacimiento" required /></label>
                 <label>Género<select class="form-control" name="repGenero" required>

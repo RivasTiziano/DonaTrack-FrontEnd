@@ -10,6 +10,8 @@ import java.util.Objects;
 /** Validaciones del cliente: el backend conserva la autoridad sobre reglas de negocio. */
 @Component
 public class DonacionesValidator {
+    private static final List<String> TIPOS_DOCUMENTO = List.of("DNI", "CUIT");
+
     public void validar(String tipo, DonanteForm f, Errors errors) {
         required(f.numeroDocumento(), "numeroDocumento", errors);
         required(f.calle(), "calle", errors); required(f.numero(), "numero", errors);
@@ -30,6 +32,7 @@ public class DonacionesValidator {
                 required(f.representanteDocumento(), "representanteDocumento", errors);
                 required(f.representanteGenero(), "representanteGenero", errors);
                 if (f.representanteNacimiento() == null) errors.rejectValue("representanteNacimiento", "required", "Completá la fecha del representante.");
+                if (!tipoDocumentoValido(f.representanteTipoDocumento())) errors.rejectValue("representanteTipoDocumento", "required", "Elegí DNI o CUIT para el representante.");
             }
             int count = initial ? 1 : 0;
             int rows = Math.max(size(f.repNombre()), Math.max(size(f.repApellido()), Math.max(size(f.repDocumento()), Math.max(size(f.repNacimiento()), size(f.repGenero())))));
@@ -38,7 +41,7 @@ public class DonacionesValidator {
                         && at(f.repNacimiento(),i) == null && blank(at(f.repGenero(),i))) continue;
                 count++;
                 if (blank(at(f.repNombre(),i)) || blank(at(f.repApellido(),i)) || blank(at(f.repDocumento(),i))
-                        || at(f.repNacimiento(),i) == null || blank(at(f.repGenero(),i)))
+                        || at(f.repNacimiento(),i) == null || blank(at(f.repGenero(),i)) || !tipoDocumentoValido(at(f.repTipoDocumento(),i)))
                     errors.reject("representantes", "Completá todos los datos de los representantes.");
             }
             if (count == 0) errors.reject("representantes", "Ingresá al menos un representante real; no se generan datos ficticios.");
@@ -77,15 +80,19 @@ public class DonacionesValidator {
         }
     }
 
+    /** Al menos un representante con nombre y teléfono (NOT NULL en Donaciones). El correo es opcional; si se carga, tiene que ser válido. */
     public void validarRepresentantesBeneficiario(List<String> nombres, List<String> telefonos, List<String> emails, Errors errors) {
         if (size(nombres)!=size(telefonos) || size(nombres)!=size(emails)) {
             errors.reject("representantes","Los datos de representantes están incompletos."); return;
         }
+        int count=0;
         for (int i=0;i<size(nombres);i++) {
             if (blank(nombres.get(i)) && blank(telefonos.get(i)) && blank(emails.get(i))) continue;
-            if (blank(nombres.get(i)) || !email(emails.get(i)))
-                errors.reject("representantes","Completá nombre y email del representante, o dejá todos sus campos vacíos.");
+            if (blank(nombres.get(i)) || blank(telefonos.get(i)) || (!blank(emails.get(i)) && !email(emails.get(i))))
+                errors.reject("representantes","Completá nombre y teléfono del representante. El email es opcional, y si lo cargás tiene que ser válido.");
+            else count++;
         }
+        if (count==0) errors.reject("representantes","Ingresá al menos un representante con nombre y teléfono.");
     }
 
     public void archivo(MultipartFile f) { require(f!=null && !f.isEmpty(), "Seleccioná un archivo CSV no vacío."); }
@@ -104,6 +111,8 @@ public class DonacionesValidator {
     private void required(String s,String field,Errors errors) { if(blank(s)) errors.rejectValue(field,"required","Este campo es obligatorio."); }
     private boolean email(String s) { return s!=null && s.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"); }
     private boolean blank(String s) { return s==null || s.isBlank(); }
+    // List.of(...).contains(null) lanza NPE: el tipo puede venir sin cargar.
+    private boolean tipoDocumentoValido(String s) { return s!=null && TIPOS_DOCUMENTO.contains(s); }
     private int size(List<?> l) { return l==null ? 0 : l.size(); }
     private <T> T at(List<T> l,int i) { return l==null || i>=l.size() ? null : l.get(i); }
     private void require(boolean ok,String message) { if(!ok) throw new ar.edu.utn.donatrack.exceptions.FormularioInvalidoException(message); }

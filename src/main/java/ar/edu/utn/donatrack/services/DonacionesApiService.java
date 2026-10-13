@@ -85,6 +85,21 @@ public class DonacionesApiService {
         return http.getList(url + "/donaciones", ApiDtos.Donacion.class);
     }
 
+    /** Donaciones propias del donante, filtradas por el back. Los filtros nulos o vacíos no se envían. */
+    public List<ApiDtos.Donacion> donaciones(Long donanteId, String estado, Long categoriaId, Long subcategoriaId) {
+        var uri = UriComponentsBuilder.fromUriString(url + "/donaciones").queryParam("donanteId", donanteId);
+        if (estado != null && !estado.isBlank()) uri.queryParam("estado", estado);
+        if (categoriaId != null) uri.queryParam("categoriaId", categoriaId);
+        if (subcategoriaId != null) uri.queryParam("subcategoriaId", subcategoriaId);
+        return http.getList(uri.build().encode().toUriString(), ApiDtos.Donacion.class);
+    }
+
+    /** Asignaciones de todas las donaciones del donante, en una sola consulta (evita N+1). */
+    public List<ApiDtos.Asignacion> asignacionesDonante(Long donanteId) {
+        var uri = UriComponentsBuilder.fromUriString(url + "/asignaciones").queryParam("donanteId", donanteId);
+        return http.getList(uri.build().encode().toUriString(), ApiDtos.Asignacion.class);
+    }
+
     public ApiDtos.Donacion donacion(Long id) {
         return http.get(url + "/donaciones/" + id, ApiDtos.Donacion.class);
     }
@@ -184,6 +199,14 @@ public class DonacionesApiService {
 
     public List<ApiDtos.Necesidad> necesidades() {
         return http.getList(url + "/necesidades", ApiDtos.Necesidad.class);
+    }
+
+    /** Necesidades filtradas por el back. Los filtros nulos o vacíos no se envían. */
+    public List<ApiDtos.Necesidad> necesidades(Long entidadBeneficiariaId, String estado) {
+        var uri = UriComponentsBuilder.fromUriString(url + "/necesidades");
+        if (entidadBeneficiariaId != null) uri.queryParam("entidadBeneficiariaId", entidadBeneficiariaId);
+        if (estado != null && !estado.isBlank()) uri.queryParam("estado", estado);
+        return http.getList(uri.build().encode().toUriString(), ApiDtos.Necesidad.class);
     }
 
     public ApiDtos.Necesidad necesidad(Long id) {

@@ -47,8 +47,8 @@ class PanelAdminMvcTest {
                 List.of(new IncentivosDtos.Mision(1L,"RACHA","Primera misión","Donar de manera recurrente",3,1,null)))));
         when(donaciones.algoritmos()).thenReturn(List.of(new ApiDtos.Algoritmo("Semantico",true)));
         when(logistica.camiones()).thenReturn(List.of(new ApiDtos.Camion(3L,"AB123CD",30f,3f,2000f,"DISPONIBLE")));
-        when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(10L,9L,"NO_RECIBIDA","Depósito cerrado",List.of(),3L,"AB123CD",2L),
-                new ApiDtos.Entrega(11L,8L,"EN_TRASLADO",null,List.of(),3L,"AB123CD",2L)));
+        when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(10L,9L,"NO_RECIBIDA","Depósito cerrado",List.of(),3L,"AB123CD",2L,null,null,null),
+                new ApiDtos.Entrega(11L,8L,"EN_TRASLADO",null,List.of(),3L,"AB123CD",2L,null,null,null)));
         when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L,"Chofer",hoy,"PLANIFICADA",3L,50.0,60)));
         when(logistica.ubicaciones()).thenReturn(List.of(new LogisticaDetalles.Seguimiento("AB123CD",-34.6,-58.4,0f,
                 hoy.atStartOfDay(),1L,3,1,2,33.0,"Comedor")));

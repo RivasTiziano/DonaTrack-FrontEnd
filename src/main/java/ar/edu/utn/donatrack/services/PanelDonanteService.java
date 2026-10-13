@@ -41,28 +41,43 @@ public class PanelDonanteService {
         String categoriaActual() { return metricas == null ? null : metricas.categoriaActual(); }
     }
 
+    /**
+     * Filtros del historial, ya validados por el controller: el estado contra ESTADOS y los ids numéricos.
+     * Los nulos no se envían al back.
+     */
+    public record FiltroDonaciones(String estado, Long categoriaId, Long subcategoriaId) {
+        public static final Set<String> ESTADOS = Set.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "VENCIDA");
+    }
+
     /** Resumen: perfil, últimas cinco donaciones e insignias visibles. */
     public Map<String, Object> resumen() {
         Map<String, Object> m = new LinkedHashMap<>();
         Contexto c = contexto(m);
         m.put("user", c.user());
         m.put("donorMetrics", mapper.metricas(c.metricas()));
-        var recientes = donacionesPropias(m, c.ref()).stream()
+        var recientes = cargar(m, () -> donacionesApi.donaciones(c.ref(), null, null, null), List.<ApiDtos.Donacion>of()).stream()
                 .sorted(Comparator.comparing(ApiDtos.Donacion::fechaRecepcion, Comparator.nullsLast(Comparator.reverseOrder())))
                 .limit(5).toList();
-        m.put("userDonations", donaciones(m, recientes, beneficiariosPorId(m)));
+        m.put("userDonations", filas(m, c.ref(), recientes));
         m.put("badges", mapper.insignias(cargarIncentivos(m, () -> incentivosApi.insignias(c.ref()), List.<IncentivosDtos.Insignia>of())));
         return m;
     }
 
-    /** Historial de donaciones propias. Hoy vacío por el permiso del backend (ver donacionesPropias); los filtros salen del catálogo. */
-    public Map<String, Object> donaciones() {
+    /**
+     * Historial de donaciones propias, con filtros. Tres llamadas en total: donaciones del donante,
+     * asignaciones del donante (una sola consulta) y beneficiarios (para el nombre de la entidad). Más el catálogo de filtros.
+     */
+    public Map<String, Object> donaciones(FiltroDonaciones filtro) {
         Map<String, Object> m = new LinkedHashMap<>();
         Contexto c = contexto(m);
         m.put("user", c.user());
-        List<Map<String, Object>> lista = donaciones(m, donacionesPropias(m, c.ref()), beneficiariosPorId(m));
-        m.put("userDonations", lista);
+        var donaciones = cargar(m, () -> donacionesApi.donaciones(c.ref(), filtro.estado(), filtro.categoriaId(), filtro.subcategoriaId()),
+                List.<ApiDtos.Donacion>of());
+        m.put("userDonations", filas(m, c.ref(), donaciones));
         m.putAll(mapper.filtrosCatalogo(cargar(m, donacionesApi::categorias, List.<ApiDtos.Categoria>of())));
+        m.put("filtroEstado", filtro.estado());
+        m.put("filtroCategoriaId", filtro.categoriaId());
+        m.put("filtroSubcategoriaId", filtro.subcategoriaId());
         return m;
     }
 
@@ -71,14 +86,14 @@ public class PanelDonanteService {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("user", contexto(m).user());
         var beneficiarios = cargar(m, donacionesApi::beneficiarios, List.<ApiDtos.Beneficiario>of());
+        // Una sola llamada para todas las entidades; evita N+1 (una consulta por entidad). Se agrupa en memoria.
         var necesidades = cargar(m, donacionesApi::necesidades, List.<ApiDtos.Necesidad>of());
+        Map<Long, List<ApiDtos.Necesidad>> porEntidad = new HashMap<>();
+        for (var n : necesidades)
+            if (n.entidadBeneficiariaId() != null) porEntidad.computeIfAbsent(n.entidadBeneficiariaId(), k -> new ArrayList<>()).add(n);
         List<Map<String, Object>> entidades = new ArrayList<>();
-        for (var b : beneficiarios) {
-            // PROVISORIO: reemplazar por GET /necesidades?entidadBeneficiariaId (pedido backend C2)
-            List<ApiDtos.Necesidad> deEntidad = necesidades.stream()
-                    .filter(n -> Objects.equals(n.entidadBeneficiariaId(), b.id())).toList();
-            entidades.add(mapper.entidad(b, deEntidad));
-        }
+        for (var b : beneficiarios)
+            entidades.add(mapper.entidad(b, porEntidad.getOrDefault(b.id(), List.of())));
         m.put("beneficiaryEntities", entidades);
         m.putAll(mapper.filtrosEntidades(entidades));
         return m;
@@ -117,7 +132,8 @@ public class PanelDonanteService {
         m.put("user", c.user());
         var entidades = beneficiariosPorId(m);
         List<Map<String, Object>> entregas = new ArrayList<>();
-        for (var d : donacionesPropias(m, c.ref())) {
+        // Req 9 bloqueado hasta GET /entregas/seguimiento (C4): no se listan entregas en curso todavía.
+        for (var d : List.<ApiDtos.Donacion>of()) {
             var asignaciones = cargar(m, () -> donacionesApi.asignaciones(d.id()), List.<ApiDtos.Asignacion>of());
             for (var a : asignaciones) {
                 if (!EN_CURSO.contains(a.estado())) continue;
@@ -151,12 +167,6 @@ public class PanelDonanteService {
         return new Contexto(ref, metricas, user);
     }
 
-    // PROVISORIO: bloqueado hasta GET /donaciones?donanteId (pedido backend C1, bloqueante).
-    // GET /donaciones es solo ADMIN desde el commit 035387d: el donante recibe 403, así que no se consulta.
-    private List<ApiDtos.Donacion> donacionesPropias(Map<String, Object> m, Long ref) {
-        return List.of();
-    }
-
     private Map<Long, ApiDtos.Beneficiario> beneficiariosPorId(Map<String, Object> m) {
         var beneficiarios = cargar(m, donacionesApi::beneficiarios, List.<ApiDtos.Beneficiario>of());
         Map<Long, ApiDtos.Beneficiario> porId = new HashMap<>();
@@ -164,14 +174,19 @@ public class PanelDonanteService {
         return porId;
     }
 
-    /** Arma una fila por donación, con sus asignaciones (una consulta por donación). */
-    private List<Map<String, Object>> donaciones(Map<String, Object> m, List<ApiDtos.Donacion> donaciones,
-                                                 Map<Long, ApiDtos.Beneficiario> entidades) {
+    /**
+     * Arma una fila por donación. Las asignaciones del donante se piden una sola vez y se agrupan por donacionId
+     * (sin N+1); los beneficiarios, también una sola vez.
+     */
+    private List<Map<String, Object>> filas(Map<String, Object> m, Long ref, List<ApiDtos.Donacion> donaciones) {
+        if (donaciones.isEmpty()) return List.of();
+        var entidades = beneficiariosPorId(m);
+        var asignaciones = cargar(m, () -> donacionesApi.asignacionesDonante(ref), List.<ApiDtos.Asignacion>of());
+        Map<Long, List<ApiDtos.Asignacion>> porDonacion = new HashMap<>();
+        for (var a : asignaciones)
+            if (a.donacionId() != null) porDonacion.computeIfAbsent(a.donacionId(), k -> new ArrayList<>()).add(a);
         List<Map<String, Object>> out = new ArrayList<>();
-        for (var d : donaciones) {
-            var asignaciones = cargar(m, () -> donacionesApi.asignaciones(d.id()), List.<ApiDtos.Asignacion>of());
-            out.add(mapper.donacion(d, asignaciones, entidades));
-        }
+        for (var d : donaciones) out.add(mapper.donacion(d, porDonacion.getOrDefault(d.id(), List.of()), entidades));
         return out;
     }
 

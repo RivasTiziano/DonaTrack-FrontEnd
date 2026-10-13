@@ -151,7 +151,7 @@ class AdminMvcTest {
         when(donaciones.necesidades()).thenReturn(List.of(new ApiDtos.Necesidad(1L, 2L, bien, "Alimentos", "RECURRENTE", "P1M", 0f, 80f, "PENDIENTE")));
         when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Entidad Real", "ONG", "Comedor", true, null, null, List.of())));
         when(logistica.camiones()).thenReturn(List.of(new ApiDtos.Camion(3L, "AB123CD", 30f, 3f, 2000f, "DISPONIBLE")));
-        when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(1L, 7L, "EN_TRASLADO", null, List.of(), 3L, "AB123CD", null)));
+        when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(1L, 7L, "EN_TRASLADO", null, List.of(), 3L, "AB123CD", null, null, null, null)));
         when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L, "Chofer", java.time.LocalDate.now(), "PLANIFICADA", 3L, 50.0, 60)));
         when(donaciones.algoritmos()).thenReturn(List.of(new ApiDtos.Algoritmo("Semantico", true)));
         for (String path : List.of("bienes", "necesidades", "beneficiarios", "catalogo", "camiones", "entregas", "rutas", "asignar"))
@@ -239,11 +239,13 @@ class AdminMvcTest {
                 .param("representanteDocumento", "20111222")
                 .param("representanteNacimiento", "1980-05-15")
                 .param("representanteGenero", "MASCULINO")
+                .param("representanteTipoDocumento", "DNI")
                 .param("repNombre", "Laura")
                 .param("repApellido", "Fernández")
                 .param("repDocumento", "25333444")
                 .param("repNacimiento", "1985-10-20")
-                .param("repGenero", "FEMENINO"))
+                .param("repGenero", "FEMENINO")
+                .param("repTipoDocumento", "CUIT"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attributeExists("success"));
 
@@ -251,7 +253,24 @@ class AdminMvcTest {
                 request.mediosDeContacto().size() >= 3 &&
                 request.representantesJuridicos().size() == 2 &&
                 "Carlos".equals(request.representantesJuridicos().get(0).nombre()) &&
-                "Laura".equals(request.representantesJuridicos().get(1).nombre())));
+                "Laura".equals(request.representantesJuridicos().get(1).nombre()) &&
+                "DNI".equals(request.representantesJuridicos().get(0).tipoDocumento()) &&
+                "CUIT".equals(request.representantesJuridicos().get(1).tipoDocumento())));
+    }
+
+    // Regla c: el alta de jurídico por el admin exige el tipo de documento de cada representante.
+    @Test void altaDeJuridicoSinTipoDocumentoNoLlamaALaApi() throws Exception {
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos").session(TestSesiones.admin())
+                .param("razonSocial", "Empresa Solidaria S.A.").param("numeroDocumento", "30112233445")
+                .param("tipoEntidad", "EMPRESA").param("rubro", "Alimenticio")
+                .param("calle", "Av. San Martín").param("numero", "500").param("ciudad", "CABA")
+                .param("provincia", "Buenos Aires").param("email", "contacto@empresa.com")
+                .param("representanteNombre", "Carlos").param("representanteApellido", "Gómez")
+                .param("representanteDocumento", "20111222").param("representanteNacimiento", "1980-05-15")
+                .param("representanteGenero", "MASCULINO"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Elegí DNI o CUIT para el representante.")));
+        verify(donaciones,never()).crearJuridico(any());
     }
 
     @Test void rendersAllDonorAndBeneficiaryPages() throws Exception {

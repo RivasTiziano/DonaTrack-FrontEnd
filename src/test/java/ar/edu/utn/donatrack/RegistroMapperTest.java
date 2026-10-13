@@ -86,13 +86,13 @@ class RegistroMapperTest {
         f.setDocumento("30111222333"); f.setRazonSocial("Arcos S.A."); f.setTipoEntidad("EMPRESA"); f.setRubro("Alimentos");
         Representante completo = new Representante();
         completo.setNombre("Juan"); completo.setApellido("Gómez"); completo.setDocumento("20111222");
-        completo.setTipoDocumento(""); completo.setFechaNacimiento("1980-01-02"); completo.setGenero("MASCULINO");
+        completo.setTipoDocumento("DNI"); completo.setFechaNacimiento("1980-01-02"); completo.setGenero("MASCULINO");
         f.setRepresentantes(new ArrayList<>(List.of(completo, new Representante())));
         JsonNode perfil = aJson(mapper.juridico(f)).get("perfil");
         assertEquals(1, perfil.get("representantesJuridicos").size());
         JsonNode rep = perfil.get("representantesJuridicos").get(0);
         assertEquals("Juan", rep.get("nombre").asText());
-        assertTrue(rep.get("tipoDocumento").isNull());
+        assertEquals("DNI", rep.get("tipoDocumento").asText());
         assertEquals("1980-01-02", rep.get("fechaNacimiento").asText());
         assertEquals("EMPRESA", perfil.get("tipoEntidad").asText());
     }

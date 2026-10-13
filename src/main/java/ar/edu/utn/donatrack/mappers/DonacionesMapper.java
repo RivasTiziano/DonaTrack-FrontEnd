@@ -14,7 +14,7 @@ import java.util.stream.*;
 public class DonacionesMapper {
 
     public record CamposContacto(String tipo,String valor) {}
-    public record CamposRepresentante(String nombre,String apellido,String documento,LocalDate nacimiento,String genero) {}
+    public record CamposRepresentante(String nombre,String apellido,String documento,LocalDate nacimiento,String genero,String tipoDocumento) {}
 
     public Map<String,Object> camposDonante(DonanteForm f) {
         var contactos=new ArrayList<CamposContacto>();
@@ -24,7 +24,7 @@ public class DonacionesMapper {
         int rows=Math.max(size(f.repNombre()),Math.max(size(f.repApellido()),Math.max(size(f.repDocumento()),
                 Math.max(size(f.repNacimiento()),size(f.repGenero())))));
         for(int i=0;i<rows;i++) representantes.add(new CamposRepresentante(at(f.repNombre(),i),at(f.repApellido(),i),
-                at(f.repDocumento(),i),at(f.repNacimiento(),i),at(f.repGenero(),i)));
+                at(f.repDocumento(),i),at(f.repNacimiento(),i),at(f.repGenero(),i),at(f.repTipoDocumento(),i)));
         return Map.of("contactosExtras",contactos,"representantesExtras",representantes);
     }
 
@@ -52,11 +52,11 @@ public class DonacionesMapper {
     public List<DonanteRequests.Representante> representantes(DonanteForm f) {
         var result = new ArrayList<DonanteRequests.Representante>();
         if (!blank(f.representanteNombre())) result.add(new DonanteRequests.Representante(null,
-                f.representanteNombre(), f.representanteApellido(), "DNI", f.representanteDocumento(),
+                f.representanteNombre(), f.representanteApellido(), f.representanteTipoDocumento(), f.representanteDocumento(),
                 f.representanteNacimiento(), f.representanteGenero()));
         for (int i = 0; i < size(f.repNombre()); i++) {
             if (!blank(at(f.repNombre(), i))) result.add(new DonanteRequests.Representante(null,
-                    at(f.repNombre(), i), at(f.repApellido(), i), "DNI", at(f.repDocumento(), i),
+                    at(f.repNombre(), i), at(f.repApellido(), i), at(f.repTipoDocumento(), i), at(f.repDocumento(), i),
                     at(f.repNacimiento(), i), at(f.repGenero(), i)));
         }
         return List.copyOf(result);
@@ -120,8 +120,10 @@ public class DonacionesMapper {
         var result = new ArrayList<DonacionesDetalles.Representante>();
         for (int i = 0; i < size(nombres); i++) {
             if (blank(at(nombres, i)) && blank(at(telefonos, i)) && blank(at(emails, i))) continue;
-            result.add(new DonacionesDetalles.Representante(null, at(nombres, i), at(telefonos, i),
-                    List.of(new MedioDeContactoDto("EMAIL", at(emails, i)))));
+            // El correo es opcional: sin email no se envía ningún medio (el back rechaza formaContacto vacío).
+            List<MedioDeContactoDto> correos = blank(at(emails, i)) ? List.of()
+                    : List.of(new MedioDeContactoDto("EMAIL", at(emails, i)));
+            result.add(new DonacionesDetalles.Representante(null, at(nombres, i), at(telefonos, i), correos));
         }
         return List.copyOf(result);
     }
@@ -181,9 +183,13 @@ private String contacto(
                 new MedioDeContactoDto(f.contactoTipo(),f.contactoValor()),representantesBeneficiario(nombres,telefonos,emails));
     }
 
-    public DonacionesDetalles.ActualizarBeneficiario beneficiario(PerfilForm f,DonacionesDetalles.Beneficiario actual) {
+    /** Si la entidad ya tiene representantes se conservan; si no, se usan los cargados en el formulario (obligatorios en ese caso). */
+    public DonacionesDetalles.ActualizarBeneficiario beneficiario(PerfilForm f,DonacionesDetalles.Beneficiario actual,
+                                                                  List<String> nombres,List<String> telefonos,List<String> emails) {
+        boolean tieneRepresentantes=actual.representantes()!=null && !actual.representantes().isEmpty();
+        var representantes=tieneRepresentantes ? actual.representantes() : representantesBeneficiario(nombres,telefonos,emails);
         return new DonacionesDetalles.ActualizarBeneficiario(f.razonSocial(),f.tipoEntidad(),f.rubro(),direccion(f),
-                new MedioDeContactoDto(f.contactoTipo(),f.contactoValor()),actual.representantes(),f.activo());
+                new MedioDeContactoDto(f.contactoTipo(),f.contactoValor()),representantes,f.activo());
     }
 
     public ApiRequests.Donacion donacion(Long id,String descripcion,List<ApiRequests.Bien> bienes) {

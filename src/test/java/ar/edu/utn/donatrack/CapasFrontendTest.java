@@ -66,6 +66,7 @@ class CapasFrontendTest {
         when(f.representanteDocumento()).thenReturn("87654321");
         when(f.representanteNacimiento()).thenReturn(LocalDate.of(1978,2,3));
         when(f.representanteGenero()).thenReturn("OTRO");
+        when(f.representanteTipoDocumento()).thenReturn("DNI");
         service.crear("juridicos",f);
         verify(api).crearJuridico(argThat(r -> r.representantesJuridicos().size()==1
                 && r.representantesJuridicos().get(0).fechaNacimiento().equals(LocalDate.of(1978,2,3))));
