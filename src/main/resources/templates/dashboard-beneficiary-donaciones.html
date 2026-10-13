@@ -45,8 +45,8 @@
         <!-- Filter Tabs -->
         <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
             <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterAssignedDonations('todas', this)">Todas (<span th:text="${assignedDonations.size()}">2</span>)</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterAssignedDonations('En camino', this)">En camino</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterAssignedDonations('Lista para entregar', this)">Listas en Depósito</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterAssignedDonations('EN_TRASLADO', this)">En traslado</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterAssignedDonations('LISTA_PARA_ENTREGAR', this)">Listas para entregar</button>
         </div>
 
         <!-- Empty State -->
@@ -70,30 +70,26 @@
                         <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Donación Asignada</span>
                         <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${don.title}">Título</h3>
                     </div>
-                    <span class="status-badge" th:classappend="${don.status == 'En camino' ? 'badge-traslado' : 'badge-lista'}" th:text="${don.status}">Estado</span>
+                    <span class="status-badge" th:classappend="${don.status_badge}" th:text="${don.status_label}">Estado</span>
                 </div>
 
                 <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem; font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.35rem;">
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--color-muted);">Donante:</span>
-                        <strong style="color: var(--color-ink);" th:text="${don.donor_name}">Donante</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
                         <span style="color: var(--color-muted);">Unidades:</span>
-                        <strong th:text="${don.items_count} + ' unidades'">50 unidades</strong>
+                        <strong th:text="${don.items_count != null ? don.items_count + ' ' + don.unit : '—'}">50 unidades</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--color-muted);">Entrega estimada:</span>
-                        <span style="color: var(--color-primary); font-weight: 600;" th:text="${don.expected_delivery}">Hoy, 15:30</span>
+                        <span style="color: var(--color-muted);">Entrega:</span>
+                        <span style="color: var(--color-primary); font-weight: 600;" th:text="${don.expected_delivery ?: '—'}">—</span>
                     </div>
                 </div>
 
                 <div style="margin-top: auto; display: flex; gap: 0.5rem;">
                     <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm" style="flex: 1;" data-tooltip="Localizar camión satelital">
                         <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
-                        <span>Ver Camión</span>
+                        <span>Ver entregas</span>
                     </a>
-                    <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary btn-sm" style="flex: 1;" data-tooltip="Subir fotografías y dar por entregada">
+                    <a th:href="@{/entidad/dashboard/confirmar}" th:if="${don.status == 'EN_TRASLADO'}" class="btn btn-primary btn-sm" style="flex: 1;" data-tooltip="Subir fotografías y dar por entregada">
                         <i data-lucide="camera" style="width: 14px; height: 14px;"></i>
                         <span>Confirmar</span>
                     </a>

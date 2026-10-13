@@ -34,21 +34,21 @@
 
         <div class="dashboard-header-right">
             <div class="user-profile-summary">
-                <span class="user-profile-name" th:text="${user != null ? user.name : 'Juan Pérez'}">Juan Pérez</span>
-                <span class="user-profile-role" th:text="'Categoría: ' + (${user != null && user.category != null ? user.category : 'Sostenedor'})">Categoría: Sostenedor</span>
+                <span class="user-profile-name" th:text="${sesion != null ? sesion.nombreVisible : ''}"></span>
+                <span class="user-profile-role" th:if="${user != null and user.category != null}" th:text="'Categoría: ' + ${user.category}"></span>
             </div>
 
             <a th:href="@{/donante/dashboard/notificaciones}" class="header-icon-btn" aria-label="Ver notificaciones" data-tooltip="Notificaciones">
                 <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
-                <span class="notification-count-badge">2</span>
+                <span class="notification-count-badge" th:if="${notificacionesNoLeidas != null and notificacionesNoLeidas > 0}" th:text="${notificacionesNoLeidas}"></span>
             </a>
 
-            <a th:href="@{/}" style="text-decoration: none;" data-tooltip="Cerrar sesión">
-                <button type="button" class="btn btn-outline btn-sm" style="color: var(--color-ink-light);">
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-outline btn-sm" style="color: var(--color-ink-light);" data-tooltip="Cerrar sesión">
                     <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
                     <span>Salir</span>
                 </button>
-            </a>
+            </form>
         </div>
     </header>
 
@@ -68,7 +68,7 @@
         </div>
 
         <div class="dashboard-drawer-user-card">
-            <div class="user-profile-name" th:text="${user != null ? user.name : 'Juan Pérez'}">Juan Pérez</div>
+            <div class="user-profile-name" th:text="${sesion != null ? sesion.nombreVisible : ''}"></div>
             <span class="role-badge" style="margin-top: 6px;">
                 <i data-lucide="user-check" style="width: 12px; height: 12px;"></i>
                 Donante
@@ -107,10 +107,12 @@
         </nav>
 
         <div class="dashboard-drawer-footer">
-            <a th:href="@{/}" class="btn btn-outline" style="width: 100%; justify-content: center; gap: 0.5rem;">
-                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
-                <span>Cerrar sesión</span>
-            </a>
+            <form th:action="@{/logout}" method="post" style="display: block; width: 100%;">
+                <button type="submit" class="btn btn-outline" style="width: 100%; justify-content: center; gap: 0.5rem;">
+                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                    <span>Cerrar sesión</span>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -154,6 +156,8 @@
 
         <!-- Main Content View -->
         <main class="dashboard-main-content" role="main">
+            <p th:if="${apiError != null}" th:text="${apiError}" role="alert" style="padding: 1rem; border-radius: var(--radius-md); background: #fef2f2; color: #991b1b; margin-bottom: 1rem;"></p>
+            <p th:if="${success != null}" th:text="${success}" role="status" style="padding: 1rem; border-radius: var(--radius-md); background: #ecfdf5; color: #065f46; margin-bottom: 1rem;"></p>
             <div th:replace="${content}"></div>
         </main>
     </div>

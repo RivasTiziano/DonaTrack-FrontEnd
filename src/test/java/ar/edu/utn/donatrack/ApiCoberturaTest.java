@@ -179,4 +179,35 @@ class ApiCoberturaTest {
         assertThat(posicion.donante().idReferencia()).isEqualTo(9);
         assertThat(posicion.misionesCompletadas()).isEqualTo(2);
     }
+
+    @Test void asignacionYBeneficiarioLeenLosCamposAmpliadosDelContrato() {
+        route("GET","/donaciones/9/asignaciones",200,"""
+            [{"id":7,"donacionId":9,"descripcionGeneralDonacion":"Arroz","bien":{"id":3,"descripcion":"Arroz"},
+            "necesidadId":1,"entidadBeneficiariaId":2,"cantidadAsignada":30,"fechaAsignacion":"2026-10-11T10:00:00",
+            "estado":"ENTREGA_FALLIDA","camionId":null,"fechaEntrega":null,"justificacionFallo":"Camión sin ruta"}]
+            """);
+        route("GET","/beneficiarios",200,"""
+            [{"id":2,"razonSocial":"Entidad Real","tipoEntidad":"ONG","rubro":"Comedor","activo":true,
+            "direccion":{"calle":"Real","ciudad":"CABA","provincia":"BA","numero":"1"},
+            "medioDeContactoPredeterminado":{"tipoMedioContacto":"EMAIL","formaContacto":"entidad@example.com"},
+            "representantes":[{"id":5,"nombre":"Laura","telefono":"+5491112345678","correos":[]}]}]
+            """);
+        var asignacion = donaciones.asignaciones(9L).get(0);
+        assertThat(asignacion.justificacionFallo()).isEqualTo("Camión sin ruta");
+        assertThat(asignacion.bien().descripcion()).isEqualTo("Arroz");
+        assertThat(asignacion.fechaAsignacion()).isEqualTo(java.time.LocalDateTime.of(2026, 10, 11, 10, 0));
+        var beneficiario = donaciones.beneficiarios().get(0);
+        assertThat(beneficiario.direccion().calle()).isEqualTo("Real");
+        assertThat(beneficiario.medioDeContactoPredeterminado().formaContacto()).isEqualTo("entidad@example.com");
+        assertThat(beneficiario.representantes().get(0).nombre()).isEqualTo("Laura");
+    }
+
+    @Test void actualizarEntregaEnviaPatchConEstadoFotosYJustificacion() throws Exception {
+        route("PATCH","/entregas/5/estado",200,"{}");
+        logistica.actualizarEstadoEntrega(5L, new LogisticaDetalles.ActualizarEntrega("ENTREGADA", null,
+                List.of("https://example.com/foto.jpg")));
+        var json = mapper.readTree(requests.get("PATCH /entregas/5/estado"));
+        assertThat(json.path("estado").asText()).isEqualTo("ENTREGADA");
+        assertThat(json.path("fotos").get(0).asText()).isEqualTo("https://example.com/foto.jpg");
+    }
 }

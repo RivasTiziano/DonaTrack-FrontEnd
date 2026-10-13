@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-donor-layout :: layout(~{::title}, ~{::main}, 'entregas')}">
 <head>
-    <title>DonaTrack - Seguimiento de Entregas y Camiones</title>
+    <title>DonaTrack - Seguimiento de Entregas</title>
 </head>
 <body>
     <main class="donor-deliveries-view" th:fragment="main">
@@ -17,26 +17,20 @@
         <!-- Header -->
         <div class="dt-page-header">
             <div>
-                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Buscador y Seguimiento de Entregas en Tiempo Real</h1>
-                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Localiza en el mapa los camiones que transportan tus donaciones, su velocidad y última actualización GPS.</p>
-            </div>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-outline btn-sm" onclick="syncAllGpsSignals(this)">
-                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
-                    <span>Sincronizar GPS</span>
-                </button>
+                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Seguimiento de Entregas</h1>
+                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Destino de tus donaciones que están listas para entregar o en camino.</p>
             </div>
         </div>
 
-        <!-- Onboarding Hint (Seguimiento Logístico) -->
+        <!-- Onboarding Hint -->
         <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de seguimiento logístico">
             <div class="onboarding-hint-icon">
                 <i data-lucide="truck" style="width: 20px; height: 20px; color: #d97706;"></i>
             </div>
             <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Telemetría y Seguimiento de la Flota en Tiempo Real</div>
+                <div class="onboarding-hint-title">Seguimiento de tus entregas</div>
                 <p class="onboarding-hint-text">
-                    El sistema logístico monitorea la posición satelital del vehículo asignado (coordenadas, velocidad actual y hora del último reporte). Puedes buscar entre todas tus donaciones despachadas, seleccionar un camión para centrar el mapa, y consultar la hora estimada de arribo (ETA) a la entidad beneficiaria.
+                    Acá ves a qué entidad va cada donación y su estado. La ubicación del camión solo se muestra cuando el servicio de logística la informa para tu cuenta.
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -44,335 +38,168 @@
             </button>
         </div>
 
-        <!-- Search & Filter Bar (Punto 6 de Consigna) -->
+        <!-- Search & Filter Bar -->
         <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
-                <!-- Search Input -->
                 <div style="grid-column: span 1 / -1;">
                     <label for="delivery-search" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); margin-bottom: 0.35rem;">
-                        <i data-lucide="search" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Buscar entrega por ID de donación, bien, entidad destino, chofer o patente
+                        <i data-lucide="search" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> Buscar por donación, bien o entidad destino
                     </label>
-                    <input type="text" id="delivery-search" class="form-control" placeholder="Ej: #102, Fideos, Despierta, AB 123 CD, Miguel Ángel..." style="width: 100%; font-size: 0.875rem; padding: 0.55rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);" oninput="applyDeliverySearch()" />
+                    <input type="text" id="delivery-search" class="form-control" placeholder="Ej: Fideos, Fundación..." style="width: 100%; font-size: 0.875rem; padding: 0.55rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);" oninput="applyDeliverySearch()" />
                 </div>
             </div>
 
-            <!-- Status Buttons -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border); flex-wrap: wrap; gap: 0.5rem;">
-                <div class="filter-tabs" style="display: flex; gap: 0.5rem;">
+                <div class="filter-tabs" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <button type="button" class="btn btn-outline btn-sm delivery-tab active" onclick="filterDeliveriesByStatus('all', this)">
-                        Todas (<span th:text="${activeDonorDeliveries.size()}">3</span>)
+                        Todas (<span th:text="${activeDonorDeliveries.size()}">0</span>)
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm delivery-tab" onclick="filterDeliveriesByStatus('En traslado', this)">
+                    <button type="button" class="btn btn-outline btn-sm delivery-tab" onclick="filterDeliveriesByStatus('LISTA_PARA_ENTREGAR', this)">
+                        Listas para entregar
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm delivery-tab" onclick="filterDeliveriesByStatus('EN_TRASLADO', this)">
                         <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
-                        En Traslado (Activas)
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm delivery-tab" onclick="filterDeliveriesByStatus('Planificada', this)">
-                        Planificadas
+                        En traslado
                     </button>
                 </div>
                 <div style="font-size: 0.8125rem; color: var(--color-muted);">
-                    Mostrando <strong id="delivery-count" style="color: var(--color-ink);" th:text="${activeDonorDeliveries.size()}">3</strong> envíos
+                    Mostrando <strong id="delivery-count" style="color: var(--color-ink);" th:text="${activeDonorDeliveries.size()}">0</strong> envíos
                 </div>
             </div>
         </section>
 
-        <!-- Live Map and Telematics Grid -->
-        <div class="dt-grid-1-8-1">
-            <!-- Leaflet Interactive Map -->
+        <!-- Estado vacío: las donaciones propias todavía no se pueden listar (pedido backend C1) -->
+        <!-- PROVISORIO: pedido backend C3/C4 (GET /entregas/seguimiento) y C1 (GET /donaciones?donanteId) -->
+        <p th:if="${activeDonorDeliveries.isEmpty()}" class="card" style="padding: 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-muted); font-size: 0.875rem;">Todavía no podemos mostrar tus entregas en curso.</p>
+
+        <div th:unless="${activeDonorDeliveries.isEmpty()}" class="dt-grid-1-8-1">
+            <!-- Mapa: solo el destino, si la entidad tiene coordenadas -->
             <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; min-height: 480px;">
                 <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite;"></span>
-                        <strong style="font-size: 0.9375rem; color: var(--color-ink);" id="map-active-truck-title">Monitoreo Satelital de Flota Activa</strong>
-                    </div>
-                    <span style="font-size: 0.8125rem; color: var(--color-muted);" id="last-gps-update">Sincronizado: En tiempo real</span>
+                    <strong style="font-size: 0.9375rem; color: var(--color-ink);" id="map-title">Destino de la entrega</strong>
                 </div>
-                
                 <div id="donor-tracking-map" style="flex: 1; min-height: 420px; width: 100%; z-index: 1;"></div>
             </div>
 
-            <!-- Deliveries Selector & Telematics Card -->
             <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <!-- Deliveries List Selector -->
+                <!-- Selector de entregas -->
                 <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
                     <h3 style="font-size: 0.9375rem; font-weight: 800; color: var(--color-ink); margin-bottom: 0.75rem;">
-                        <i data-lucide="list" style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; color: var(--color-primary);"></i> Seleccionar Entrega para Trazar:
+                        <i data-lucide="list" style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; color: var(--color-primary);"></i> Seleccionar entrega:
                     </h3>
-                    
                     <div class="deliveries-selector-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 260px; overflow-y: auto;">
                         <div th:each="del, iterStat : ${activeDonorDeliveries}"
                              class="delivery-select-item"
                              th:classappend="${iterStat.first ? 'active' : ''}"
                              th:attr="data-id=${del.id},
-                                      data-donation-id=${del.donationId},
                                       data-title=${del.donationTitle},
                                       data-status=${del.status},
                                       data-destination=${del.destinationEntity},
                                       data-address=${del.destinationAddress},
-                                      data-eta=${del.eta},
-                                      data-plate=${del.truck.plate},
-                                      data-model=${del.truck.model},
-                                      data-driver=${del.truck.driver},
-                                      data-phone=${del.truck.driverPhone},
-                                      data-speed=${del.truck.gps.speed},
-                                      data-lastupdate=${del.truck.gps.lastUpdate},
-                                      data-lat=${del.truck.gps.lat},
-                                      data-lng=${del.truck.gps.lng},
-                                      data-dest-lat=${del.destinationCoords.lat},
-                                      data-dest-lng=${del.destinationCoords.lng}"
+                                      data-dest-lat=${del.destinationCoords != null ? del.destinationCoords.lat : null},
+                                      data-dest-lng=${del.destinationCoords != null ? del.destinationCoords.lng : null}"
                              onclick="selectDeliveryForTracking(this)"
                              style="padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; transition: all 0.2s ease;">
-                            
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                                <strong style="font-size: 0.875rem; color: var(--color-ink);" th:text="'Donación #' + ${del.donationId} + ': ' + ${del.donationTitle}">Donación</strong>
-                                <span class="status-badge" th:classappend="${del.status == 'En traslado' ? 'badge-traslado' : 'badge-asignada'}" style="font-size: 0.7rem;" th:text="${del.status}">En traslado</span>
+                                <strong style="font-size: 0.875rem; color: var(--color-ink);" th:text="${del.donationTitle ?: 'Donación'}">Donación</strong>
+                                <span class="status-badge" th:classappend="${del.status_badge}" style="font-size: 0.7rem;" th:text="${del.status_label}">Estado</span>
                             </div>
-                            <div style="font-size: 0.75rem; color: var(--color-muted); display: flex; justify-content: space-between;">
-                                <span>Destino: <strong style="color: var(--color-ink);" th:text="${del.destinationEntity}">Entidad</strong></span>
-                                <span th:text="${del.truck.plate}">AB 123 CD</span>
+                            <div style="font-size: 0.75rem; color: var(--color-muted);">
+                                Destino: <strong style="color: var(--color-ink);" th:text="${del.destinationEntity ?: '—'}">Entidad</strong>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Live Telematics Panel -->
+                <!-- Detalle de la entrega seleccionada -->
                 <div class="card" id="telematics-panel" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1rem;">
                     <div>
-                        <span class="status-badge badge-traslado" id="telematics-status">En traslado</span>
-                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-ink); margin-top: 6px;" id="telematics-donation-title">Donación #102: Fideos Secos y Harina</h3>
-                        <p style="font-size: 0.8125rem; color: var(--color-muted);" id="telematics-destination">Destino: Fundación Despierta</p>
+                        <span class="status-badge" id="delivery-status" th:classappend="${activeDonorDeliveries[0].status_badge}" th:text="${activeDonorDeliveries[0].status_label}">Estado</span>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-ink); margin-top: 6px;" id="delivery-title" th:text="${activeDonorDeliveries[0].donationTitle ?: 'Donación'}">Donación</h3>
                     </div>
 
-                    <!-- Telemetry Data Box (Telemetría Satelital de Unidad) -->
                     <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8125rem;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Camión / Modelo:</span>
-                            <strong style="color: var(--color-ink);" id="telematics-truck-plate">AB 123 CD (Mercedes Sprinter)</strong>
+                        <div style="display: flex; justify-content: space-between; gap: 0.5rem;">
+                            <span style="color: var(--color-muted);">Entidad destino:</span>
+                            <strong style="color: var(--color-ink); text-align: right;" id="delivery-destination" th:text="${activeDonorDeliveries[0].destinationEntity ?: '—'}">Entidad</strong>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Conductor Asignado:</span>
-                            <strong style="color: var(--color-ink);" id="telematics-driver">Miguel Ángel</strong>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Coordenadas GPS:</span>
-                            <span style="font-family: monospace; color: #4338ca; font-weight: 600;" id="telematics-coords">-34.6050, -58.4250</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Velocidad Actual:</span>
-                            <strong style="color: #059669;" id="telematics-speed">38.5 km/h</strong>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Última Señal Satelital:</span>
-                            <span id="telematics-lastping">Hace 35 segundos</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding-top: 4px; border-top: 1px solid var(--color-border);">
-                            <span style="color: var(--color-muted);">Arribo Estimado (ETA):</span>
-                            <strong style="color: var(--color-primary);" id="telematics-eta">Hoy, 15:30 (en 12 mins)</strong>
+                        <div style="display: flex; justify-content: space-between; gap: 0.5rem;">
+                            <span style="color: var(--color-muted);">Dirección:</span>
+                            <span style="text-align: right;" id="delivery-address" th:text="${activeDonorDeliveries[0].destinationAddress ?: '—'}">Dirección</span>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; margin-top: auto;">
-                        <a href="tel:+541112345678" id="telematics-call-btn" class="btn btn-outline btn-sm" style="flex: 1;">
-                            <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
-                            <span>Llamar Chofer</span>
-                        </a>
-                        <button type="button" class="btn btn-primary btn-sm" style="flex: 1;" onclick="simulateAsyncAction(this, 500, function() { showToast('GPS Sincronizado', 'Posición del camión actualizada con el satélite.', 'success'); })">
-                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
-                            <span>Actualizar GPS</span>
-                        </button>
-                    </div>
+                    <!-- Aviso: el camión no se informa para la cuenta del donante -->
+                    <p style="font-size: 0.8125rem; color: var(--color-muted);" id="truck-notice" th:if="${activeDonorDeliveries[0].truck == null}">La ubicación del camión todavía no está disponible para tu cuenta.</p>
                 </div>
             </div>
         </div>
 
-        <style>
-            .delivery-select-item.active {
-                border-color: var(--color-primary);
-                background: #f0fdf4;
-            }
-        </style>
-
-        <!-- Leaflet Tracking Map Script with Multi-truck and Route Handling -->
         <script th:inline="javascript">
+            // Entregas propias (API), sin datos de maqueta. Solo se dibuja el destino si la API informa coordenadas.
+            const entregas = /*[[${activeDonorDeliveries}]]*/ [];
             let trackingMap = null;
-            let currentRoutePolyline = null;
-            let truckMarkers = {};
-
-            const deliveriesData = [
-                {
-                    id: "del-102",
-                    title: "Donación #102: Fideos Secos y Harina",
-                    plate: "AB 123 CD",
-                    driver: "Miguel Ángel",
-                    status: "En traslado",
-                    truckCoords: [-34.6050, -58.4250],
-                    destCoords: [-34.5989, -58.4395],
-                    destName: "Fundación Despierta",
-                    eta: "15:30"
-                },
-                {
-                    id: "del-105",
-                    title: "Donación #105: Frazadas Térmicas",
-                    plate: "EF 456 GH",
-                    driver: "Carlos Ruiz",
-                    status: "En traslado",
-                    truckCoords: [-34.6190, -58.4350],
-                    destCoords: [-34.6289, -58.4123],
-                    destName: "Hogar San Francisco",
-                    eta: "17:15"
-                },
-                {
-                    id: "del-103",
-                    title: "Donación #103: Sillas de Estudio",
-                    plate: "MN 234 OP",
-                    driver: "Jorge Blanco",
-                    status: "Planificada",
-                    truckCoords: [-34.6179, -58.4471],
-                    destCoords: [-34.9812, -59.2745],
-                    destName: "Escuela Rural N°10 (Navarro)",
-                    eta: "Mañana 10:00"
-                }
-            ];
+            let destinationMarker = null;
 
             function initDonorTrackingMap() {
                 const container = document.getElementById('donor-tracking-map');
                 if (!container || typeof L === 'undefined') return;
-
-                trackingMap = L.map('donor-tracking-map').setView([-34.6100, -58.4300], 13);
+                const primera = entregas.find(e => e.destinationCoords);
+                const centro = primera ? [primera.destinationCoords.lat, primera.destinationCoords.lng] : [-34.6037, -58.3816];
+                trackingMap = L.map('donor-tracking-map').setView(centro, primera ? 13 : 4);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(trackingMap);
-
-                // Depósito Central Base Marker
-                const depIcon = L.divIcon({
-                    className: 'dep-marker',
-                    html: '<div style="background: #0f172a; color: white; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(15,23,42,0.5); border: 2px solid white;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div>',
-                    iconSize: [34, 34],
-                    iconAnchor: [17, 17]
-                });
-                L.marker([-34.6179, -58.4471], { icon: depIcon }).addTo(trackingMap)
-                    .bindPopup('<strong>Depósito Central UTN</strong><br/>Base de Despacho Logístico');
-
-                // Plot all active trucks
-                deliveriesData.forEach(d => {
-                    const truckIcon = L.divIcon({
-                        className: 'truck-marker-' + d.id,
-                        html: '<div style="background: #e11d48; color: white; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 14px rgba(225,29,72,0.5); border: 2.5px solid white;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></div>',
-                        iconSize: [38, 38],
-                        iconAnchor: [19, 19]
-                    });
-
-                    const marker = L.marker(d.truckCoords, { icon: truckIcon }).addTo(trackingMap)
-                        .bindPopup('<strong>Camión ' + d.plate + '</strong><br/>' + d.title + '<br/>Chofer: ' + d.driver + '<br/>Destino: ' + d.destName + '<br/>ETA: ' + d.eta);
-                    
-                    truckMarkers[d.id] = marker;
-                });
-
-                // Select initial delivery (del-102)
-                drawRouteForDelivery("del-102");
+                const seleccionada = document.querySelector('.delivery-select-item.active');
+                if (seleccionada) selectDeliveryForTracking(seleccionada);
             }
 
-            function drawRouteForDelivery(deliveryId) {
-                const del = deliveriesData.find(d => d.id === deliveryId);
-                if (!del || !trackingMap) return;
-
-                if (currentRoutePolyline) {
-                    trackingMap.removeLayer(currentRoutePolyline);
-                }
-
-                const depCoords = [-34.6179, -58.4471];
-                const waypoints = [depCoords, del.truckCoords, del.destCoords];
-
-                currentRoutePolyline = L.polyline(waypoints, {
-                    color: '#e11d48',
-                    weight: 4,
-                    dashArray: '6, 8'
-                }).addTo(trackingMap);
-
-                trackingMap.fitBounds(currentRoutePolyline.getBounds(), { padding: [50, 50] });
+            function mostrarDestino(coords) {
+                if (!trackingMap) return;
+                if (destinationMarker) { trackingMap.removeLayer(destinationMarker); destinationMarker = null; }
+                if (!coords) return;
+                destinationMarker = L.marker([coords.lat, coords.lng]).addTo(trackingMap);
+                trackingMap.setView([coords.lat, coords.lng], 14);
             }
 
             function selectDeliveryForTracking(itemElement) {
                 document.querySelectorAll('.delivery-select-item').forEach(i => i.classList.remove('active'));
                 itemElement.classList.add('active');
 
-                const delId = itemElement.getAttribute('data-id');
-                const title = itemElement.getAttribute('data-title');
-                const destination = itemElement.getAttribute('data-destination');
-                const status = itemElement.getAttribute('data-status');
-                const plate = itemElement.getAttribute('data-plate');
-                const model = itemElement.getAttribute('data-model');
-                const driver = itemElement.getAttribute('data-driver');
-                const phone = itemElement.getAttribute('data-phone');
-                const speed = itemElement.getAttribute('data-speed');
-                const lastUpdate = itemElement.getAttribute('data-lastupdate');
-                const eta = itemElement.getAttribute('data-eta');
-                const lat = itemElement.getAttribute('data-lat');
-                const lng = itemElement.getAttribute('data-lng');
+                const lat = itemElement.getAttribute('data-dest-lat');
+                const lng = itemElement.getAttribute('data-dest-lng');
+                const coords = lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null;
 
-                // Update Telematics Panel
-                document.getElementById('telematics-donation-title').textContent = title;
-                document.getElementById('telematics-destination').textContent = 'Destino: ' + destination;
-                document.getElementById('telematics-status').textContent = status;
-                document.getElementById('telematics-truck-plate').textContent = plate + ' (' + model + ')';
-                document.getElementById('telematics-driver').textContent = driver;
-                document.getElementById('telematics-coords').textContent = parseFloat(lat).toFixed(4) + ', ' + parseFloat(lng).toFixed(4);
-                document.getElementById('telematics-speed').textContent = speed + ' km/h';
-                document.getElementById('telematics-lastping').textContent = lastUpdate;
-                document.getElementById('telematics-eta').textContent = eta;
-                document.getElementById('telematics-call-btn').href = 'tel:' + phone;
-                document.getElementById('map-active-truck-title').textContent = 'Camión ' + plate + ' — ' + title;
+                document.getElementById('map-title').textContent = 'Destino: ' + (itemElement.getAttribute('data-destination') || '—');
+                document.getElementById('delivery-title').textContent = itemElement.getAttribute('data-title') || 'Donación';
+                document.getElementById('delivery-status').textContent = itemElement.querySelector('.status-badge').textContent;
+                document.getElementById('delivery-destination').textContent = itemElement.getAttribute('data-destination') || '—';
+                document.getElementById('delivery-address').textContent = itemElement.getAttribute('data-address') || '—';
 
-                drawRouteForDelivery(delId);
-
-                if (truckMarkers[delId]) {
-                    truckMarkers[delId].openPopup();
-                }
+                mostrarDestino(coords);
             }
 
             function applyDeliverySearch() {
                 const query = (document.getElementById('delivery-search').value || '').toLowerCase().trim();
-                const items = document.querySelectorAll('.delivery-select-item');
                 let count = 0;
-
-                items.forEach(item => {
-                    const text = (item.textContent || '').toLowerCase();
-                    if (!query || text.includes(query)) {
-                        item.style.display = 'block';
-                        count++;
-                    } else {
-                        item.style.display = 'none';
-                    }
+                document.querySelectorAll('.delivery-select-item').forEach(item => {
+                    const visible = !query || (item.textContent || '').toLowerCase().includes(query);
+                    item.style.display = visible ? 'block' : 'none';
+                    if (visible) count++;
                 });
-
                 document.getElementById('delivery-count').textContent = count;
             }
 
             function filterDeliveriesByStatus(status, btn) {
                 document.querySelectorAll('.delivery-tab').forEach(b => b.classList.remove('active'));
                 if (btn) btn.classList.add('active');
-
-                const items = document.querySelectorAll('.delivery-select-item');
                 let count = 0;
-
-                items.forEach(item => {
-                    const itemStatus = item.getAttribute('data-status');
-                    if (status === 'all' || itemStatus === status) {
-                        item.style.display = 'block';
-                        count++;
-                    } else {
-                        item.style.display = 'none';
-                    }
+                document.querySelectorAll('.delivery-select-item').forEach(item => {
+                    const visible = status === 'all' || item.getAttribute('data-status') === status;
+                    item.style.display = visible ? 'block' : 'none';
+                    if (visible) count++;
                 });
-
                 document.getElementById('delivery-count').textContent = count;
-            }
-
-            function syncAllGpsSignals(btn) {
-                simulateAsyncAction(btn, 600, function() {
-                    document.getElementById('last-gps-update').textContent = 'Sincronizado: Hace segundos';
-                    showToast('Telemetría GPS Sincronizada', 'Las posiciones de todos los camiones fueron actualizadas.', 'success');
-                });
             }
 
             document.addEventListener('DOMContentLoaded', initDonorTrackingMap);

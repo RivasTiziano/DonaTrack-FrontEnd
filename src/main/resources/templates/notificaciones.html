@@ -4,27 +4,17 @@
 <head><title>Notificaciones - DonaTrack</title></head><body><main th:fragment="main" class="api-view">
     <link rel="stylesheet" th:href="@{/css/api-views.css}" />
     <h1>Centro de Notificaciones</h1>
-    <section th:if="${historialHabilitado != null}" class="card api-panel">
+    <section th:if="${audience != 'admin'}" class="card api-panel">
         <h2>Mis notificaciones</h2>
-        <p class="api-notice" role="note">Modo de desarrollo local: el historial se consulta por el email o teléfono que indiques. No sustituye el inicio de sesión: cuando exista la sesión con token, se mostrarán solo tus avisos.</p>
-        <form method="get" th:action="@{/{ruta}/dashboard/notificaciones(ruta=${audienceRuta})}">
-            <div class="api-fields">
-                <label>Email<input class="form-control" type="email" name="email" th:value="${email}" autocomplete="email" /></label>
-                <label>Teléfono<input class="form-control" type="tel" name="telefono" th:value="${telefono}" placeholder="+5491112345678" autocomplete="tel" /></label>
-            </div>
-            <button class="btn btn-primary" type="submit">Ver notificaciones</button>
-        </form>
         <p th:if="${apiError != null}" th:text="${apiError}" role="alert" class="api-error"></p>
         <div th:if="${notificaciones != null}">
             <div class="api-inline">
                 <p role="status"><strong th:text="${noLeidas}">0</strong> sin leer de <span th:text="${notificaciones.size()}">0</span></p>
-                <form th:if="${noLeidas > 0}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/leidas(ruta=${audienceRuta})}">
-                    <input type="hidden" name="email" th:value="${email}" />
-                    <input type="hidden" name="telefono" th:value="${telefono}" />
+                <form th:if="${noLeidas > 0}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/leidas(ruta=${audience})}">
                     <button class="btn btn-outline btn-sm" type="submit">Marcar todas como leídas</button>
                 </form>
             </div>
-            <p th:if="${notificaciones.isEmpty()}" role="status">No hay notificaciones para ese contacto.</p>
+            <p th:if="${notificaciones.isEmpty()}" role="status">No tenés notificaciones.</p>
             <ul class="notif-list" th:unless="${notificaciones.isEmpty()}">
                 <li th:each="n : ${notificaciones}" class="notif-item" th:classappend="${!n.leida} ? 'notif-unread' : ''">
                     <div class="notif-head">
@@ -33,20 +23,12 @@
                     </div>
                     <small class="api-notice" th:text="${n.fecha + ' · ' + n.canal}">Fecha · Canal</small>
                     <p th:text="${n.cuerpo}">Mensaje</p>
-                    <form th:if="${!n.leida}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/{id}/leida(ruta=${audienceRuta},id=${n.id})}">
-                        <input type="hidden" name="email" th:value="${email}" />
-                        <input type="hidden" name="telefono" th:value="${telefono}" />
+                    <form th:if="${!n.leida}" method="post" th:action="@{/{ruta}/dashboard/notificaciones/{id}/leida(ruta=${audience},id=${n.id})}">
                         <button class="btn btn-outline btn-sm" type="submit">Marcar como leída</button>
                     </form>
                 </li>
             </ul>
         </div>
-    </section>
-    <section th:if="${historialHabilitado == null}" class="card api-panel" role="status">
-        <h2>Historial todavía no disponible</h2>
-        <p>El servicio ya expone el historial y la marca de lectura, pero para mostrar solo tus avisos hay que identificarte con tu sesión, y el inicio de sesión con token todavía no está integrado en este cliente.</p>
-        <p>No estamos mostrando una lista vacía como si no tuvieras avisos ni consultando por datos ingresados a mano.</p>
-        <p>Los avisos automáticos de asignaciones y entregas siguen siendo responsabilidad de los servicios y sus eventos RabbitMQ. Abrir esta página no dispara envíos.</p>
     </section>
     <section th:if="${audience == 'admin'}" class="card api-panel">
         <h2>Conexión con Notificaciones</h2>

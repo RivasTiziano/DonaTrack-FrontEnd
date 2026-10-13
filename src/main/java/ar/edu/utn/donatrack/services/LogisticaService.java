@@ -2,23 +2,18 @@ package ar.edu.utn.donatrack.services;
 import ar.edu.utn.donatrack.dto.*;
 import ar.edu.utn.donatrack.mappers.LogisticaMapper;
 import ar.edu.utn.donatrack.validators.LogisticaValidator;
-import ar.edu.utn.donatrack.models.WebDatos;
-import ar.edu.utn.donatrack.mappers.*;
-import static ar.edu.utn.donatrack.services.internal.ConsultaOpcional.lista;
-import java.util.Map;
+import ar.edu.utn.donatrack.validators.RecepcionValidator;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 @Service
 public class LogisticaService {
-    private final DonacionesService donaciones;
-    private final DonanteDashboardMapper donanteMapper;
-    private final BeneficiarioDashboardMapper beneficiarioMapper;
     private final LogisticaApiService api;
     private final LogisticaMapper mapper;
     private final LogisticaValidator validator;
-    public LogisticaService(LogisticaApiService api,LogisticaMapper mapper,LogisticaValidator validator, DonacionesService donaciones, DonanteDashboardMapper donanteMapper, BeneficiarioDashboardMapper beneficiarioMapper) {
-        this.api=api; this.mapper=mapper; this.validator=validator; this.donaciones=donaciones; this.donanteMapper=donanteMapper; this.beneficiarioMapper=beneficiarioMapper;
+    private final RecepcionValidator recepcion;
+    public LogisticaService(LogisticaApiService api,LogisticaMapper mapper,LogisticaValidator validator,RecepcionValidator recepcion) {
+        this.api=api; this.mapper=mapper; this.validator=validator; this.recepcion=recepcion;
     }
     public void crearCamion(String patente,Float volumen,Float altura,Float carga) {
         validator.camion(patente,volumen,altura,carga); api.crear(mapper.camion(patente,volumen,altura,carga));
@@ -86,17 +81,15 @@ public class LogisticaService {
         api.cancelarRuta(id);
     }
 
-    public Map<String,Object> entregasDonante() {
-        var d=donaciones.datosDemostracionDonante();
-        return donanteMapper.mapear(new WebDatos(List.of(),null,d.humanos(),d.juridicos(),List.of(),List.of(),List.of(),lista(api::entregas)));
-    }
-    public Map<String,Object> entregasBeneficiario() {
-        var d=donaciones.datosDemostracionBeneficiario();
-        return beneficiarioMapper.mapear(new WebDatos(List.of(),null,List.of(),List.of(),d.beneficiarios(),List.of(),List.of(),lista(api::entregas)));
-    }
-    /** Conserva la pantalla existente; no confirma una recepción real. */
-    public Map<String,Object> confirmarBeneficiario() {
-        var d=donaciones.datosDemostracionBeneficiario();
-        return beneficiarioMapper.mapear(new WebDatos(lista(donaciones::donaciones),null,List.of(),List.of(),d.beneficiarios(),List.of(),List.of(),List.of()));
+    /**
+     * Confirma la recepción de una entrega en tránsito. RECIBIDA exige fotos (URL); NO_RECIBIDA exige justificación.
+     * Las fotos solo viajan con RECIBIDA. PROVISORIO: la entidad no puede obtener el entregaId (hallazgo backend X1 → pedido C3).
+     */
+    public void confirmarRecepcion(Long entregaId,String resultado,List<String> fotos,String justificacion) {
+        recepcion.validar(entregaId,resultado,fotos,justificacion);
+        boolean recibida=RecepcionValidator.RECIBIDA.equals(resultado);
+        String motivo=justificacion==null||justificacion.isBlank()?null:justificacion.trim();
+        api.actualizarEstadoEntrega(entregaId,new LogisticaDetalles.ActualizarEntrega(
+                recibida?"ENTREGADA":"NO_RECIBIDA", motivo, recibida?fotos:null));
     }
 }

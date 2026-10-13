@@ -1,18 +1,59 @@
 package ar.edu.utn.donatrack.services;
+
+import ar.edu.utn.donatrack.dto.AuthDtos;
 import ar.edu.utn.donatrack.mappers.AutenticacionMapper;
 import org.springframework.stereotype.Service;
-import java.util.*;
-/** Navegación demostrativa. Pendiente integración con autenticación real. */
+import org.springframework.web.client.RestClientException;
+import java.util.Map;
+
+/** Login contra el servicio de autenticación y resolución del nombre que se muestra en el panel. */
 @Service
 public class AutenticacionService {
     private final AutenticacionMapper mapper;
-    public AutenticacionService(AutenticacionMapper mapper) { this.mapper=mapper; }
+    private final AutenticacionApiService authApi;
+    private final DonacionesApiService donaciones;
+
+    public AutenticacionService(AutenticacionMapper mapper, AutenticacionApiService authApi, DonacionesApiService donaciones) {
+        this.mapper = mapper;
+        this.authApi = authApi;
+        this.donaciones = donaciones;
+    }
+
     public Map<String,Object> register() { return mapper.opcionesRegistro(); }
-    /** No verifica identidad, contraseñas ni genera tokens. */
-    public String destinoDemostracion(String email) {
-        String lower=email.toLowerCase(Locale.ROOT);
-        if(lower.contains("admin")) return "/admin/dashboard";
-        if(lower.contains("entidad") || lower.contains("beneficiaria")) return "/entidad/dashboard";
-        return "/donante/dashboard";
+
+    /** Pide el token. Las credenciales incorrectas llegan como HttpClientErrorException.Unauthorized. */
+    public AuthDtos.Token login(String email, String password) {
+        AuthDtos.Token token = authApi.login(email, password);
+        if (token == null || token.accessToken() == null)
+            throw new IllegalStateException("El servicio de autenticación no devolvió un token.");
+        return token;
+    }
+
+    /**
+     * Nombre para mostrar: razón social o nombre del donante o de la entidad, y el email para ADMIN.
+     * Si el perfil no se puede leer, queda el email. Necesita que la sesión con el token ya esté guardada.
+     */
+    public String nombreVisible(String email, AuthDtos.Token token) {
+        if (token.referenciaId() == null) return email;
+        try {
+            String nombre = switch (token.rol()) {
+                case "DONANTE_HUMANO" -> {
+                    var humano = donaciones.humano(token.referenciaId());
+                    yield unir(humano.nombre(), humano.apellido());
+                }
+                case "DONANTE_JURIDICO" -> donaciones.juridico(token.referenciaId()).razonSocial();
+                case "BENEFICIARIA" -> donaciones.beneficiario(token.referenciaId()).razonSocial();
+                default -> null;
+            };
+            return nombre == null || nombre.isBlank() ? email : nombre;
+        } catch (RestClientException | IllegalStateException exception) {
+            return email;
+        }
+    }
+
+    private String unir(String nombre, String apellido) {
+        return java.util.stream.Stream.of(nombre, apellido)
+                .filter(parte -> parte != null && !parte.isBlank())
+                .reduce((a, b) -> a + " " + b).orElse(null);
     }
 }

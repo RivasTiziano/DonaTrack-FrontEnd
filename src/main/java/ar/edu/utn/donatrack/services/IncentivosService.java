@@ -2,21 +2,15 @@ package ar.edu.utn.donatrack.services;
 import ar.edu.utn.donatrack.dto.*;
 import ar.edu.utn.donatrack.mappers.IncentivosMapper;
 import ar.edu.utn.donatrack.validators.IncentivosValidator;
-import ar.edu.utn.donatrack.models.WebDatos;
-import ar.edu.utn.donatrack.mappers.*;
-import static ar.edu.utn.donatrack.services.internal.ConsultaOpcional.lista;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 import java.util.List;
 @Service
 public class IncentivosService {
-    private final DonacionesService donaciones;
-    private final DonanteDashboardMapper donanteMapper;
     private final IncentivosApiService api;
     private final IncentivosMapper mapper;
     private final IncentivosValidator validator;
-    public IncentivosService(IncentivosApiService api,IncentivosMapper mapper,IncentivosValidator validator, DonacionesService donaciones, DonanteDashboardMapper donanteMapper) {
-        this.api=api; this.mapper=mapper; this.validator=validator; this.donaciones=donaciones; this.donanteMapper=donanteMapper;
+    public IncentivosService(IncentivosApiService api,IncentivosMapper mapper,IncentivosValidator validator) {
+        this.api=api; this.mapper=mapper; this.validator=validator;
     }
     public void crearCategoria(String nombre,Long siguiente,String tipo,Integer objetivo) {
         validator.categoria(nombre,tipo,objetivo); api.crearCategoria(mapper.categoria(nombre,siguiente,tipo,objetivo));
@@ -70,10 +64,5 @@ public class IncentivosService {
 
     public void eliminarMision(Long categoriaId, Long misionId) {
         api.eliminarMision(categoriaId, misionId);
-    }
-
-    public Map<String,Object> incentivosDonante() {
-        var d=donaciones.datosDemostracionDonante();
-        return donanteMapper.mapear(new WebDatos(lista(donaciones::donaciones),null,d.humanos(),d.juridicos(),List.of(),List.of(),lista(api::ranking),List.of()));
     }
 }

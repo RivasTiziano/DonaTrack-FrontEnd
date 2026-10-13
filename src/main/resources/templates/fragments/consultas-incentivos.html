@@ -53,11 +53,6 @@
     </th:block>
     <h2>Misiones completadas</h2><ul><li th:each="m : ${misionesCompletadas}" th:text="${m.nombreMision} + ' — ' + ${m.fechaCompletada}"></li></ul>
     <h2>Insignias</h2><article th:each="i : ${insignias}"><h3 th:text="${i.nombre}"></h3><p th:text="${i.descripcion}"></p></article>
-    <form method="post" th:action="@{/admin/dashboard/incentivos/donantes/{id}/visibilidad(id=${donanteId})}" onsubmit="return confirm('¿Cambiar la visibilidad de todas las insignias de este donante?');">
-        <label>Visibilidad de todas las insignias<select class="form-control" name="visible"><option value="true">Mostrar</option><option value="false">Ocultar</option></select></label>
-        <p>La API no informa el valor actual; esta selección es una nueva decisión, no una lectura del estado.</p>
-        <button class="btn btn-outline" type="submit">Aplicar visibilidad</button>
-    </form>
     <h2>Historial de categorías</h2><ul><li th:each="a : ${historialCategorias}" th:text="${a.fechaCambio} + ': ' + ${a.categoriaAnterior} + ' → ' + ${a.categoriaNueva}"></li></ul>
 </section>
 <section th:if="${section == 'historialRanking'}" class="card api-panel">

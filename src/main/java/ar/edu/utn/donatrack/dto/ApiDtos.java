@@ -1,5 +1,6 @@
 package ar.edu.utn.donatrack.dto;
 
+import ar.edu.utn.donatrack.dto.donante.MedioDeContactoDto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,13 +27,15 @@ public final class ApiDtos {
                             String tipoNecesidad, String periodo, Float cantidadRecibida,
                             Float cantidadRestante, String estado) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Beneficiario(Long id, String razonSocial, String tipoEntidad, String rubro, boolean activo) {}
+    public record Beneficiario(Long id, String razonSocial, String tipoEntidad, String rubro, boolean activo,
+                               DonanteRequests.Direccion direccion, MedioDeContactoDto medioDeContactoPredeterminado,
+                               List<DonacionesDetalles.Representante> representantes) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Camion(Long id, String patente, Float capacidadVolumen, Float altura,
                          Float capacidadCarga, String estado) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Entrega(Long id, Long asignacionId, String estado, String justificacion,
-                          List<String> fotos, Long camionId, String camionPatente) {}
+                          List<String> fotos, Long camionId, String camionPatente, Long entidadBeneficiariaId) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Ruta(Long id, String chofer, LocalDate fecha, String estado,
                        Long camionId, Double totalDistanciaKm, Integer totalDuracionMins) {}
@@ -45,7 +48,9 @@ public final class ApiDtos {
                              List<Top> tops, Long donacionId) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Asignacion(Long id, Long donacionId, Long necesidadId, Long entidadBeneficiariaId,
-                             Float cantidadAsignada, String estado, Long camionId) {}
+                             Float cantidadAsignada, String estado, Long camionId,
+                             String descripcionGeneralDonacion, Bien bien, LocalDateTime fechaAsignacion,
+                             LocalDateTime fechaEntrega, String justificacionFallo) {}
     public record ErrorCsv(long fila, String mensaje) {}
     public record Importacion(int filasProcesadas, int donantesCreados, int donantesActualizados,
                               int filasRechazadas, List<ErrorCsv> errores) {}

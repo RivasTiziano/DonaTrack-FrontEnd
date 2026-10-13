@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso denegado - DonaTrack</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}" />
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+</head>
+<body>
+<main class="api-view">
+    <h1>No tenés acceso a esta sección</h1>
+    <p class="api-error" role="alert">Tu usuario no tiene permiso para ver esta página.</p>
+    <a th:with="panel=${#httpServletRequest.getAttribute('panelPropio')}"
+       th:href="@{${panel != null ? panel : '/'}}">Volver a tu panel</a>
+</main>
+</body>
+</html>

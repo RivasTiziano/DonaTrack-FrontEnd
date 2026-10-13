@@ -1,7 +1,6 @@
 package ar.edu.utn.donatrack.controllers;
 
 import ar.edu.utn.donatrack.dto.notificacion.NotificacionDtos.*;
-import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 import ar.edu.utn.donatrack.forms.NotificacionForm;
 import ar.edu.utn.donatrack.services.NotificacionesService;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
@@ -18,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.UUID;
 
+/** Notificaciones de la persona autenticada. La identidad sale del token; el historial no acepta email ni teléfono. */
 @Controller
 public class NotificacionesController {
     private static final String TOKEN = "notificacionesEnvioToken";
@@ -25,45 +25,29 @@ public class NotificacionesController {
     private final NotificacionesValidator validator;
     private final ApiErrorMessages errors;
     private final boolean enabled;
-    private final boolean historialPorContacto;
     public NotificacionesController(NotificacionesService service, NotificacionesValidator validator,
                                      ApiErrorMessages errors,
-                                     @Value("${app.notificaciones.envio-manual-habilitado:false}") boolean enabled,
-                                     @Value("${app.notificaciones.historial-por-contacto-habilitado:false}") boolean historialPorContacto) {
+                                     @Value("${app.notificaciones.envio-manual-habilitado:false}") boolean enabled) {
         this.service = service; this.validator = validator; this.errors = errors; this.enabled = enabled;
-        this.historialPorContacto = historialPorContacto;
     }
     @GetMapping("/admin/dashboard/notificaciones")
     public String admin(Model model, HttpSession session) {
         return prepare(model, session, "admin");
     }
     @GetMapping("/donante/dashboard/notificaciones")
-    public String donante(@RequestParam(required = false) String email, @RequestParam(required = false) String telefono,
-                          Model model, HttpSession session) {
-        cargarHistorial(model, "donante", email, telefono);
+    public String donante(Model model, HttpSession session) {
+        cargarHistorial(model);
         return prepare(model, session, "donante");
     }
     @GetMapping("/entidad/dashboard/notificaciones")
-    public String entidad(@RequestParam(required = false) String email, @RequestParam(required = false) String telefono,
-                          Model model, HttpSession session) {
-        cargarHistorial(model, "entidad", email, telefono);
+    public String entidad(Model model, HttpSession session) {
+        cargarHistorial(model);
         return prepare(model, session, "entidad");
     }
-
-    /**
-     * Historial por contacto: HERRAMIENTA DE DESARROLLO LOCAL, apagada por defecto. Quien conozca un email o
-     * teléfono puede leer sus avisos, así que no sustituye la identidad. Cuando exista la sesión con token,
-     * el contacto debe salir de la identidad autenticada y este parámetro desaparece.
-     */
-    private void cargarHistorial(Model model, String audience, String email, String telefono) {
-        if (!historialPorContacto) return;
-        model.addAttribute("historialHabilitado", true);
-        model.addAttribute("audienceRuta", audience);
-        model.addAttribute("email", email == null ? "" : email.trim());
-        model.addAttribute("telefono", telefono == null ? "" : telefono.trim());
-        if (vacio(email) && vacio(telefono)) return;
+    /** Historial de la persona de la sesión. Si el servicio falla, se muestra el error y no una lista vacía. */
+    private void cargarHistorial(Model model) {
         try {
-            var historial = service.historial(email, telefono);
+            var historial = service.historial();
             model.addAttribute("notificaciones", historial.notificaciones());
             model.addAttribute("noLeidas", historial.noLeidas());
         } catch (RestClientException | IllegalStateException exception) {
@@ -72,41 +56,31 @@ public class NotificacionesController {
         }
     }
     @PostMapping("/donante/dashboard/notificaciones/{id}/leida")
-    public String marcarLeidaDonante(@PathVariable Long id, @RequestParam(required = false) String email,
-                                     @RequestParam(required = false) String telefono, RedirectAttributes flash) {
-        return marcarLeida("donante", id, email, telefono, flash);
+    public String marcarLeidaDonante(@PathVariable Long id, RedirectAttributes flash) {
+        return marcarLeida("donante", id, flash);
     }
     @PostMapping("/entidad/dashboard/notificaciones/{id}/leida")
-    public String marcarLeidaEntidad(@PathVariable Long id, @RequestParam(required = false) String email,
-                                     @RequestParam(required = false) String telefono, RedirectAttributes flash) {
-        return marcarLeida("entidad", id, email, telefono, flash);
+    public String marcarLeidaEntidad(@PathVariable Long id, RedirectAttributes flash) {
+        return marcarLeida("entidad", id, flash);
     }
     @PostMapping("/donante/dashboard/notificaciones/leidas")
-    public String marcarTodasDonante(@RequestParam(required = false) String email,
-                                     @RequestParam(required = false) String telefono, RedirectAttributes flash) {
-        return marcarLeida("donante", null, email, telefono, flash);
+    public String marcarTodasDonante(RedirectAttributes flash) {
+        return marcarLeida("donante", null, flash);
     }
     @PostMapping("/entidad/dashboard/notificaciones/leidas")
-    public String marcarTodasEntidad(@RequestParam(required = false) String email,
-                                     @RequestParam(required = false) String telefono, RedirectAttributes flash) {
-        return marcarLeida("entidad", null, email, telefono, flash);
+    public String marcarTodasEntidad(RedirectAttributes flash) {
+        return marcarLeida("entidad", null, flash);
     }
-    /** Con id marca una; sin id marca todas. */
-    private String marcarLeida(String audience, Long id, String email, String telefono, RedirectAttributes flash) {
-        if (!historialPorContacto) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Historial por contacto deshabilitado.");
+    /** Con id marca una; sin id marca todas. La redirección no lleva datos de contacto. */
+    private String marcarLeida(String audience, Long id, RedirectAttributes flash) {
         try {
-            if (id == null) service.marcarTodasLeidas(email, telefono);
-            else service.marcarLeida(id, email, telefono);
+            if (id == null) service.marcarTodasLeidas();
+            else service.marcarLeida(id);
         } catch (RestClientException exception) {
             flash.addFlashAttribute("apiError", errors.describe(exception));
-        } catch (FormularioInvalidoException exception) {
-            flash.addFlashAttribute("apiError", exception.getMessage());
         }
-        if (!vacio(email)) flash.addAttribute("email", email.trim());
-        if (!vacio(telefono)) flash.addAttribute("telefono", telefono.trim());
         return "redirect:/" + audience + "/dashboard/notificaciones";
     }
-    private boolean vacio(String valor) { return valor == null || valor.isBlank(); }
     private String prepare(Model model, HttpSession session, String audience) {
         model.addAttribute("audience", audience);
         model.addAttribute("manualEnabled", enabled);

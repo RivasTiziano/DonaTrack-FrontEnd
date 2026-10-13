@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Cliente de Notificaciones. La identidad sale del token de la sesión: ya no se envían email ni teléfono.
+ * Las consultas de historial y de lectura son solo de la persona autenticada.
+ */
 @Service
 public class NotificacionesApiService {
     private final WebApiCallerService http;
@@ -32,36 +34,32 @@ public class NotificacionesApiService {
         return response;
     }
 
-    public List<Recibida> listar(String email, String telefono, boolean soloNoLeidas) {
-        var response = http.get(uri("/notificaciones", email, telefono, soloNoLeidas ? Map.of("soloNoLeidas", "true") : Map.of()),
-                RespuestaLista.class);
+    public List<Recibida> listar(boolean soloNoLeidas, int limite) {
+        var response = http.get(uri("/notificaciones", soloNoLeidas, limite), RespuestaLista.class);
         if (!"success".equals(response.retorno()) || response.datos() == null)
             throw new IllegalStateException("La API devolvió un historial incompleto.");
         return response.datos();
     }
 
-    public long contarNoLeidas(String email, String telefono) {
-        var response = http.get(uri("/notificaciones/no-leidas/cantidad", email, telefono, Map.of()), RespuestaCantidad.class);
+    /** La identidad sale del token de la sesión, no de un parámetro. */
+    public long contarNoLeidas() {
+        var response = http.get(url + "/notificaciones/no-leidas/cantidad", RespuestaCantidad.class);
         if (!"success".equals(response.retorno()) || response.datos() == null)
             throw new IllegalStateException("La API devolvió una cantidad incompleta.");
         return response.datos().noLeidas();
     }
 
-    public void marcarLeida(Long id, String email, String telefono) {
-        http.patch(uri("/notificaciones/" + id + "/leida", email, telefono, Map.of()));
+    public void marcarLeida(Long id) {
+        http.patch(URI.create(url + "/notificaciones/" + id + "/leida"));
     }
 
-    public void marcarTodasLeidas(String email, String telefono) {
-        http.patch(uri("/notificaciones/leidas", email, telefono, Map.of()));
+    public void marcarTodasLeidas() {
+        http.patch(URI.create(url + "/notificaciones/leidas"));
     }
 
-    /** Codifica cada valor por separado: un teléfono "+54..." no debe llegar como " 54...". */
-    private URI uri(String path, String email, String telefono, Map<String, String> extra) {
-        var builder = UriComponentsBuilder.fromUriString(url + path);
-        Map<String, Object> values = new HashMap<>();
-        if (email != null && !email.isBlank()) { builder.queryParam("email", "{email}"); values.put("email", email.trim()); }
-        if (telefono != null && !telefono.isBlank()) { builder.queryParam("telefono", "{telefono}"); values.put("telefono", telefono.trim()); }
-        extra.forEach((name, value) -> { builder.queryParam(name, "{" + name + "}"); values.put(name, value); });
-        return builder.encode().buildAndExpand(values).toUri();
+    private URI uri(String path, boolean soloNoLeidas, int limite) {
+        var builder = UriComponentsBuilder.fromUriString(url + path).queryParam("limite", limite);
+        if (soloNoLeidas) builder.queryParam("soloNoLeidas", true);
+        return builder.build().toUri();
     }
 }

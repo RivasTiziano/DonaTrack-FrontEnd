@@ -14,7 +14,6 @@ public class ApiViewSupport {
     public ApiViewSupport(ApiErrorMessages errors) { this.errors = errors; }
 
     public void defaults(Model model) {
-        model.addAttribute("user", java.util.Map.of("name", "Administración (sin autenticación)"));
         for (String name : java.util.List.of("donaciones","bienes","categorias","necesidades","beneficiarios",
                 "camiones","ranking","algoritmos","asignaciones","entregas","rutas"))
             model.addAttribute(name, java.util.List.of());

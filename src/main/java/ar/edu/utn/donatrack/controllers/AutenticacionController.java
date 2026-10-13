@@ -1,20 +1,32 @@
 package ar.edu.utn.donatrack.controllers;
 
+import ar.edu.utn.donatrack.dto.AuthDtos;
+import ar.edu.utn.donatrack.models.SesionUsuario;
 import ar.edu.utn.donatrack.services.AutenticacionService;
+import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
+import ar.edu.utn.donatrack.services.internal.SesionActual;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 
 /**
- * Pantallas de acceso y registro de la maqueta.
- * Los POST aún no crean cuentas, verifican contraseñas ni emiten tokens.
+ * Acceso y registro. El login y el logout usan el servicio de autenticación.
+ * Las pantallas de registro todavía no crean cuentas (se resuelven en la fase 7).
  */
 @Controller
 public class AutenticacionController {
     private final AutenticacionService service;
+    private final SesionActual sesiones;
+    private final ApiErrorMessages errors;
 
-    public AutenticacionController(AutenticacionService service) {
+    public AutenticacionController(AutenticacionService service, SesionActual sesiones, ApiErrorMessages errors) {
         this.service = service;
+        this.sesiones = sesiones;
+        this.errors = errors;
     }
 
     @GetMapping("/registro")
@@ -55,12 +67,44 @@ public class AutenticacionController {
 
     @GetMapping("/login")
     public String login() {
-        return "login";
+        return sesiones.obtener().map(sesion -> "redirect:" + sesion.panel()).orElse("login");
     }
 
     @PostMapping("/login")
     public String processLogin(@RequestParam(value = "email", defaultValue = "") String email,
-                               @RequestParam(value = "password", defaultValue = "") String password) {
-        return "redirect:" + service.destinoDemostracion(email);
+                               @RequestParam(value = "password", defaultValue = "") String password,
+                               HttpServletRequest request, Model model) {
+        // Nunca se devuelve la contraseña al formulario: solo el email.
+        String emailLimpio = email.trim();
+        model.addAttribute("email", emailLimpio);
+        if (emailLimpio.isEmpty() || password.isEmpty()) {
+            model.addAttribute("error", "Ingresá tu email y contraseña.");
+            return "login";
+        }
+        AuthDtos.Token token;
+        try {
+            token = service.login(emailLimpio, password);
+        } catch (HttpClientErrorException.Unauthorized exception) {
+            model.addAttribute("error", "Email o contraseña incorrectos.");
+            return "login";
+        } catch (ResourceAccessException exception) {
+            model.addAttribute("error", "No se pudo conectar con el servicio de autenticación.");
+            return "login";
+        } catch (RestClientException | IllegalStateException exception) {
+            model.addAttribute("error", errors.describe(exception));
+            return "login";
+        }
+        // La sesión debe existir antes de pedir el perfil: el interceptor de WebApiCallerService usa su token.
+        sesiones.guardar(request, SesionUsuario.desde(emailLimpio, token, emailLimpio));
+        String nombre = service.nombreVisible(emailLimpio, token);
+        SesionUsuario sesion = SesionUsuario.desde(emailLimpio, token, nombre);
+        sesiones.guardar(request, sesion);
+        return "redirect:" + sesion.panel();
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        sesiones.cerrar(request);
+        return "redirect:/";
     }
 }

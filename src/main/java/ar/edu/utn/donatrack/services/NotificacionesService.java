@@ -7,8 +7,11 @@ import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.stereotype.Service;
 import java.util.List;
+
 @Service
 public class NotificacionesService {
+    /** Cantidad de notificaciones que muestra el historial del panel. */
+    static final int LIMITE_HISTORIAL = 50;
     private final NotificacionesApiService api;
     private final NotificacionesMapper mapper;
     private final NotificacionesValidator validator;
@@ -36,21 +39,15 @@ public class NotificacionesService {
                 ? "Solicitud aceptada: PENDIENTE. El proveedor todavía puede fallar; no es confirmación de entrega."
                 : "El servicio informó COMPLETADA. No significa que la persona haya leído el mensaje.");
     }
-    public Historial historial(String email, String telefono) {
-        exigirContacto(email, telefono);
-        var notificaciones = api.listar(email, telefono, false).stream().map(mapper::vista).toList();
+    /** Historial de la persona autenticada, las más nuevas primero. */
+    public Historial historial() {
+        var notificaciones = api.listar(false, LIMITE_HISTORIAL).stream().map(mapper::vista).toList();
         return new Historial(notificaciones, notificaciones.stream().filter(n -> !n.leida()).count());
     }
-    public void marcarLeida(Long id, String email, String telefono) {
-        exigirContacto(email, telefono);
-        api.marcarLeida(id, email, telefono);
+    public void marcarLeida(Long id) {
+        api.marcarLeida(id);
     }
-    public void marcarTodasLeidas(String email, String telefono) {
-        exigirContacto(email, telefono);
-        api.marcarTodasLeidas(email, telefono);
-    }
-    private void exigirContacto(String email, String telefono) {
-        if ((email == null || email.isBlank()) && (telefono == null || telefono.isBlank()))
-            throw new FormularioInvalidoException("Indicá un email o un teléfono para consultar las notificaciones.");
+    public void marcarTodasLeidas() {
+        api.marcarTodasLeidas();
     }
 }

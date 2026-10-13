@@ -65,6 +65,10 @@ public class LogisticaApiService {
         return http.get(url + "/entregas/" + id, ApiDtos.Entrega.class);
     }
 
+    public void actualizarEstadoEntrega(Long id, LogisticaDetalles.ActualizarEntrega body) {
+        http.update(HttpMethod.PATCH, url + "/entregas/" + id + "/estado", body);
+    }
+
     public LogisticaDetalles.Ruta ruta(Long id) {
         return http.get(url + "/rutas/" + id, LogisticaDetalles.Ruta.class);
     }

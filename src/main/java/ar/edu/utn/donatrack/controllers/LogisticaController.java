@@ -1,7 +1,10 @@
 package ar.edu.utn.donatrack.controllers;
 
 import ar.edu.utn.donatrack.controllers.support.ApiViewSupport;
+import ar.edu.utn.donatrack.services.FotosRecepcion;
 import ar.edu.utn.donatrack.services.LogisticaService;
+import ar.edu.utn.donatrack.services.PanelDonanteService;
+import ar.edu.utn.donatrack.services.PanelEntidadService;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,11 +20,18 @@ public class LogisticaController {
     private final LogisticaService service;
     private final ApiViewSupport views;
     private final ApiErrorMessages errors;
+    private final PanelDonanteService panelDonante;
+    private final PanelEntidadService panelEntidad;
+    private final FotosRecepcion fotosRecepcion;
 
-    public LogisticaController(LogisticaService service, ApiViewSupport views, ApiErrorMessages errors) {
+    public LogisticaController(LogisticaService service, ApiViewSupport views, ApiErrorMessages errors,
+                               PanelDonanteService panelDonante, PanelEntidadService panelEntidad, FotosRecepcion fotosRecepcion) {
         this.service = service;
         this.views = views;
         this.errors = errors;
+        this.panelDonante = panelDonante;
+        this.panelEntidad = panelEntidad;
+        this.fotosRecepcion = fotosRecepcion;
     }
 
     // Operaciones y listados
@@ -151,19 +161,30 @@ public class LogisticaController {
 
     @GetMapping("/donante/dashboard/entregas")
     public String donorDeliveries(Model model) {
-        model.addAllAttributes(service.entregasDonante());
+        model.addAllAttributes(panelDonante.entregas());
         return "dashboard-donor-entregas";
     }
 
     @GetMapping("/entidad/dashboard/confirmar")
     public String beneficiaryConfirm(Model model) {
-        model.addAllAttributes(service.confirmarBeneficiario());
+        model.addAllAttributes(panelEntidad.confirmar());
         return "dashboard-beneficiary-confirmar";
     }
 
     @GetMapping("/entidad/dashboard/entregas")
     public String beneficiaryDeliveries(Model model) {
-        model.addAllAttributes(service.entregasBeneficiario());
+        model.addAllAttributes(panelEntidad.entregas());
         return "dashboard-beneficiary-entregas";
+    }
+
+    /** Confirmación de recepción. PROVISORIO: la entidad no puede obtener el entregaId (hallazgo backend X1 → pedido C3). */
+    @PostMapping("/entidad/dashboard/confirmar")
+    public String confirmarRecepcion(@RequestParam(required = false) Long entregaId,
+                                     @RequestParam(required = false) String resultado,
+                                     @RequestParam(required = false) String fotos,
+                                     @RequestParam(required = false) String justificacion,
+                                     RedirectAttributes flash) {
+        return views.write(flash, "/entidad/dashboard/confirmar",
+                () -> service.confirmarRecepcion(entregaId, resultado, fotosRecepcion.resolver(fotos), justificacion));
     }
 }

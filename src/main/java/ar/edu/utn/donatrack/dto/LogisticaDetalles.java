@@ -11,6 +11,8 @@ public final class LogisticaDetalles {
     public record IniciarRuta(String chofer) {}
     public record PlanificarRuta(@JsonFormat(shape = JsonFormat.Shape.STRING) LocalDate fecha) {}
     public record Planificacion(int cantidadEntregas, int cantidadLotes, List<String> requestIds) {}
+    /** Cuerpo de PATCH /entregas/{id}/estado: ENTREGADA exige al menos una foto; NO_RECIBIDA exige justificación. */
+    public record ActualizarEntrega(String estado, String justificacion, List<String> fotos) {}
     public record Direccion(String calle, String numero, String ciudad, String provincia, Double latitud, Double longitud) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Parada(Long id, Integer orden, Direccion direccion, List<ApiDtos.Entrega> entregas,

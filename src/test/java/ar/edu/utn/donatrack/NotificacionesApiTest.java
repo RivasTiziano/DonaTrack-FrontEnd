@@ -74,12 +74,13 @@ class NotificacionesApiTest {
             exchange.close();
         });
     }
-    @Test void listsHistoryEncodingThePlusOfThePhoneAndParsesTheBackendContract() {
+    @Test void listsHistoryWithLimitAndWithoutContactParamsAndParsesTheBackendContract() {
         endpointWithQuery("/notificaciones", "{\"retorno\":\"success\",\"mensajeError\":null,\"datos\":[{\"id\":7,"
                 + "\"asunto\":\"Tu donacion fue asignada\",\"cuerpo\":\"Detalle\",\"medio\":\"SMS\","
                 + "\"fecha\":\"2026-10-11T18:30:00\",\"leida\":false,\"fechaLectura\":null,\"referencia\":null,\"campoNuevo\":1}]}");
-        var result = api.listar("Ana+Perez@Mail.com", "+5491112345678", true);
-        assertThat(rawQuery.get()).contains("telefono=%2B5491112345678").contains("email=Ana%2BPerez%40Mail.com").contains("soloNoLeidas=true");
+        var result = api.listar(true, 50);
+        assertThat(rawQuery.get()).contains("soloNoLeidas=true").contains("limite=50")
+                .doesNotContain("email").doesNotContain("telefono");
         assertThat(result).hasSize(1);
         assertThat(result.get(0).id()).isEqualTo(7L);
         assertThat(result.get(0).medio()).isEqualTo(Medio.SMS);
@@ -88,18 +89,19 @@ class NotificacionesApiTest {
     }
     @Test void countsUnreadAndMarksAsReadWithPatch() {
         endpointWithQuery("/notificaciones/no-leidas/cantidad", "{\"retorno\":\"success\",\"datos\":{\"noLeidas\":3}}");
-        assertThat(api.contarNoLeidas("ana@mail.com", null)).isEqualTo(3);
-        assertThat(rawQuery.get()).isEqualTo("email=ana@mail.com".replace("@", "%40"));
+        assertThat(api.contarNoLeidas()).isEqualTo(3);
+        assertThat(rawQuery.get()).isNull();
         endpointWithQuery("/notificaciones/9/leida", "{\"retorno\":\"success\",\"datos\":{}}");
-        api.marcarLeida(9L, null, "+5491112345678");
+        api.marcarLeida(9L);
         assertThat(method.get()).isEqualTo("PATCH");
-        assertThat(rawQuery.get()).isEqualTo("telefono=%2B5491112345678");
+        assertThat(rawQuery.get()).isNull();
         endpointWithQuery("/notificaciones/leidas", "{\"retorno\":\"success\",\"datos\":{\"marcadas\":2}}");
-        api.marcarTodasLeidas("ana@mail.com", null);
+        api.marcarTodasLeidas();
         assertThat(method.get()).isEqualTo("PATCH");
+        assertThat(rawQuery.get()).isNull();
     }
     @Test void rejectsAnErrorEnvelopeInsteadOfShowingAnEmptyHistory() {
         endpointWithQuery("/notificaciones", "{\"retorno\":\"error\",\"mensajeError\":\"x\",\"datos\":null}");
-        assertThatThrownBy(() -> api.listar("ana@mail.com", null, false)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> api.listar(false, 50)).isInstanceOf(IllegalStateException.class);
     }
 }

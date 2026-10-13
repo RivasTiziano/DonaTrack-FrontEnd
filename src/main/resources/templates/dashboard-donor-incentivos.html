@@ -23,7 +23,7 @@
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <span class="status-badge badge-entregada" style="font-size: 0.8125rem;">
                     <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
-                    <span th:text="'Categoría: ' + ${user.category}">Categoría: Sostenedor Plata</span>
+                    <span th:text="${user?.category != null ? 'Categoría: ' + user.category : 'Sin categoría'}">Categoría</span>
                 </span>
             </div>
         </div>
@@ -64,23 +64,7 @@
                 <small style="font-size: 0.75rem; color: var(--color-muted);">Personas y familias asistidas</small>
             </div>
 
-            <div class="metric-card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Racha Solidaria</span>
-                    <i data-lucide="flame" style="width: 18px; height: 18px; color: #f97316;"></i>
-                </div>
-                <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink);" th:text="${donorMetrics.rachaMeses} + ' meses'">3 meses</div>
-                <small style="font-size: 0.75rem; color: #f97316; font-weight: 600;">Aporte continuo ininterrumpido</small>
-            </div>
 
-            <div class="metric-card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted);">Ranking Mensual</span>
-                    <i data-lucide="trophy" style="width: 18px; height: 18px; color: #eab308;"></i>
-                </div>
-                <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-ink);" th:text="'#' + ${donorMetrics.puestoRankingMes}">#3</div>
-                <small style="font-size: 0.75rem; color: var(--color-muted);">Entre personas humanas donantes</small>
-            </div>
         </section>
 
         <!-- Category Stepper / Path (Punto 3 y 4 de Consigna) -->
@@ -91,8 +75,8 @@
                     <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;">Escalafón de Reconocimiento Solidario</h2>
                 </div>
                 <div style="text-align: right;">
-                    <span style="font-size: 0.8125rem; color: var(--color-muted);">Progreso para ascenso a <strong>Protector Oro</strong>:</span>
-                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary);">75% completado</div>
+                    <span style="font-size: 0.8125rem; color: var(--color-muted);">Categoría actual</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary);" th:text="${user?.category ?: '—'}">—</div>
                 </div>
             </div>
 
@@ -178,8 +162,7 @@
                 <!-- Mission Filter Tabs -->
                 <div class="filter-tabs" style="display: flex; gap: 0.5rem;">
                     <button type="button" class="btn btn-outline btn-sm mission-tab-btn active" onclick="filterMissionsByCategory('todas', this)">Todas las Misiones</button>
-                    <button type="button" class="btn btn-outline btn-sm mission-tab-btn" onclick="filterMissionsByCategory('Sostenedor Plata', this)">Nivel Actual (Plata)</button>
-                    <button type="button" class="btn btn-outline btn-sm mission-tab-btn" onclick="filterMissionsByCategory('Protector Oro', this)">Próximo Nivel (Oro)</button>
+                    <button type="button" class="btn btn-outline btn-sm mission-tab-btn" th:each="cat : ${incentiveCategories}" th:attr="data-categoria=${cat.nombre}" onclick="filterMissionsByCategory(this.getAttribute('data-categoria'), this)" th:text="${cat.nombre}">Categoría</button>
                 </div>
             </div>
 
@@ -202,7 +185,7 @@
 
                         <!-- Mission Type Badge -->
                         <span style="font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.35rem;"
-                              th:styleappend="${m.tipo == 'MisionRacha' ? 'background: #ffedd5; color: #ea580c;' : (m.tipo == 'MisionCompletitud' ? 'background: #e0f2fe; color: #0284c7;' : (m.tipo == 'MisionHabilDonador' ? 'background: #f3e8ff; color: #7c3aed;' : 'background: #dcfce7; color: #15803d;'))}">
+                              th:styleappend="${m.tipo == 'RACHA' ? 'background: #ffedd5; color: #ea580c;' : (m.tipo == 'COMPLETITUD' ? 'background: #e0f2fe; color: #0284c7;' : (m.tipo == 'HABILDONADOR' ? 'background: #f3e8ff; color: #7c3aed;' : 'background: #dcfce7; color: #15803d;'))}">
                             <i th:attr="data-lucide=${m.tipoIcon}" style="width: 13px; height: 13px;"></i>
                             <span th:text="${m.tipoLabel}">Racha Mensual Solidaria</span>
                         </span>
@@ -213,7 +196,7 @@
                     <!-- Progress Bar & Target Values -->
                     <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--color-border);">
                         <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; font-weight: 700; margin-bottom: 6px;">
-                            <span style="color: var(--color-ink);">Progreso: <span th:text="${m.valorActual} + ' / ' + ${m.valorObjetivo} + ' ' + ${m.unidad}">3 / 3 meses</span></span>
+                            <span style="color: var(--color-ink);">Progreso: <span th:text="${m.valorActual != null ? m.valorActual + ' / ' + m.valorObjetivo : 'Misión completada'}">3 / 3</span></span>
                             <span style="color: var(--color-primary);" th:text="${m.progresoPorcentaje} + '%'">100%</span>
                         </div>
                         <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
@@ -223,15 +206,15 @@
                     </div>
 
                     <!-- Prize Badge Showcase (Insignia Premio requerida en Punto 3) -->
-                    <div style="border: 1px solid #e0e7ff; background: #f5f3ff; border-radius: var(--radius-md); padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.875rem;">
+                    <div th:if="${m.insigniaPremio != null}" style="border: 1px solid #e0e7ff; background: #f5f3ff; border-radius: var(--radius-md); padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.875rem;">
                         <div style="width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #ffffff; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
-                             th:style="'background: ' + ${m.insigniaPremio.color} + ';'">
-                            <i th:attr="data-lucide=${m.insigniaPremio.icon}" style="width: 22px; height: 22px;"></i>
+                             th:style="'background: #7c3aed;'">
+                            <i data-lucide="award" style="width: 22px; height: 22px;"></i>
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #6d28d9; letter-spacing: 0.04em;">Insignia Premio:</span>
-                            <h4 style="font-size: 0.9375rem; font-weight: 800; color: #1e1b4b;" th:text="${m.insigniaPremio.nombre}">Llama Solidaria</h4>
-                            <p style="font-size: 0.75rem; color: #4b5563; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${m.insigniaPremio.descripcion}">Descripción insignia</p>
+                            <h4 style="font-size: 0.9375rem; font-weight: 800; color: #1e1b4b;" th:text="${m.insigniaPremio?.nombre}">Llama Solidaria</h4>
+                            <p style="font-size: 0.75rem; color: #4b5563; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${m.insigniaPremio?.descripcion}">Descripción insignia</p>
                         </div>
                         <span th:if="${m.completada}" style="font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 0.25rem 0.5rem; border-radius: 999px;">
                             <i data-lucide="check" style="width: 12px; height: 12px; display: inline-block;"></i> Desbloqueada
@@ -242,12 +225,8 @@
                     <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-size: 0.8125rem; color: var(--color-muted);">
                             <span th:if="${m.completada}">Completada el: <strong style="color: var(--color-ink);" th:text="${m.fechaCompletada}">01/03/2026</strong></span>
-                            <span th:unless="${m.completada}">Estado: <strong style="color: var(--color-primary);" th:text="${m.fechaCompletada}">En curso</strong></span>
+                            <span th:unless="${m.completada}">Estado: <strong style="color: var(--color-primary);" th:text="${m.fechaCompletada ?: 'En curso'}">En curso</strong></span>
                         </div>
-                        <button type="button" class="btn btn-outline btn-sm" th:if="${!m.completada}" onclick="simulateAsyncAction(this, 500, function() { showToast('Progreso Verificado', 'Tus aportes recientes han sido auditados.', 'info'); })">
-                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
-                            <span>Verificar Avance</span>
-                        </button>
                     </div>
                 </article>
             </div>
@@ -262,14 +241,26 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--color-ink);">
                     <span>Insignias visibles en perfil público:</span>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="togglePublicBadges(this)">
-                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
-                        <span id="public-badge-status">Públicas (Activado)</span>
-                    </button>
+                    <!-- La API no informa el estado actual de visibilidad: no se preselecciona ninguno. -->
+                    <form method="post" th:action="@{/donante/dashboard/incentivos/visibilidad}" style="display: inline;">
+                        <input type="hidden" name="visible" value="true" />
+                        <button type="submit" class="btn btn-outline btn-sm">
+                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                            <span>Mostrar</span>
+                        </button>
+                    </form>
+                    <form method="post" th:action="@{/donante/dashboard/incentivos/visibilidad}" style="display: inline;">
+                        <input type="hidden" name="visible" value="false" />
+                        <button type="submit" class="btn btn-outline btn-sm">
+                            <i data-lucide="eye-off" style="width: 14px; height: 14px;"></i>
+                            <span>Ocultar</span>
+                        </button>
+                    </form>
                 </div>
             </div>
 
             <div class="dt-cards-grid-3">
+                <p th:if="${badges.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">Todavía no tenés insignias visibles.</p>
                 <article class="badge-card" th:each="b : ${badges}"
                          style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-xs); display: flex; align-items: center; gap: 1rem; transition: transform 0.2s ease;"
                          th:styleappend="${b.status == 'Bloqueada' ? 'opacity: 0.6; background: #f8fafc; border-style: dashed;' : ''}">
@@ -285,7 +276,6 @@
                             <span class="status-badge" th:classappend="${b.status == 'Obtenida' ? 'badge-entregada' : 'badge-vencida'}" style="font-size: 0.7rem;" th:text="${b.status}">Estado</span>
                         </div>
                         <p style="font-size: 0.8125rem; color: var(--color-muted); line-height: 1.35; margin: 3px 0;" th:text="${b.description}">Descripción de la insignia.</p>
-                        <span style="font-size: 0.75rem; color: var(--color-primary); font-weight: 700;" th:text="${b.status == 'Obtenida' ? 'Ganada: ' + b.earnedDate : b.earnedDate}">Fecha</span>
                     </div>
                 </article>
             </div>
@@ -307,7 +297,6 @@
                         </strong>
                         <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${audit.fecha}">15 Feb 2026</span>
                     </div>
-                    <p style="font-size: 0.8125rem; color: var(--color-ink-light); margin-top: 2px;" th:text="${audit.motivo}">Motivo del ascenso</p>
                 </div>
             </div>
         </section>
@@ -332,18 +321,6 @@
                 }, 250);
             }
 
-            let badgesPublic = true;
-            function togglePublicBadges(btn) {
-                badgesPublic = !badgesPublic;
-                const label = document.getElementById('public-badge-status');
-                if (badgesPublic) {
-                    label.textContent = 'Públicas (Activado)';
-                    showToast('Visibilidad Actualizada', 'Tus insignias se mostrarán en el ranking y perfil público.', 'success');
-                } else {
-                    label.textContent = 'Ocultas (Privado)';
-                    showToast('Visibilidad Actualizada', 'Tus insignias ahora son privadas.', 'info');
-                }
-            }
         </script>
     </main>
 </body>

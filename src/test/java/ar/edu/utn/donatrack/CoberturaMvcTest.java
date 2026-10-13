@@ -44,12 +44,12 @@ class CoberturaMvcTest {
         when(donaciones.humano(1L)).thenReturn(humano);
         when(donaciones.juridico(2L)).thenReturn(juridico);
         when(donaciones.beneficiario(3L)).thenReturn(beneficiario);
-        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(3L,"Entidad Real","ONG","Alimentos",true)));
+        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(3L,"Entidad Real","ONG","Alimentos",true,null,null,List.of())));
         when(donaciones.listarHumanos()).thenReturn(List.of());
         when(donaciones.listarJuridicos()).thenReturn(List.of());
         when(donaciones.sugerencias()).thenReturn(List.of(new ApiDtos.Sugerencia(false,List.of(),List.of(),1L)));
         when(donaciones.sugerencia(1L)).thenReturn(new ApiDtos.Sugerencia(false,List.of(),List.of(),1L));
-        when(donaciones.asignacionesEntidad(3L, "")).thenReturn(List.of(new ApiDtos.Asignacion(5L,1L,1L,3L,20f,"PENDIENTE_RUTA",null)));
+        when(donaciones.asignacionesEntidad(3L, "")).thenReturn(List.of(new ApiDtos.Asignacion(5L,1L,1L,3L,20f,"PENDIENTE_RUTA",null,null,null,null,null,null)));
         when(donaciones.contactosDonacion(1L)).thenReturn(new DonacionesDetalles.Contactos(
                 new DonacionesDetalles.Contacto(new DonacionesDetalles.Destinatario("Ana","real@example.com",null),"EMAIL"),null));
         when(donaciones.contactosAsignacion(5L)).thenReturn(new DonacionesDetalles.Contactos(null,
@@ -58,7 +58,7 @@ class CoberturaMvcTest {
         when(donaciones.necesidad(1L)).thenReturn(new ApiDtos.Necesidad(1L,3L,null,"Alimentos","EXTRAORDINARIA",null,0f,20f,"PENDIENTE"));
         var camion = new ApiDtos.Camion(1L,"AA123BB",20f,3f,1000f,"DISPONIBLE");
         when(logistica.camion(1L)).thenReturn(camion);
-        var entrega = new ApiDtos.Entrega(1L,5L,"PENDIENTE",null,List.of("https://example.com/foto.jpg"),null,null);
+        var entrega = new ApiDtos.Entrega(1L,5L,"PENDIENTE",null,List.of("https://example.com/foto.jpg"),null,null,null);
         when(logistica.entrega(1L)).thenReturn(entrega);
         var parada = new LogisticaDetalles.Parada(1L,1,
                 new LogisticaDetalles.Direccion("Calle","1","CABA","BA",-34.0,-58.0),List.of(entrega),"10:00");
@@ -90,17 +90,17 @@ class CoberturaMvcTest {
                 "/donaciones/1/contactos","/asignaciones/5/contactos","/sugerencias","/sugerencias/1",
                 "/camiones/1","/entregas/1","/rutas/1","/paradas","/paradas/1","/seguimiento","/seguimiento/AA123BB",
                 "/incentivos","/incentivos/categorias/1","/incentivos/donantes","/incentivos/donantes/1","/incentivos/historial"))
-            mvc.perform(get("/admin/dashboard" + path)).andExpect(status().isOk());
+            mvc.perform(get("/admin/dashboard" + path).session(TestSesiones.admin())).andExpect(status().isOk());
     }
 
     @Test void donorUpdatePreservesAllContactsAndRepresentatives() throws Exception {
-        mvc.perform(profile("/admin/dashboard/donantes/humanos/1")
+        mvc.perform(profile("/admin/dashboard/donantes/humanos/1").session(TestSesiones.admin())
                 .param("nombre","Ana Editada").param("apellido","Real").param("fechaNacimiento","1990-01-01")
                 .param("numeroDocumento","12345678").param("genero","OTRO"))
                 .andExpect(status().is3xxRedirection());
         verify(donaciones).actualizarHumano(eq(1L), argThat(r -> r.nombre().equals("Ana Editada")
                 && r.mediosDeContacto().equals(humano.mediosDeContacto()) && r.medioDeContactoPredeterminado().equals(email)));
-        mvc.perform(profile("/admin/dashboard/donantes/juridicos/2")
+        mvc.perform(profile("/admin/dashboard/donantes/juridicos/2").session(TestSesiones.admin())
                 .param("numeroDocumento","30123456789").param("razonSocial","Empresa Editada")
                 .param("tipoEntidad","EMPRESA").param("rubro","Alimentos"))
                 .andExpect(status().is3xxRedirection());
@@ -108,18 +108,18 @@ class CoberturaMvcTest {
     }
 
     @Test void invalidProfileDoesNotWriteAndKeepsSubmittedName() throws Exception {
-        mvc.perform(profile("/admin/dashboard/donantes/humanos/1").param("nombre","Nombre conservado"))
+        mvc.perform(profile("/admin/dashboard/donantes/humanos/1").session(TestSesiones.admin()).param("nombre","Nombre conservado"))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("Nombre conservado")));
         verify(donaciones,never()).actualizarHumano(anyLong(),any());
     }
 
     @Test void beneficiaryCreationAndUpdateMatchDistinctContracts() throws Exception {
-        mvc.perform(profile("/admin/dashboard/beneficiarios/nuevo").param("razonSocial","Entidad")
+        mvc.perform(profile("/admin/dashboard/beneficiarios/nuevo").session(TestSesiones.admin()).param("razonSocial","Entidad")
                 .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
                 .param("contactoValor","entidad@example.com").param("repNombre","").param("repTelefono","").param("repEmail",""))
                 .andExpect(status().is3xxRedirection());
         verify(donaciones).crearBeneficiario(argThat(r -> r.representantes().isEmpty()));
-        mvc.perform(profile("/admin/dashboard/beneficiarios/3").param("razonSocial","Entidad Editada")
+        mvc.perform(profile("/admin/dashboard/beneficiarios/3").session(TestSesiones.admin()).param("razonSocial","Entidad Editada")
                 .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
                 .param("contactoValor","entidad@example.com").param("activo","false"))
                 .andExpect(status().is3xxRedirection());
@@ -129,30 +129,30 @@ class CoberturaMvcTest {
 
     @Test void assignmentFiltersAndNullableBeneficiaryContactAreSupported() throws Exception {
         when(donaciones.asignacionesEntidad(3L,"ENTREGADA")).thenReturn(List.of());
-        mvc.perform(get("/admin/dashboard/asignaciones").param("entidadBeneficiariaId","3").param("estado","ENTREGADA"))
+        mvc.perform(get("/admin/dashboard/asignaciones").session(TestSesiones.admin()).param("entidadBeneficiariaId","3").param("estado","ENTREGADA"))
                 .andExpect(status().isOk());
         verify(donaciones).asignacionesEntidad(3L,"ENTREGADA");
-        mvc.perform(get("/admin/dashboard/donaciones/1/contactos")).andExpect(status().isOk())
+        mvc.perform(get("/admin/dashboard/donaciones/1/contactos").session(TestSesiones.admin())).andExpect(status().isOk())
                 .andExpect(content().string(containsString("puede no estar asignada")));
     }
 
     @Test void routeRequiresDriverAndPlanningIsAcceptedNotCompleted() throws Exception {
-        mvc.perform(post("/admin/dashboard/rutas/1/iniciar")).andExpect(status().isBadRequest());
-        mvc.perform(post("/admin/dashboard/rutas/1/iniciar").param("chofer",""))
+        mvc.perform(post("/admin/dashboard/rutas/1/iniciar").session(TestSesiones.admin())).andExpect(status().isBadRequest());
+        mvc.perform(post("/admin/dashboard/rutas/1/iniciar").session(TestSesiones.admin()).param("chofer",""))
                 .andExpect(flash().attributeExists("apiError"));
         verify(logistica,never()).iniciarRuta(anyLong(),anyString());
-        mvc.perform(post("/admin/dashboard/rutas/1/iniciar").param("chofer","Chofer Real"))
+        mvc.perform(post("/admin/dashboard/rutas/1/iniciar").session(TestSesiones.admin()).param("chofer","Chofer Real"))
                 .andExpect(status().is3xxRedirection());
         verify(logistica).iniciarRuta(1L,"Chofer Real");
         when(logistica.planificar(LocalDate.of(2026,10,10)))
                 .thenReturn(new LogisticaDetalles.Planificacion(2,1,List.of("request-real")));
-        mvc.perform(post("/admin/dashboard/rutas/planificar").param("fecha","2026-10-10"))
+        mvc.perform(post("/admin/dashboard/rutas/planificar").session(TestSesiones.admin()).param("fecha","2026-10-10"))
                 .andExpect(flash().attribute("success",containsString("después del callback")))
                 .andExpect(flash().attributeExists("planificacion"));
     }
 
     @Test void allMissionsCompletedIsNotDisplayedAsZeroPercent() throws Exception {
-        mvc.perform(get("/admin/dashboard/incentivos/donantes/1")).andExpect(status().isOk())
+        mvc.perform(get("/admin/dashboard/incentivos/donantes/1").session(TestSesiones.admin())).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Todas las misiones han sido completadas")))
                 .andExpect(content().string(not(containsString("null / null"))));
     }
@@ -160,12 +160,12 @@ class CoberturaMvcTest {
     @Test void currentMissionUsesActualProgressValues() throws Exception {
         when(incentivos.progreso(1L)).thenReturn(new IncentivosDtos.Progreso(2L,"Misión actual","Descripción",
                 2,4,50.0,false,1,null));
-        mvc.perform(get("/admin/dashboard/incentivos/donantes/1")).andExpect(status().isOk())
+        mvc.perform(get("/admin/dashboard/incentivos/donantes/1").session(TestSesiones.admin())).andExpect(status().isOk())
                 .andExpect(content().string(containsString("2 / 4 (50.0%)")));
     }
 
     @Test void incompleteBeneficiaryRepresentativeDoesNotWrite() throws Exception {
-        mvc.perform(profile("/admin/dashboard/beneficiarios/nuevo").param("razonSocial","Entidad")
+        mvc.perform(profile("/admin/dashboard/beneficiarios/nuevo").session(TestSesiones.admin()).param("razonSocial","Entidad")
                 .param("tipoEntidad","ONG").param("rubro","Alimentos").param("contactoTipo","EMAIL")
                 .param("contactoValor","entidad@example.com").param("repNombre","Referente")
                 .param("repTelefono","").param("repEmail",""))
@@ -175,33 +175,30 @@ class CoberturaMvcTest {
     }
 
     @Test void incentiveManagementUsesCorrectPayloadsAndDoesNotRegisterDonations() throws Exception {
-        mvc.perform(post("/admin/dashboard/incentivos/categorias").param("nombre","Solidario").param("tipo","RACHA").param("valorObjetivo","3"))
+        mvc.perform(post("/admin/dashboard/incentivos/categorias").session(TestSesiones.admin()).param("nombre","Solidario").param("tipo","RACHA").param("valorObjetivo","3"))
                 .andExpect(status().is3xxRedirection());
         verify(incentivos).crearCategoria(new IncentivosDtos.CategoriaRequest("Solidario",null,new IncentivosDtos.MisionRequest("RACHA",3)));
-        mvc.perform(post("/admin/dashboard/incentivos/categorias/1/misiones").param("tipo","COMPLETITUD").param("valorObjetivo","2"))
+        mvc.perform(post("/admin/dashboard/incentivos/categorias/1/misiones").session(TestSesiones.admin()).param("tipo","COMPLETITUD").param("valorObjetivo","2"))
                 .andExpect(status().is3xxRedirection());
         verify(incentivos).agregarMision(1L,new IncentivosDtos.MisionRequest("COMPLETITUD",2));
-        mvc.perform(post("/admin/dashboard/incentivos/categorias/1/misiones/2/eliminar"))
+        mvc.perform(post("/admin/dashboard/incentivos/categorias/1/misiones/2/eliminar").session(TestSesiones.admin()))
                 .andExpect(status().is3xxRedirection());
         verify(incentivos).eliminarMision(1L,2L);
-        mvc.perform(post("/admin/dashboard/incentivos/donantes/1/visibilidad").param("visible","false"))
-                .andExpect(status().is3xxRedirection());
-        verify(incentivos).visibilidad(1L,false);
     }
 
     @Test void readFailureAndRejectedWriteNeverReportSuccess() throws Exception {
         when(logistica.entrega(1L)).thenThrow(new ResourceAccessException("offline"));
-        mvc.perform(get("/admin/dashboard/entregas/1")).andExpect(status().isOk())
+        mvc.perform(get("/admin/dashboard/entregas/1").session(TestSesiones.admin())).andExpect(status().isOk())
                 .andExpect(content().string(containsString("role=\"alert\"")));
         doThrow(new ResourceAccessException("offline")).when(donaciones).eliminarBeneficiario(3L);
-        mvc.perform(post("/admin/dashboard/beneficiarios/3/eliminar")).andExpect(flash().attributeExists("apiError"))
+        mvc.perform(post("/admin/dashboard/beneficiarios/3/eliminar").session(TestSesiones.admin())).andExpect(flash().attributeExists("apiError"))
                 .andExpect(flash().attributeCount(1));
     }
 
     @Test void evaluatorRunsOnlyByExplicitPost() throws Exception {
-        mvc.perform(get("/admin/dashboard/sugerencias")).andExpect(status().isOk());
+        mvc.perform(get("/admin/dashboard/sugerencias").session(TestSesiones.admin())).andExpect(status().isOk());
         verify(donaciones,never()).evaluar();
-        mvc.perform(post("/admin/dashboard/evaluador/ejecutar")).andExpect(status().is3xxRedirection());
+        mvc.perform(post("/admin/dashboard/evaluador/ejecutar").session(TestSesiones.admin())).andExpect(status().is3xxRedirection());
         verify(donaciones).evaluar();
     }
 

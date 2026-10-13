@@ -20,13 +20,11 @@ import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 public class DonacionesService {
     private final WebMapper webMapper;
     private final ar.edu.utn.donatrack.validators.WebValidator webValidator;
-    private final DonanteDashboardMapper donanteMapper;
-    private final BeneficiarioDashboardMapper beneficiarioMapper;
     private final DonacionesApiService api;
     private final DonacionesMapper mapper;
     private final DonacionesValidator validator;
-    public DonacionesService(DonacionesApiService api, DonacionesMapper mapper, DonacionesValidator validator, WebMapper webMapper, ar.edu.utn.donatrack.validators.WebValidator webValidator, DonanteDashboardMapper donanteMapper, BeneficiarioDashboardMapper beneficiarioMapper) {
-        this.api=api; this.mapper=mapper; this.validator=validator; this.webMapper=webMapper; this.webValidator=webValidator; this.donanteMapper=donanteMapper; this.beneficiarioMapper=beneficiarioMapper;
+    public DonacionesService(DonacionesApiService api, DonacionesMapper mapper, DonacionesValidator validator, WebMapper webMapper, ar.edu.utn.donatrack.validators.WebValidator webValidator) {
+        this.api=api; this.mapper=mapper; this.validator=validator; this.webMapper=webMapper; this.webValidator=webValidator;
     }
 
     public Map<String,Object> camposDonante(DonanteForm form) { return mapper.camposDonante(form); }
@@ -232,13 +230,6 @@ public class DonacionesService {
         return api.evaluar();
     }
 
-    /** Cabecera demostrativa: no representa una identidad autenticada. */
-    public WebDatos datosDemostracionDonante() {
-        return new WebDatos(List.of(),null,lista(api::listarHumanos),lista(api::listarJuridicos),List.of(),List.of(),List.of(),List.of());
-    }
-    public WebDatos datosDemostracionBeneficiario() {
-        return new WebDatos(List.of(),null,List.of(),List.of(),lista(api::beneficiarios),List.of(),List.of(),List.of());
-    }
     public Map<String,Object> explorarDonaciones() {
         return webMapper.map(new WebDatos(lista(api::donaciones),null,List.of(),List.of(),List.of(),List.of(),List.of(),List.of()));
     }
@@ -247,21 +238,5 @@ public class DonacionesService {
         try { donation=api.donacion(webValidator.identificador(id)); }
         catch(org.springframework.web.client.RestClientException | IllegalStateException | FormularioInvalidoException e) { /* Detalle no disponible en la maqueta. */ }
         return webMapper.donationDetail(id,new WebDatos(List.of(),donation,List.of(),List.of(),List.of(),List.of(),List.of(),List.of()));
-    }
-    public Map<String,Object> donacionesDonante() {
-        var d=datosDemostracionDonante();
-        return donanteMapper.mapear(new WebDatos(lista(api::donaciones),null,d.humanos(),d.juridicos(),List.of(),List.of(),List.of(),List.of()));
-    }
-    public Map<String,Object> entidadesDonante() {
-        var d=datosDemostracionDonante();
-        return donanteMapper.mapear(new WebDatos(List.of(),null,d.humanos(),d.juridicos(),lista(api::beneficiarios),List.of(),List.of(),List.of()));
-    }
-    public Map<String,Object> necesidadesBeneficiario() {
-        var d=datosDemostracionBeneficiario();
-        return beneficiarioMapper.mapear(new WebDatos(List.of(),null,List.of(),List.of(),d.beneficiarios(),lista(api::necesidades),List.of(),List.of()));
-    }
-    public Map<String,Object> donacionesBeneficiario() {
-        var d=datosDemostracionBeneficiario();
-        return beneficiarioMapper.mapear(new WebDatos(lista(api::donaciones),null,List.of(),List.of(),d.beneficiarios(),List.of(),List.of(),List.of()));
     }
 }

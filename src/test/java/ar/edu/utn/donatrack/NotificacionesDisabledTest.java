@@ -18,10 +18,10 @@ class NotificacionesDisabledTest {
     @Autowired MockMvc mvc;
     @MockBean NotificacionesApiService api;
     @Test void disabledByDefaultAndDirectPostCannotBypassIt() throws Exception {
-        mvc.perform(get("/admin/dashboard/notificaciones")).andExpect(status().isOk())
+        mvc.perform(get("/admin/dashboard/notificaciones").session(TestSesiones.admin())).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Deshabilitado por seguridad")))
                 .andExpect(content().string(not(containsString("Solicitar envío real"))));
-        mvc.perform(post("/admin/dashboard/notificaciones/enviar").param("sendToken", "x"))
+        mvc.perform(post("/admin/dashboard/notificaciones/enviar").session(TestSesiones.admin()).param("sendToken", "x"))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(api);
     }

@@ -46,7 +46,7 @@ class AdminMvcTest {
 
     @Test void rendersAllAdministrativePagesWithoutBackends() throws Exception {
         for (String path : List.of("", "/donantes", "/donaciones", "/bienes", "/catalogo", "/beneficiarios", "/necesidades", "/camiones", "/rankings", "/asignar", "/importar", "/entregas", "/rutas"))
-            mvc.perform(get("/admin/dashboard" + path)).andExpect(status().isOk());
+            mvc.perform(get("/admin/dashboard" + path).session(TestSesiones.admin())).andExpect(status().isOk());
     }
 
     @Test void rendersHumanAndJuridicalDonorsAndFilters() throws Exception {
@@ -54,7 +54,7 @@ class AdminMvcTest {
                 List.of(new MedioDeContactoDto("EMAIL", "real@example.com")), "COMPLETO")));
         when(donaciones.listarJuridicos()).thenReturn(List.of(new DonanteJuridicoResponse(102L, "Empresa Real", "30123456789",
                 List.of(), "PENDIENTE")));
-        mvc.perform(get("/admin/dashboard/donantes"))
+        mvc.perform(get("/admin/dashboard/donantes").session(TestSesiones.admin()))
                 .andExpect(content().string(containsString("Persona Real Prueba")))
                 .andExpect(content().string(containsString("Empresa Real")))
                 .andExpect(content().string(containsString("real@example.com")))
@@ -65,7 +65,7 @@ class AdminMvcTest {
 
     @Test void backendFailureDoesNotShowInventedOrEmptySuccess() throws Exception {
         when(donaciones.donaciones()).thenThrow(new ResourceAccessException("offline"));
-        mvc.perform(get("/admin/dashboard/donaciones"))
+        mvc.perform(get("/admin/dashboard/donaciones").session(TestSesiones.admin()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("role=\"alert\"")))
                 .andExpect(content().string(not(containsString("No hay donaciones registradas."))));
@@ -76,22 +76,22 @@ class AdminMvcTest {
         var donation = new ApiDtos.Donacion(9L, 101L, "Donación real", bien, "EN_DEPOSITO", null);
         when(donaciones.donaciones()).thenReturn(List.of(donation));
         when(donaciones.donacion(9L)).thenReturn(donation);
-        when(donaciones.asignaciones(9L)).thenReturn(List.of(new ApiDtos.Asignacion(7L, 9L, 1L, 2L, 30f, "EN_TRASLADO", 3L)));
-        mvc.perform(get("/admin/dashboard/donaciones"))
+        when(donaciones.asignaciones(9L)).thenReturn(List.of(new ApiDtos.Asignacion(7L, 9L, 1L, 2L, 30f, "EN_TRASLADO", 3L, null, null, null, null, null)));
+        mvc.perform(get("/admin/dashboard/donaciones").session(TestSesiones.admin()))
                 .andExpect(content().string(containsString("50.0 KILOGRAMO")));
-        mvc.perform(get("/admin/dashboard/donaciones/9"))
+        mvc.perform(get("/admin/dashboard/donaciones/9").session(TestSesiones.admin()))
                 .andExpect(content().string(containsString("EN_TRASLADO")));
     }
 
     @Test void assignmentUsesExactAmountAndRedirectsAfterSuccess() throws Exception {
-        mvc.perform(post("/admin/dashboard/asignar").param("donacionId", "9").param("necesidadId", "2").param("cantidadAAsignar", "30"))
+        mvc.perform(post("/admin/dashboard/asignar").session(TestSesiones.admin()).param("donacionId", "9").param("necesidadId", "2").param("cantidadAAsignar", "30"))
                 .andExpect(status().is3xxRedirection()).andExpect(flash().attributeExists("success"));
         verify(donaciones).asignar(new ApiRequests.Asignacion(9L, 2L, 30f));
     }
 
     @Test void rejectedAssignmentDoesNotReportSuccess() throws Exception {
         doThrow(new ResourceAccessException("offline")).when(donaciones).asignar(any());
-        mvc.perform(post("/admin/dashboard/asignar").param("donacionId", "9").param("necesidadId", "2").param("cantidadAAsignar", "30"))
+        mvc.perform(post("/admin/dashboard/asignar").session(TestSesiones.admin()).param("donacionId", "9").param("necesidadId", "2").param("cantidadAAsignar", "30"))
                 .andExpect(flash().attributeExists("apiError")).andExpect(flash().attributeCount(1));
     }
 
@@ -99,14 +99,14 @@ class AdminMvcTest {
         var result = new ApiDtos.Importacion(100, 98, 1, 1, List.of(new ApiDtos.ErrorCsv(11, "Email en uso")));
         when(donaciones.importar(any())).thenReturn(result);
         var file = new MockMultipartFile("archivo", "personas.csv", "text/csv", "TipoPersona,TipoDoc\nHUMANA,DNI".getBytes());
-        mvc.perform(multipart("/admin/dashboard/importar").file(file))
+        mvc.perform(multipart("/admin/dashboard/importar").file(file).session(TestSesiones.admin()))
                 .andExpect(status().is3xxRedirection()).andExpect(flash().attribute("importacion", result));
-        mvc.perform(get("/admin/dashboard/importar").flashAttr("importacion", result))
+        mvc.perform(get("/admin/dashboard/importar").session(TestSesiones.admin()).flashAttr("importacion", result))
                 .andExpect(content().string(containsString("Fila 11: Email en uso")));
     }
 
     @Test void csvEmptyNeverCallsApi() throws Exception {
-        mvc.perform(multipart("/admin/dashboard/importar").file(new MockMultipartFile("archivo", new byte[0])))
+        mvc.perform(multipart("/admin/dashboard/importar").file(new MockMultipartFile("archivo", new byte[0])).session(TestSesiones.admin()))
                 .andExpect(flash().attributeExists("apiError"));
         verify(donaciones, never()).importar(any());
     }
@@ -114,20 +114,20 @@ class AdminMvcTest {
     @Test void matchmakingRendersNoIntersectionAndIndividualTops() throws Exception {
         var necesidad = new ApiDtos.Necesidad(5L, 2L, null, "Necesidad real", "EXTRAORDINARIA", null, 0f, 30f, "PENDIENTE");
         var suggestion = new ApiDtos.Sugerencia(false, List.of(), List.of(new ApiDtos.Top("Semantico", List.of(necesidad))), 9L);
-        mvc.perform(get("/admin/dashboard/asignar").flashAttr("sugerencia", suggestion))
+        mvc.perform(get("/admin/dashboard/asignar").session(TestSesiones.admin()).flashAttr("sugerencia", suggestion))
                 .andExpect(content().string(containsString("No hay intersección")))
                 .andExpect(content().string(containsString("Necesidad real")));
     }
 
     @Test void ranksByActualApiMetricNotInventedKilograms() throws Exception {
         when(incentivos.ranking()).thenReturn(List.of(new ApiDtos.Ranking(101L, 8)));
-        mvc.perform(get("/admin/dashboard/rankings"))
+        mvc.perform(get("/admin/dashboard/rankings").session(TestSesiones.admin()))
                 .andExpect(content().string(containsString("Misiones resueltas")))
                 .andExpect(content().string(containsString("101")));
     }
 
     @Test void goodsFormBindsNumbersAndDates() throws Exception {
-        mvc.perform(post("/admin/dashboard/bienes")
+        mvc.perform(post("/admin/dashboard/bienes").session(TestSesiones.admin())
                 .param("descripcion", "Sillas").param("cantidad", "10").param("subCategoriaId", "3")
                 .param("unidadMedida", "UNIDAD").param("tipoBien", "DURABLE").param("fueUsado", "false"))
                 .andExpect(flash().attributeExists("success"));
@@ -135,7 +135,7 @@ class AdminMvcTest {
     }
 
     @Test void invalidAmountReturnsReadable400AndDoesNotCallApi() throws Exception {
-        mvc.perform(post("/admin/dashboard/asignar").param("donacionId", "9").param("necesidadId", "2").param("cantidadAAsignar", "texto"))
+        mvc.perform(post("/admin/dashboard/asignar").session(TestSesiones.admin()).param("donacionId", "9").param("necesidadId", "2").param("cantidadAAsignar", "texto"))
                 .andExpect(status().isBadRequest()).andExpect(content().string(containsString("formatos inválidos")));
         verify(donaciones, never()).asignar(any());
     }
@@ -147,17 +147,17 @@ class AdminMvcTest {
         when(donaciones.categorias()).thenReturn(List.of(category));
         when(donaciones.bienes()).thenReturn(List.of(bien));
         when(donaciones.necesidades()).thenReturn(List.of(new ApiDtos.Necesidad(1L, 2L, bien, "Alimentos", "RECURRENTE", "P1M", 0f, 80f, "PENDIENTE")));
-        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Entidad Real", "ONG", "Comedor", true)));
+        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Entidad Real", "ONG", "Comedor", true, null, null, List.of())));
         when(logistica.camiones()).thenReturn(List.of(new ApiDtos.Camion(3L, "AB123CD", 30f, 3f, 2000f, "DISPONIBLE")));
-        when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(1L, 7L, "EN_TRASLADO", null, List.of(), 3L, "AB123CD")));
+        when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(1L, 7L, "EN_TRASLADO", null, List.of(), 3L, "AB123CD", null)));
         when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L, "Chofer", java.time.LocalDate.now(), "PLANIFICADA", 3L, 50.0, 60)));
         when(donaciones.algoritmos()).thenReturn(List.of(new ApiDtos.Algoritmo("Semantico", true)));
         for (String path : List.of("bienes", "necesidades", "beneficiarios", "catalogo", "camiones", "entregas", "rutas", "asignar"))
-            mvc.perform(get("/admin/dashboard/" + path)).andExpect(status().isOk());
+            mvc.perform(get("/admin/dashboard/" + path).session(TestSesiones.admin())).andExpect(status().isOk());
     }
 
     @Test void updateNecessityUsesPutContractWithoutChangingOwner() throws Exception {
-        mvc.perform(post("/admin/dashboard/necesidades/5").param("descripcionNecesidad", "Ayuda recurrente")
+        mvc.perform(post("/admin/dashboard/necesidades/5").session(TestSesiones.admin()).param("descripcionNecesidad", "Ayuda recurrente")
                 .param("tipoNecesidad", "RECURRENTE").param("periodo", "P1M").param("descripcion", "Arroz")
                 .param("cantidad", "80").param("subCategoriaId", "2").param("unidadMedida", "KILOGRAMO").param("tipoBien", "PERECEDERO"))
                 .andExpect(flash().attributeExists("success"));
@@ -165,12 +165,12 @@ class AdminMvcTest {
     }
 
     @Test void realDonorFormsRenderForBothTypes() throws Exception {
-        mvc.perform(get("/admin/dashboard/donantes/nuevo/humanos")).andExpect(status().isOk());
-        mvc.perform(get("/admin/dashboard/donantes/nuevo/juridicos")).andExpect(status().isOk());
+        mvc.perform(get("/admin/dashboard/donantes/nuevo/humanos").session(TestSesiones.admin())).andExpect(status().isOk());
+        mvc.perform(get("/admin/dashboard/donantes/nuevo/juridicos").session(TestSesiones.admin())).andExpect(status().isOk());
     }
 
     @Test void donorCreationSendsDateNotAgeAndDoesNotCreateAccount() throws Exception {
-        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos")
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").session(TestSesiones.admin())
                 .param("nombre", "Ana").param("apellido", "Pérez").param("numeroDocumento", "12345678")
                 .param("fechaNacimiento", "1990-01-01").param("genero", "FEMENINO")
                 .param("calle", "Calle").param("numero", "123").param("ciudad", "CABA").param("provincia", "CABA")
@@ -185,7 +185,7 @@ class AdminMvcTest {
                 "Bad request", org.springframework.http.HttpHeaders.EMPTY,
                 "{\"message\":\"<script>alert(1)</script>\"}".getBytes(), java.nio.charset.StandardCharsets.UTF_8))
                 .when(donaciones).crearHumano(any());
-        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").param("nombre", "Ana Conservada").param("email", "ana@example.com")
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").session(TestSesiones.admin()).param("nombre", "Ana Conservada").param("email", "ana@example.com")
                 .param("apellido","Real").param("numeroDocumento","12345678").param("fechaNacimiento","1990-01-01")
                 .param("genero","OTRO").param("calle","Calle").param("numero","123").param("ciudad","CABA").param("provincia","BA"))
                 .andExpect(status().isOk())
@@ -195,7 +195,7 @@ class AdminMvcTest {
     }
 
     @Test void createsDonationWithMultipleGoods() throws Exception {
-        mvc.perform(post("/admin/dashboard/donaciones")
+        mvc.perform(post("/admin/dashboard/donaciones").session(TestSesiones.admin())
                 .param("donanteId", "1")
                 .param("descripcionGeneral", "Campaña de Invierno")
                 .param("descripcion", "Frazadas")
@@ -219,7 +219,7 @@ class AdminMvcTest {
     }
 
     @Test void createsJuridicoDonorWithMultipleContactsAndRepresentatives() throws Exception {
-        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos")
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos").session(TestSesiones.admin())
                 .param("razonSocial", "Empresa Solidaria S.A.")
                 .param("numeroDocumento", "30112233445")
                 .param("tipoEntidad", "EMPRESA")
@@ -258,7 +258,7 @@ class AdminMvcTest {
         when(donaciones.donaciones()).thenReturn(List.of(donacion));
         when(donaciones.donacion(10L)).thenReturn(donacion);
         when(donaciones.necesidades()).thenReturn(List.of(new ApiDtos.Necesidad(1L, 2L, bien, "Ayuda comedor", "RECURRENTE", "P1M", 0f, 50f, "ACTIVA")));
-        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Fundación Vida", "ONG", "Comedor", true)));
+        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Fundación Vida", "ONG", "Comedor", true, null, null, List.of())));
 
         for (String path : List.of(
                 "/donante/dashboard",
@@ -279,12 +279,15 @@ class AdminMvcTest {
                 "/legal",
                 "/registro"
         )) {
-            mvc.perform(get(path)).andExpect(status().isOk());
+            var request = get(path);
+            if (path.startsWith("/donante/")) request.session(TestSesiones.donante(1L));
+            if (path.startsWith("/entidad/")) request.session(TestSesiones.entidad(3L));
+            mvc.perform(request).andExpect(status().isOk());
         }
     }
 
     @Test void juridicoSinRepresentantesMuestraErrorSinInvocarBackend() throws Exception {
-        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos")
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos").session(TestSesiones.admin())
                 .param("razonSocial","Empresa Real").param("numeroDocumento","30123456789")
                 .param("tipoEntidad","EMPRESA").param("rubro","Alimentos")
                 .param("calle","Calle").param("numero","123").param("ciudad","CABA").param("provincia","BA")
@@ -296,7 +299,7 @@ class AdminMvcTest {
     }
 
     @Test void errorDeRepresentanteConservaContactosYFilasAdicionales() throws Exception {
-        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos")
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/juridicos").session(TestSesiones.admin())
                 .param("razonSocial","Empresa Real").param("numeroDocumento","30123456789")
                 .param("tipoEntidad","EMPRESA").param("rubro","Alimentos")
                 .param("calle","Calle").param("numero","123").param("ciudad","CABA").param("provincia","BA")

@@ -1,5 +1,7 @@
 package ar.edu.utn.donatrack.controllers;
 
+import ar.edu.utn.donatrack.services.PanelDonanteService;
+import ar.edu.utn.donatrack.services.PanelEntidadService;
 import ar.edu.utn.donatrack.services.WebService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,8 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class WebController {
 
     private final WebService service;
+    private final PanelDonanteService donante;
+    private final PanelEntidadService entidad;
 
-    public WebController(WebService service) { this.service = service; }
+    public WebController(WebService service, PanelDonanteService donante, PanelEntidadService entidad) {
+        this.service = service; this.donante = donante; this.entidad = entidad;
+    }
 
     @GetMapping("/")
     public String landing(Model model) {
@@ -29,7 +35,7 @@ public class WebController {
     // =========================================================================
     @GetMapping("/donante/dashboard")
     public String donorDashboard(Model model) {
-        model.addAllAttributes(service.donorDashboard());
+        model.addAllAttributes(donante.resumen());
         return "dashboard-donor";
     }
 
@@ -38,7 +44,7 @@ public class WebController {
     // =========================================================================
     @GetMapping("/entidad/dashboard")
     public String beneficiaryDashboard(Model model) {
-        model.addAllAttributes(service.beneficiaryDashboard());
+        model.addAllAttributes(entidad.resumen());
         return "dashboard-beneficiary";
     }
 

@@ -21,7 +21,7 @@ class CapasFrontendTest {
     DonacionesApiService api=mock(DonacionesApiService.class);
     DonacionesMapper mapper=new DonacionesMapper();
     DonacionesValidator validator=new DonacionesValidator();
-    DonacionesService service=new DonacionesService(api,mapper,validator,new WebMapper(),new WebValidator(),new DonanteDashboardMapper(),new BeneficiarioDashboardMapper());
+    DonacionesService service=new DonacionesService(api,mapper,validator,new WebMapper(),new WebValidator());
 
     DonanteForm form() {
         var f=mock(DonanteForm.class);
@@ -124,7 +124,7 @@ class CapasFrontendTest {
 
     @Test void logisticaValidaChoferYNoConfundeAceptacionConRutasTerminadas() {
         var api=mock(LogisticaApiService.class);
-        var service=new LogisticaService(api,new LogisticaMapper(),new LogisticaValidator(),mock(DonacionesService.class),new DonanteDashboardMapper(),new BeneficiarioDashboardMapper());
+        var service=new LogisticaService(api,new LogisticaMapper(),new LogisticaValidator(),new ar.edu.utn.donatrack.validators.RecepcionValidator());
         assertThrows(FormularioInvalidoException.class,()->service.iniciarRuta(1L,""));
         verifyNoInteractions(api);
         var fecha=LocalDate.of(2026,10,10);
@@ -135,7 +135,7 @@ class CapasFrontendTest {
 
     @Test void incentivosValidaAntesDeConstruirYSolicitar() {
         var api=mock(IncentivosApiService.class);
-        var service=new IncentivosService(api,new IncentivosMapper(),new IncentivosValidator(),mock(DonacionesService.class),new DonanteDashboardMapper());
+        var service=new IncentivosService(api,new IncentivosMapper(),new IncentivosValidator());
         assertThrows(FormularioInvalidoException.class,()->service.agregarMision(1L,"RACHA",0));
         assertThrows(FormularioInvalidoException.class,()->service.crearCategoria("Real",null,"INVENTADA",2));
         verifyNoInteractions(api);
@@ -172,7 +172,7 @@ class CapasFrontendTest {
                     assertFalse(parameter.getName().startsWith("org.springframework.ui.")
                             || parameter.getName().startsWith("org.springframework.web.servlet.")
                             || parameter.getName().startsWith("jakarta.servlet."),type.getSimpleName());
-        for(var type:List.of(DonacionesMapper.class,LogisticaMapper.class,IncentivosMapper.class,NotificacionesMapper.class,WebMapper.class,AutenticacionMapper.class,DonanteDashboardMapper.class,BeneficiarioDashboardMapper.class))
+        for(var type:List.of(DonacionesMapper.class,LogisticaMapper.class,IncentivosMapper.class,NotificacionesMapper.class,WebMapper.class,AutenticacionMapper.class))
             for(var field:type.getDeclaredFields())
                 assertFalse(field.getType().getPackageName().startsWith("ar.edu.utn.donatrack.services"));
     }

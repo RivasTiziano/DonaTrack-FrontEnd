@@ -5,6 +5,8 @@ import ar.edu.utn.donatrack.forms.BienForm;
 import ar.edu.utn.donatrack.forms.DonanteForm;
 import ar.edu.utn.donatrack.forms.PerfilForm;
 import ar.edu.utn.donatrack.services.DonacionesService;
+import ar.edu.utn.donatrack.services.PanelDonanteService;
+import ar.edu.utn.donatrack.services.PanelEntidadService;
 import ar.edu.utn.donatrack.validators.DonacionesValidator;
 import ar.edu.utn.donatrack.forms.BienesAdicionalesForm;
 import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
@@ -28,12 +30,17 @@ public class DonacionesController {
     private final DonacionesValidator validator;
     private final ApiViewSupport views;
     private final ApiErrorMessages errors;
+    private final PanelDonanteService panelDonante;
+    private final PanelEntidadService panelEntidad;
 
-    public DonacionesController(DonacionesService service, ApiViewSupport views, ApiErrorMessages errors, DonacionesValidator validator) {
+    public DonacionesController(DonacionesService service, ApiViewSupport views, ApiErrorMessages errors, DonacionesValidator validator,
+                                PanelDonanteService panelDonante, PanelEntidadService panelEntidad) {
         this.service = service;
         this.validator = validator;
         this.views = views;
         this.errors = errors;
+        this.panelDonante = panelDonante;
+        this.panelEntidad = panelEntidad;
     }
 
     // Listados y operaciones de Donaciones
@@ -223,7 +230,6 @@ public class DonacionesController {
 
     @GetMapping("/admin/dashboard/donantes")
     public String listar(Model model) {
-        model.addAttribute("user",Map.of("name","Administrador","email","","role","Administrador de Depósito"));
         model.addAttribute("donorsList",List.of());
         try { model.addAttribute("donorsList",service.filasDonantes()); }
         catch(RestClientException | IllegalStateException e) {
@@ -400,25 +406,44 @@ public class DonacionesController {
 
     @GetMapping("/donante/dashboard/donaciones")
     public String donorDonations(Model model) {
-        model.addAllAttributes(service.donacionesDonante());
+        model.addAllAttributes(panelDonante.donaciones());
         return "dashboard-donor-donaciones";
     }
 
     @GetMapping("/donante/dashboard/entidades")
     public String donorEntities(Model model) {
-        model.addAllAttributes(service.entidadesDonante());
+        model.addAllAttributes(panelDonante.entidades());
         return "dashboard-donor-entidades";
     }
 
     @GetMapping("/entidad/dashboard/necesidades")
     public String beneficiaryNeeds(Model model) {
-        model.addAllAttributes(service.necesidadesBeneficiario());
+        model.addAllAttributes(panelEntidad.necesidades());
         return "dashboard-beneficiary-necesidades";
     }
 
     @GetMapping("/entidad/dashboard/donaciones")
     public String beneficiaryDonations(Model model) {
-        model.addAllAttributes(service.donacionesBeneficiario());
+        model.addAllAttributes(panelEntidad.donaciones());
         return "dashboard-beneficiary-donaciones";
+    }
+
+    /** Alta de necesidad por la entidad. La entidad sale de la sesión; el formulario no la envía. */
+    @PostMapping("/entidad/dashboard/necesidades")
+    public String necesidadEntidad(@RequestParam String descripcionNecesidad, @RequestParam String tipoNecesidad,
+                                   @RequestParam(defaultValue = "") String periodo,
+                                   @ModelAttribute BienForm form, BindingResult binding, RedirectAttributes flash) {
+        if (binding.hasErrors()) {
+            flash.addFlashAttribute("apiError", "Revisá el formato de los números y las fechas del formulario.");
+            return "redirect:/entidad/dashboard/necesidades";
+        }
+        return views.write(flash, "/entidad/dashboard/necesidades",
+                () -> panelEntidad.crearNecesidad(descripcionNecesidad, tipoNecesidad, periodo, form));
+    }
+
+    /** Baja de necesidad; el servicio verifica que pertenezca a la entidad de la sesión. */
+    @PostMapping("/entidad/dashboard/necesidades/{id}/eliminar")
+    public String eliminarNecesidadEntidad(@PathVariable Long id, RedirectAttributes flash) {
+        return views.write(flash, "/entidad/dashboard/necesidades", () -> panelEntidad.eliminarNecesidad(id));
     }
 }

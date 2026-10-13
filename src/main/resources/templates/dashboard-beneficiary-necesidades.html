@@ -18,7 +18,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
                 <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Gestión de Necesidades Materiales</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Publica solicitudes para que el algoritmo de matchmaking las vincule con donaciones en depósito.</p>
+                <p style="color: var(--color-muted); font-size: 0.9375rem;">Publicá las solicitudes de tu entidad para que el sistema las vincule con donaciones en depósito.</p>
             </div>
             <button type="button" class="btn btn-primary" onclick="openModal('modal-new-need')">
                 <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
@@ -34,8 +34,8 @@
             <div class="onboarding-hint-content">
                 <div class="onboarding-hint-title">¿Necesidad Recurrente o Extraordinaria?</div>
                 <p class="onboarding-hint-text">
-                    • <strong>Recurrente:</strong> Alimentos o consumibles periódicos (ej. 100 paquetes de fideos semanales para el comedor).<br/>
-                    • <strong>Extraordinaria:</strong> Bienes urgentes por emergencias, mudanzas o roturas (ej. 30 sillas tras una inundación). Se satisface acumulando donaciones parciales.
+                    • <strong>Recurrente:</strong> consumo periódico (por ejemplo, fideos todas las semanas para el comedor).<br/>
+                    • <strong>Extraordinaria:</strong> bienes puntuales por una emergencia o una mudanza. Se cubre acumulando donaciones parciales.
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -43,81 +43,80 @@
             </button>
         </div>
 
-        <!-- Filter Tabs -->
+        <!-- Filtros -->
         <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterNeeds('todas', this)">Todas (<span th:text="${needs.size()}">3</span>)</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterNeeds('Recurrente', this)">Recurrentes</button>
-            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterNeeds('Extraordinaria', this)">Extraordinarias</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterNeeds('todas', this)">Todas (<span th:text="${needs.size()}">0</span>)</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterNeeds('RECURRENTE', this)">Recurrentes</button>
+            <button type="button" class="btn btn-outline btn-sm filter-tab" onclick="filterNeeds('EXTRAORDINARIA', this)">Extraordinarias</button>
         </div>
 
-        <!-- Empty State for filtered needs -->
+        <p th:if="${needs.isEmpty()}" style="font-size: 0.875rem; color: var(--color-muted);">Todavía no publicaste necesidades.</p>
+
+        <!-- Estado vacío del filtro -->
         <div id="no-needs-found" class="dt-empty-state" style="display: none;">
             <div class="dt-empty-state-icon">
                 <i data-lucide="inbox" style="width: 32px; height: 32px; color: var(--color-muted);"></i>
             </div>
             <h3 class="dt-empty-state-title">No hay necesidades con este criterio</h3>
-            <p class="dt-empty-state-text">No se encontraron solicitudes registradas que coincidan con el filtro seleccionado.</p>
+            <p class="dt-empty-state-text">No hay necesidades publicadas de este tipo.</p>
             <button type="button" class="btn btn-outline btn-sm" onclick="filterNeeds('todas', document.querySelector('.filter-tab'))">
                 <span>Restablecer Filtro</span>
             </button>
         </div>
 
-        <!-- Needs Grid -->
+        <!-- Lista de necesidades -->
         <div id="needs-grid" class="dt-cards-grid-3">
             <article class="need-card" th:each="need : ${needs}" th:data-type="${need.type}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; box-shadow: var(--shadow-xs); display: flex; flex-direction: column;">
-                <div style="position: relative; height: 160px;">
-                    <img th:src="${need.image_url}" th:alt="${need.title}" style="width: 100%; height: 100%; object-fit: cover;" />
-                    <span class="status-badge" th:classappend="${need.type == 'Extraordinaria' ? 'badge-vencida' : 'badge-asignada'}" style="position: absolute; top: 12px; right: 12px;" th:text="${need.type}">Tipo</span>
-                </div>
-
                 <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div>
-                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${need.category} + ' • Subcategoría: ' + ${need.subcategory}">Categoría</span>
-                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${need.title}">Título</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${need.category ?: '—'} + ' • ' + ${need.subcategory ?: '—'}">Categoría</span>
+                            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${need.title ?: '—'}">Título</h3>
+                        </div>
+                        <span class="status-badge" th:classappend="${need.type == 'EXTRAORDINARIA' ? 'badge-vencida' : 'badge-asignada'}" th:text="${need.type == 'EXTRAORDINARIA' ? 'Extraordinaria' : 'Recurrente'}">Tipo</span>
                     </div>
 
-                    <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.4;" th:text="${need.description}">Descripción</p>
+                    <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.4;" th:text="${need.description ?: ''}">Descripción</p>
 
                     <div style="background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.35rem;">
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: var(--color-muted);">Cantidad requerida:</span>
-                            <strong style="color: var(--color-ink);" th:text="${need.quantity} + ' ' + ${need.unit}">100 kg</strong>
+                            <strong style="color: var(--color-ink);" th:text="${need.quantity != null ? need.quantity + ' ' + need.unit : '—'}">—</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Prioridad:</span>
-                            <span style="font-weight: 700; color: #dc2626;" th:text="${need.priority}">Alta</span>
+                            <span style="color: var(--color-muted);">Estado:</span>
+                            <span style="font-weight: 700; color: var(--color-ink);" th:text="${need.status_label}">Pendiente</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--color-muted);">Fecha límite:</span>
-                            <span th:text="${need.deadline}">15/04/2026</span>
+                            <span style="color: var(--color-muted);">Período:</span>
+                            <span th:text="${need.deadline ?: '—'}">—</span>
                         </div>
                     </div>
 
-                    <!-- Progress Bar -->
+                    <!-- Progreso -->
                     <div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px;">
                             <span>Progreso cubierto</span>
-                            <span style="color: var(--color-primary);" th:text="${need.progress} + '%'">60%</span>
+                            <span style="color: var(--color-primary);" th:text="${need.progress} + '%'">0%</span>
                         </div>
                         <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
                             <div style="height: 100%; background: #2563eb; border-radius: 999px;" th:style="'width: ' + ${need.progress} + '%;'"></div>
                         </div>
                     </div>
 
-                    <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem;">
-                        <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" onclick="showToast('Modo edición', 'Puedes editar los parámetros de esta necesidad.', 'info')">
-                            <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
-                            <span>Editar</span>
-                        </button>
-                        <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fee2e2;" onclick="showToast('Necesidad pausada', 'La solicitud fue archivada temporalmente.', 'warning')">
-                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                        </button>
+                    <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+                        <form method="post" th:action="@{/entidad/dashboard/necesidades/{id}/eliminar(id=${need.id})}" onsubmit="return confirm('¿Eliminar esta necesidad?');">
+                            <button type="submit" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fee2e2;">
+                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </article>
         </div>
 
-        <!-- Accessible Modal for Creating a New Need -->
+        <!-- Alta de necesidad: formulario real (mismos campos del bien que usa el admin) -->
         <div id="modal-new-need" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-need-title" aria-hidden="true">
             <div class="dt-modal-backdrop" onclick="closeModal('modal-new-need')"></div>
             <div class="dt-modal-content">
@@ -127,55 +126,28 @@
                         <i data-lucide="x" style="width: 20px; height: 20px;"></i>
                     </button>
                 </div>
-                <form id="form-new-need" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 600, function() { closeModal('modal-new-need'); showToast('¡Necesidad Publicada!', 'Tu necesidad fue registrada e ingresará en el próximo ciclo de matchmaking.', 'success'); });">
+                <form method="post" th:action="@{/entidad/dashboard/necesidades}">
                     <div class="dt-modal-body">
                         <div class="form-group">
-                            <label class="form-label">Título descriptivo <span class="required">*</span></label>
-                            <input type="text" class="form-control" placeholder="Ej. 100 paquetes de fideos secos para comedor" required />
+                            <label class="form-label">Descripción de la necesidad <span class="required">*</span></label>
+                            <input type="text" name="descripcionNecesidad" class="form-control" placeholder="Ej. Fideos secos para el comedor" required />
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
-                                <label class="form-label">Tipo de Necesidad <span class="required">*</span></label>
-                                <select class="form-control" required>
-                                    <option value="recurrente">Recurrente (Consumo periódico)</option>
-                                    <option value="extraordinaria">Extraordinaria (Emergencia/Puntual)</option>
+                                <label class="form-label">Tipo de necesidad <span class="required">*</span></label>
+                                <select name="tipoNecesidad" class="form-control" required>
+                                    <option value="RECURRENTE">Recurrente</option>
+                                    <option value="EXTRAORDINARIA">Extraordinaria</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Categoría <span class="required">*</span></label>
-                                <select class="form-control" required>
-                                    <option value="Alimentos">Alimentos</option>
-                                    <option value="Vestimenta">Vestimenta</option>
-                                    <option value="Mobiliario">Mobiliario</option>
-                                    <option value="Educación">Educación / Útiles</option>
-                                </select>
+                                <label class="form-label">Período (ISO 8601, opcional)</label>
+                                <input type="text" name="periodo" class="form-control" placeholder="P1M" />
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label class="form-label">Subcategoría <span class="required">*</span></label>
-                                <input type="text" class="form-control" placeholder="Ej. Fideos secos, Sillas, Camperas" required />
-                                <span class="form-hint">Unidad mínima de asignación del sistema.</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Cantidad y Unidad <span class="required">*</span></label>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <input type="number" class="form-control" placeholder="50" min="1" required style="width: 50%;" />
-                                    <select class="form-control" style="width: 50%;">
-                                        <option value="kg">kg</option>
-                                        <option value="unidades">unidades</option>
-                                        <option value="litros">litros</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Descripción detallada y justificación</label>
-                            <textarea class="form-control" rows="3" placeholder="Detalla el destino o situación particular de la necesidad..."></textarea>
-                        </div>
+                        <div th:replace="~{fragments/api-bien-form :: campos}"></div>
                     </div>
                     <div class="dt-modal-footer">
                         <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-need')">Cancelar</button>
@@ -187,28 +159,24 @@
                 </form>
             </div>
         </div>
+
         <script>
             function filterNeeds(type, btn) {
                 if (btn) {
                     document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 }
+                let visible = 0;
+                document.querySelectorAll('.need-card').forEach(card => {
+                    const cardType = card.getAttribute('data-type');
+                    const mostrar = type === 'todas' || cardType === type;
+                    card.style.display = mostrar ? 'flex' : 'none';
+                    if (mostrar) visible++;
+                });
+                const emptyState = document.getElementById('no-needs-found');
+                if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
                 const container = document.getElementById('needs-grid');
-                window.simulateFilterReload(container, function() {
-                    let visible = 0;
-                    document.querySelectorAll('.need-card').forEach(card => {
-                        const cardType = card.getAttribute('data-type');
-                        if (type === 'todas' || cardType === type) {
-                            card.style.display = 'flex';
-                            visible++;
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                    const emptyState = document.getElementById('no-needs-found');
-                    if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
-                    if (container) container.style.display = visible === 0 ? 'none' : 'grid';
-                }, 200);
+                if (container) container.style.display = visible === 0 ? 'none' : 'grid';
             }
         </script>
     </main>

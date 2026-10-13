@@ -23,7 +23,7 @@ class NotificacionesMvcTest {
     @MockBean NotificacionesApiService api;
 
     MockHttpSession session() throws Exception {
-        return (MockHttpSession) mvc.perform(get("/admin/dashboard/notificaciones"))
+        return (MockHttpSession) mvc.perform(get("/admin/dashboard/notificaciones").session(TestSesiones.admin()))
                 .andExpect(status().isOk()).andReturn().getRequest().getSession();
     }
     org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder send(MockHttpSession session) {
@@ -32,13 +32,15 @@ class NotificacionesMvcTest {
                 .param("medioContacto", "EMAIL").param("nombre", "Persona de prueba")
                 .param("email", "prueba@example.com").param("asunto", "Aviso").param("cuerpo", "Mensaje de prueba");
     }
-    @Test void personalPagesDoNotInventIdentityOrQueryHistoryOrSend() throws Exception {
+    @Test void personalPagesShowOwnHistoryAndNeverOfferSendingOrContactLookup() throws Exception {
         for (String route : java.util.List.of("donante", "entidad"))
-            mvc.perform(get("/" + route + "/dashboard/notificaciones"))
+            mvc.perform(get("/" + route + "/dashboard/notificaciones")
+                            .session(route.equals("donante") ? TestSesiones.donante(1L) : TestSesiones.entidad(1L)))
                     .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("Historial todavía no disponible")))
-                    .andExpect(content().string(not(containsString("Solicitar envío real"))));
-        verifyNoInteractions(api);
+                    .andExpect(content().string(containsString("No tenés notificaciones.")))
+                    .andExpect(content().string(not(containsString("Solicitar envío real"))))
+                    .andExpect(content().string(not(containsString("Historial todavía no disponible"))));
+        verify(api, never()).enviar(any());
     }
     @Test void pendingIsAcceptanceNotDeliveryAndPostRedirectGetDoesNotRepeat() throws Exception {
         when(api.enviar(any())).thenReturn(new Respuesta("success", Estado.PENDIENTE, null));
@@ -97,7 +99,7 @@ class NotificacionesMvcTest {
     }
     @Test void healthCheckExplicitlyDoesNotCertifyDeliveryProviders() throws Exception {
         when(api.disponible()).thenReturn(true);
-        mvc.perform(post("/admin/dashboard/notificaciones/comprobar"))
+        mvc.perform(post("/admin/dashboard/notificaciones/comprobar").session(TestSesiones.admin()))
                 .andExpect(flash().attribute("serviceStatus", containsString("no verifica Gmail")));
     }
 }

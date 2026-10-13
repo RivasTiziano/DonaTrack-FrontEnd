@@ -34,16 +34,16 @@
 
         <div class="dashboard-header-right">
             <div class="user-profile-summary">
-                <span class="user-profile-name" th:text="${user != null ? user.name : 'Administrador'}">Administrador</span>
+                <span class="user-profile-name" th:text="${sesion != null ? sesion.nombreVisible : ''}"></span>
                 <span class="user-profile-role">Depósito Central</span>
             </div>
 
-            <a th:href="@{/}" style="text-decoration: none;" data-tooltip="Cerrar sesión">
-                <button type="button" class="btn btn-outline btn-sm" style="color: var(--color-ink-light);">
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-outline btn-sm" style="color: var(--color-ink-light);" data-tooltip="Cerrar sesión">
                     <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
                     <span>Salir</span>
                 </button>
-            </a>
+            </form>
         </div>
     </header>
 
@@ -63,7 +63,7 @@
         </div>
 
         <div class="dashboard-drawer-user-card">
-            <div class="user-profile-name" th:text="${user != null ? user.name : 'Administrador'}">Administrador</div>
+            <div class="user-profile-name" th:text="${sesion != null ? sesion.nombreVisible : ''}"></div>
             <span class="role-badge" style="background: #fef3c7; color: #b45309; margin-top: 6px;">
                 <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
                 Administración
@@ -109,10 +109,12 @@
         </nav>
 
         <div class="dashboard-drawer-footer">
-            <a th:href="@{/}" class="btn btn-outline" style="width: 100%; justify-content: center; gap: 0.5rem;">
-                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
-                <span>Cerrar sesión</span>
-            </a>
+            <form th:action="@{/logout}" method="post" style="display: block; width: 100%;">
+                <button type="submit" class="btn btn-outline" style="width: 100%; justify-content: center; gap: 0.5rem;">
+                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                    <span>Cerrar sesión</span>
+                </button>
+            </form>
         </div>
     </aside>
 

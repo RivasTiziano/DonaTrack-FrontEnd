@@ -12,13 +12,13 @@ import org.springframework.web.client.ResourceAccessException;
 import java.time.LocalDateTime;
 import java.util.List;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/** Historial por contacto activado (herramienta de desarrollo local; por defecto está apagado). */
-@SpringBootTest(properties = "app.notificaciones.historial-por-contacto-habilitado=true")
+/** Historial de la persona de la sesión: el servicio la identifica por el token, no por email ni teléfono. */
+@SpringBootTest
 @AutoConfigureMockMvc
 class NotificacionesHistorialMvcTest {
     @Autowired MockMvc mvc;
@@ -29,47 +29,63 @@ class NotificacionesHistorialMvcTest {
                 LocalDateTime.of(2026, 10, 11, 18, 30), leida, null, null);
     }
 
-    @Test void withoutContactItAsksForOneAndDoesNotQueryTheApi() throws Exception {
-        for (String route : List.of("donante", "entidad"))
-            mvc.perform(get("/" + route + "/dashboard/notificaciones"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("Ver notificaciones")))
-                    .andExpect(content().string(not(containsString("Historial todavía no disponible"))));
-        verifyNoInteractions(api);
+    @Test void sinSesionNoSeConsultaElHistorial() throws Exception {
+        mvc.perform(get("/donante/dashboard/notificaciones")).andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+        verify(api, never()).listar(anyBoolean(), anyInt());
     }
-    @Test void showsHistoryWithUnreadCountAndEscapesContent() throws Exception {
-        when(api.listar("ana@mail.com", null, false)).thenReturn(List.of(recibida(1, false), recibida(2, true)));
-        mvc.perform(get("/donante/dashboard/notificaciones").param("email", "ana@mail.com"))
+    @Test void mostrarLaListaDelDonanteConContadorYEscapaContenido() throws Exception {
+        when(api.listar(false, 50)).thenReturn(List.of(recibida(1, false), recibida(2, true)));
+        mvc.perform(get("/donante/dashboard/notificaciones").session(TestSesiones.donante(1L)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("11/10/2026 18:30")))
                 .andExpect(content().string(containsString("&lt;b&gt;Detalle&lt;/b&gt;")))
                 .andExpect(content().string(containsString("/donante/dashboard/notificaciones/1/leida")))
                 .andExpect(content().string(not(containsString("/donante/dashboard/notificaciones/2/leida"))))
-                .andExpect(content().string(containsString("Marcar todas como leídas")));
+                .andExpect(content().string(containsString("Marcar todas como leídas")))
+                .andExpect(content().string(not(containsString("name=\"email\""))))
+                .andExpect(content().string(not(containsString("name=\"telefono\""))));
     }
-    @Test void emptyHistoryIsExplainedAndApiFailureIsNotShownAsEmpty() throws Exception {
-        when(api.listar("ana@mail.com", null, false)).thenReturn(List.of());
-        mvc.perform(get("/entidad/dashboard/notificaciones").param("email", "ana@mail.com"))
-                .andExpect(content().string(containsString("No hay notificaciones para ese contacto")));
-        when(api.listar("caida@mail.com", null, false)).thenThrow(new ResourceAccessException("offline"));
-        mvc.perform(get("/entidad/dashboard/notificaciones").param("email", "caida@mail.com"))
+    @Test void entidadVeSuPropioHistorial() throws Exception {
+        when(api.listar(false, 50)).thenReturn(List.of(recibida(3, false)));
+        mvc.perform(get("/entidad/dashboard/notificaciones").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/entidad/dashboard/notificaciones/3/leida")));
+    }
+    @Test void historialVacioSeExplicaComoVacio() throws Exception {
+        when(api.listar(false, 50)).thenReturn(List.of());
+        mvc.perform(get("/entidad/dashboard/notificaciones").session(TestSesiones.entidad(3L)))
+                .andExpect(content().string(containsString("No tenés notificaciones.")));
+    }
+    @Test void falloDelServicioSeMuestraComoErrorYNoComoListaVacia() throws Exception {
+        when(api.listar(false, 50)).thenThrow(new ResourceAccessException("offline"));
+        mvc.perform(get("/entidad/dashboard/notificaciones").session(TestSesiones.entidad(3L)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("No se pudo comunicar con el servicio")))
-                .andExpect(content().string(not(containsString("No hay notificaciones para ese contacto"))));
+                .andExpect(content().string(not(containsString("No tenés notificaciones."))));
     }
-    @Test void markingAsReadCallsTheApiAndKeepsTheContactInTheRedirect() throws Exception {
-        mvc.perform(post("/donante/dashboard/notificaciones/5/leida").param("email", "ana@mail.com").param("telefono", "+5491112345678"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/donante/dashboard/notificaciones?email=ana%40mail.com&telefono=%2B5491112345678"));
-        verify(api).marcarLeida(5L, "ana@mail.com", "+5491112345678");
-        mvc.perform(post("/entidad/dashboard/notificaciones/leidas").param("telefono", "+5491112345678"))
-                .andExpect(status().is3xxRedirection());
-        verify(api).marcarTodasLeidas(null, "+5491112345678");
+    @Test void elContactoDeLaUrlNoCambiaLaConsulta() throws Exception {
+        when(api.listar(false, 50)).thenReturn(List.of());
+        mvc.perform(get("/donante/dashboard/notificaciones").session(TestSesiones.donante(1L))
+                        .param("email", "otra@mail.com").param("telefono", "+5491112345678"))
+                .andExpect(status().isOk());
+        verify(api).listar(false, 50);
     }
-    @Test void markingWithoutContactDoesNotCallTheApi() throws Exception {
-        mvc.perform(post("/donante/dashboard/notificaciones/5/leida"))
+    @Test void marcarUnaLeidaLlamaAlServicioYRedirigeSinDatosDeContacto() throws Exception {
+        mvc.perform(post("/donante/dashboard/notificaciones/5/leida").session(TestSesiones.donante(1L)))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute("apiError", containsString("email o un teléfono")));
-        verify(api, never()).marcarLeida(any(), any(), any());
+                .andExpect(redirectedUrl("/donante/dashboard/notificaciones"));
+        verify(api).marcarLeida(5L);
+    }
+    @Test void marcarTodasLasLeidasDeLaEntidad() throws Exception {
+        mvc.perform(post("/entidad/dashboard/notificaciones/leidas").session(TestSesiones.entidad(3L)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/entidad/dashboard/notificaciones"));
+        verify(api).marcarTodasLeidas();
+    }
+    @Test void falloAlMarcarMuestraElErrorEnElFlash() throws Exception {
+        org.mockito.Mockito.doThrow(new ResourceAccessException("offline")).when(api).marcarLeida(anyLong());
+        mvc.perform(post("/donante/dashboard/notificaciones/5/leida").session(TestSesiones.donante(1L)))
+                .andExpect(flash().attribute("apiError", containsString("No se pudo comunicar")));
     }
 }

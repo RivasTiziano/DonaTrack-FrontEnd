@@ -4,6 +4,7 @@ import ar.edu.utn.donatrack.controllers.support.ApiViewSupport;
 
 import ar.edu.utn.donatrack.services.DonacionesService;
 import ar.edu.utn.donatrack.services.IncentivosService;
+import ar.edu.utn.donatrack.services.PanelDonanteService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +15,9 @@ public class IncentivosController {
     private final IncentivosService service;
     private final DonacionesService donaciones;
     private final ApiViewSupport views;
-    public IncentivosController(IncentivosService service, DonacionesService donaciones, ApiViewSupport views) {
-        this.service = service; this.donaciones = donaciones; this.views = views;
+    private final PanelDonanteService panelDonante;
+    public IncentivosController(IncentivosService service, DonacionesService donaciones, ApiViewSupport views, PanelDonanteService panelDonante) {
+        this.service = service; this.donaciones = donaciones; this.views = views; this.panelDonante = panelDonante;
     }
 
     @GetMapping("/admin/dashboard/rankings")
@@ -24,7 +26,6 @@ public class IncentivosController {
         model.addAttribute("pageTitle", "Ranking de incentivos");
         model.addAttribute("section", "rankings");
         model.addAttribute("activeTab", "rankings");
-        model.addAttribute("user", java.util.Map.of("name", "Administración (sin autenticación)"));
         return "admin-api";
     }
 
@@ -77,22 +78,23 @@ public class IncentivosController {
         return views.page(model, "Incentivos del donante " + id, "donanteIncentivos");
     }
 
-    @PostMapping("/admin/dashboard/incentivos/donantes/{id}/visibilidad")
-    public String visibilidad(@PathVariable Long id, @RequestParam boolean visible, RedirectAttributes flash) {
-        return views.write(flash, "/admin/dashboard/incentivos/donantes/" + id, () -> service.visibilidad(id, visible));
-    }
-
     @GetMapping("/admin/dashboard/incentivos/historial")
     public String historial(Model model) {
         views.load(model, "historialRanking", service::historialRankings);
         return views.page(model, "Historial de rankings", "historialRanking");
     }
 
-    // Pantallas públicas o personales: conservan sus URL y no requieren prefijo administrativo.
+    // Pantallas personales: conservan sus URL y no requieren prefijo administrativo.
 
     @GetMapping("/donante/dashboard/incentivos")
     public String donorIncentives(Model model) {
-        model.addAllAttributes(service.incentivosDonante());
+        model.addAllAttributes(panelDonante.incentivos());
         return "dashboard-donor-incentivos";
+    }
+
+    /** Solo el propio donante puede cambiar la visibilidad de sus insignias (ADMIN recibe 403 del backend). */
+    @PostMapping("/donante/dashboard/incentivos/visibilidad")
+    public String visibilidadDonante(@RequestParam boolean visible, RedirectAttributes flash) {
+        return views.write(flash, "/donante/dashboard/incentivos", () -> panelDonante.visibilidad(visible));
     }
 }

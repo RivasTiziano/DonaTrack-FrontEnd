@@ -13,6 +13,7 @@ services:
       - LOGISTICA_API_URL=http://logistica-service:8083
       - INCENTIVOS_API_URL=http://incentivos-service:8082
       - NOTIFICACIONES_API_URL=http://notificaciones-service:8081
+      - AUTENTICACION_API_URL=http://autenticacion-service:8084
       - NOTIFICACIONES_ENVIO_MANUAL_HABILITADO=${NOTIFICACIONES_ENVIO_MANUAL_HABILITADO:-false}
     extra_hosts:
       - "host.docker.internal:host-gateway"
