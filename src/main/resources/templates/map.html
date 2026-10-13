@@ -21,7 +21,7 @@
                 <div class="onboarding-hint-content">
                     <div class="onboarding-hint-title">Mapa Público de Transparencia Comunitaria</div>
                     <p class="onboarding-hint-text">
-                        Las ubicaciones de las entregas no se publican para proteger a sus participantes. Podés consultar las entregas habilitadas para publicación en las destacadas y la galería de la página principal.
+                        Cada marcador es una entrega ya recibida, ubicada en la entidad que la recibió. Tocá un marcador para ver su detalle. No se muestran donantes ni direcciones exactas.
                     </p>
                 </div>
                 <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -50,15 +50,6 @@
                         <strong th:text="${beneficiariesCount}">0</strong>
                     </div>
                 </div>
-                <div class="map-stat-item">
-                    <span class="map-stat-icon map-stat-icon-purple" aria-hidden="true">
-                        <i data-lucide="package" style="width: 18px; height: 18px;"></i>
-                    </span>
-                    <div>
-                        <p>Artículos</p>
-                        <strong th:text="${itemsCount}">0</strong>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -72,6 +63,31 @@
         <script th:inline="javascript">
             /*<![CDATA[*/
             var donations = /*[[${donations}]]*/ [];
+
+            function crearPopupEntrega(donation) {
+                var box = document.createElement('div');
+                box.style.minWidth = '210px';
+                function linea(tag, texto, estilo) {
+                    var el = document.createElement(tag);
+                    el.textContent = texto;
+                    el.setAttribute('style', estilo);
+                    box.appendChild(el);
+                }
+                var categoria = [donation.category, donation.subcategory].filter(Boolean).join(' · ') || 'Donación';
+                var cantidad = donation.total_units != null
+                    ? donation.total_units + (donation.unit ? ' ' + donation.unit.toLowerCase() : '') : '—';
+                var entidad = (donation.entity_name || '—') + (donation.locality ? ' (' + donation.locality + ')' : '');
+                linea('h4', categoria, 'font-size:0.95rem;font-weight:700;color:#0f172a;margin:0 0 6px;');
+                linea('p', 'Cantidad: ' + cantidad, 'font-size:0.8rem;color:#64748b;margin:0 0 2px;');
+                linea('p', 'Entidad: ' + entidad, 'font-size:0.8rem;color:#64748b;margin:0 0 2px;');
+                linea('p', 'Entregada: ' + (donation.delivery_date || '—'), 'font-size:0.8rem;color:#64748b;margin:0 0 8px;');
+                var enlace = document.createElement('a');
+                enlace.href = '/explorar-donaciones/' + encodeURIComponent(donation.id);
+                enlace.textContent = 'Ver detalle →';
+                enlace.setAttribute('style', 'color:#e11d48;font-weight:700;font-size:0.8rem;');
+                box.appendChild(enlace);
+                return box;
+            }
 
             function initPublicDonationsMap() {
                 var mapContainer = document.getElementById('map-leaflet');
@@ -102,24 +118,18 @@
                     popupAnchor: [0, -18]
                 });
 
+                var puntos = [];
                 if (Array.isArray(donations)) {
                     donations.forEach(function(donation) {
                         if (!donation.location || donation.location.lat == null) return;
-                        var imgUrl = donation.image_url || donation.image;
-                        var entityName = donation.entity_name || '—';
-                        var detailUrl = '/explorar-donaciones/' + encodeURIComponent(donation.id);
-                        var popupHtml = '<div style="font-family: var(--font-sans); min-width: 210px; padding: 4px;">' +
-                            (imgUrl ? '<img src="' + imgUrl + '" alt="Fotografía del bien donado" style="width:100%;height:110px;object-fit:cover;border-radius:6px;" />' : '<span class="map-package-icon" aria-label="Bien sin fotografía">📦</span>') +
-                            '<h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 2px;">' + (donation.title || 'Donación') + '</h4>' +
-                            '<p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;">Entidad: <strong>' + entityName + '</strong></p>' +
-                            '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                                '<span class="status-badge badge-entregada" style="font-size: 0.7rem;">' + (donation.status || '') + '</span>' +
-                                '<a href="' + detailUrl + '" style="color: #e11d48; font-weight: 700; font-size: 0.8rem;">Ver detalle &rarr;</a>' +
-                            '</div>' +
-                        '</div>';
-                        var marker = L.marker([donation.location.lat, donation.location.lng], { icon: customDonationIcon }).addTo(map);
-                        marker.bindPopup(popupHtml);
+                        var posicion = [donation.location.lat, donation.location.lng];
+                        puntos.push(posicion);
+                        L.marker(posicion, { icon: customDonationIcon }).addTo(map)
+                            .bindPopup(crearPopupEntrega(donation));
                     });
+                }
+                if (puntos.length > 0) {
+                    map.fitBounds(puntos, { padding: [32, 32], maxZoom: 13 });
                 }
 
                 // Invalidate size to ensure full rendering

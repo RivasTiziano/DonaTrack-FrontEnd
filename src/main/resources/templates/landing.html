@@ -121,17 +121,17 @@
 
         <section class="section" id="donations">
             <div class="container">
-                <h2>Donaciones destacadas del mes</h2>
-                <p class="section-copy">Entregas habilitadas para consulta pública.</p>
+                <h2>Donaciones destacadas del último mes</h2>
+                <p class="section-copy">Entregas de los últimos 30 días habilitadas para consulta pública.</p>
                 <div class="donation-grid">
                     <article class="donation-card" th:each="donation : ${featuredDonations}">
                         <img th:if="${donation.image != null}" th:src="${donation.image}" th:alt="${donation.item}" />
                         <h3 th:text="${donation.item}">Item</h3>
-                        <p th:if="${donation.donorName != null}">
-                            <strong>Donante:</strong> <span th:text="${donation.donorName}">Donor</span>
+                        <p class="meta" th:if="${donation.category != null}" th:text="${donation.category}">Categoría</p>
+                        <p th:if="${donation.entity != null}">
+                            <strong>Entidad:</strong> <span th:text="${donation.entity}">Entidad</span><span th:if="${donation.locality != null}" th:text="' (' + ${donation.locality} + ')'"></span>
                         </p>
                         <p class="meta" th:if="${donation.date != null}" th:text="${donation.date}">Date</p>
-                        <p class="meta" th:if="${donation.beneficiary != null}">Beneficiario: <span th:text="${donation.beneficiary}">Beneficiary</span></p>
                         <a class="btn btn-outline" th:href="@{/explorar-donaciones/{id}(id=${donation.id})}">Ver detalles</a>
                     </article>
                 </div>

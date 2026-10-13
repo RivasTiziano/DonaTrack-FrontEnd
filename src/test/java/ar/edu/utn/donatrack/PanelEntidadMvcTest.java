@@ -1,6 +1,7 @@
 package ar.edu.utn.donatrack;
 
 import ar.edu.utn.donatrack.dto.ApiDtos;
+import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.IncentivosApiService;
 import ar.edu.utn.donatrack.services.LogisticaApiService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -194,5 +196,42 @@ class PanelEntidadMvcTest {
                 .andExpect(content().string(not(containsString("Chofer Asignado"))));
         verify(donaciones, never()).beneficiarios();
         verify(donaciones, never()).donaciones();
+    }
+
+    // ---------- Entregas en camino (req. 14) ----------
+
+    private static LogisticaDetalles.SeguimientoEntrega envioEnCamino(long entregaId, long asignacionId, LogisticaDetalles.CamionPosicion camion) {
+        return new LogisticaDetalles.SeguimientoEntrega(entregaId, asignacionId, "EN_TRASLADO",
+                new LogisticaDetalles.Destino("La Plata", "Buenos Aires", -34.92, -57.95), camion);
+    }
+
+    @Test void entregasUsanElSeguimientoYUnaSolaConsultaDeAsignaciones() throws Exception {
+        var camion = new LogisticaDetalles.CamionPosicion("AB123CD", -34.9, -57.9, LocalDateTime.of(2026, 10, 13, 10, 30));
+        when(logistica.seguimiento()).thenReturn(List.of(envioEnCamino(7L, 5L, camion)));
+        when(donaciones.asignacionesEntidad(3L, "")).thenReturn(List.of(asignacionEnTraslado(5L)));
+        mvc.perform(get("/entidad/dashboard/entregas").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("AB123CD")))
+                .andExpect(content().string(containsString("Donación de prueba")))
+                .andExpect(content().string(containsString("10:30")));
+        verify(logistica, times(1)).seguimiento();
+        verify(donaciones, times(1)).asignacionesEntidad(3L, "");
+        verify(logistica, never()).ubicaciones();
+        verify(logistica, never()).ubicacion(anyString());
+    }
+
+    @Test void entidadSinCamionMuestraSinPosicionTodavia() throws Exception {
+        when(logistica.seguimiento()).thenReturn(List.of(envioEnCamino(7L, 5L, null)));
+        when(donaciones.asignacionesEntidad(3L, "")).thenReturn(List.of(asignacionEnTraslado(5L)));
+        mvc.perform(get("/entidad/dashboard/entregas").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Sin posición todavía")));
+    }
+
+    @Test void entidadSinEnviosEnCaminoMuestraEstadoVacio() throws Exception {
+        when(logistica.seguimiento()).thenReturn(List.of());
+        mvc.perform(get("/entidad/dashboard/entregas").session(TestSesiones.entidad(3L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("No hay envíos en camino a tu sede.")));
     }
 }

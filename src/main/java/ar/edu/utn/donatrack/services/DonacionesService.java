@@ -16,6 +16,7 @@ import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 /** Casos de uso del cliente liviano; no implementa reglas de negocio ni persistencia. */
 @Service
 public class DonacionesService {
+    public static final int DESCRIPCION_PUBLICA_MAX = 500;
     private final DonacionesApiService api;
     private final DonacionesMapper mapper;
     private final DonacionesValidator validator;
@@ -106,6 +107,18 @@ public class DonacionesService {
         api.asignar(mapper.asignacion(donacionId,necesidadId,cantidad));
     }
     public void algoritmo(String nombre,boolean activo) { api.algoritmo(mapper.algoritmo(nombre,activo)); }
+
+    /**
+     * Publica o despublica una entrega en la landing. Al despublicar no se envía descripción.
+     * El largo se valida acá, antes del PATCH.
+     */
+    public DonacionesDetalles.Publicacion publicarAsignacion(Long asignacionId, boolean publicable, String descripcionPublica) {
+        if (publicable && descripcionPublica != null && descripcionPublica.length() > DESCRIPCION_PUBLICA_MAX)
+            throw new FormularioInvalidoException("La descripción pública no puede superar los " + DESCRIPCION_PUBLICA_MAX + " caracteres.");
+        String descripcion = publicable && descripcionPublica != null && !descripcionPublica.isBlank()
+                ? descripcionPublica.trim() : null;
+        return api.publicacion(asignacionId, publicable, descripcion);
+    }
     public ApiDtos.Importacion importar(MultipartFile file) { validator.archivo(file); return api.importar(file); }
 
     private void check(BeanPropertyBindingResult errors) {

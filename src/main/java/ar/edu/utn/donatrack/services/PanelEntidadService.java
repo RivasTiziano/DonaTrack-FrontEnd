@@ -2,6 +2,7 @@ package ar.edu.utn.donatrack.services;
 
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
+import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import ar.edu.utn.donatrack.forms.BienForm;
 import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 import ar.edu.utn.donatrack.exceptions.SesionRequeridaException;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -138,12 +140,22 @@ public class PanelEntidadService {
         }
     }
 
-    /** Asignaciones en camino o listas para entregar. */
+    /**
+     * Entregas en camino de la entidad (req. 14). El seguimiento sale del token; las asignaciones de la entidad
+     * (una sola consulta) aportan el título y los bienes. Sin N+1.
+     */
     public Map<String, Object> entregas() {
         Map<String, Object> m = new LinkedHashMap<>();
         Long ref = ref();
         m.put("user", perfil(m, ref));
-        m.put("incomingDeliveries", enCurso(asignaciones(m, ref)).stream().map(mapper::entrega).toList());
+        var seguimiento = cargar(m, logisticaApi::seguimiento, List.<LogisticaDetalles.SeguimientoEntrega>of());
+        Map<Long, ApiDtos.Asignacion> asignaciones = new HashMap<>();
+        if (!seguimiento.isEmpty())
+            for (var a : asignaciones(m, ref)) if (a.id() != null) asignaciones.put(a.id(), a);
+        LocalDateTime ahora = LocalDateTime.now();
+        m.put("incomingDeliveries", seguimiento.stream()
+                .map(s -> mapper.entrega(s, s.asignacionId() == null ? null : asignaciones.get(s.asignacionId()), ahora))
+                .toList());
         return m;
     }
 

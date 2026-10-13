@@ -25,7 +25,7 @@ public class WebController {
         return "landing";
     }
 
-    /** Mapa público: sin datos reales hasta que exista el endpoint público (pedido D1). */
+    /** Mapa público: entregadas con la ubicación de la entidad que las recibió. */
     @GetMapping("/explorar-donaciones")
     public String mapa(Model model) {
         model.addAllAttributes(service.mapa());

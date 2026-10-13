@@ -112,6 +112,12 @@ public class DonacionesApiService {
         http.post(url + "/asignaciones", request, Object.class);
     }
 
+    /** Publica o despublica la entrega de una asignación entregada (admin). */
+    public DonacionesDetalles.Publicacion publicacion(Long asignacionId, boolean publicable, String descripcionPublica) {
+        return http.patch(url + "/asignaciones/" + asignacionId + "/publicacion",
+                new ApiRequests.PublicacionAsignacion(publicable, descripcionPublica), DonacionesDetalles.Publicacion.class);
+    }
+
     public void crearDonacion(ApiRequests.Donacion request) {
         http.post(url + "/donaciones", request, new ParameterizedTypeReference<List<ApiDtos.Donacion>>() {});
     }

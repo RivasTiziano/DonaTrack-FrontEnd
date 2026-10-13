@@ -2,7 +2,9 @@ package ar.edu.utn.donatrack.mappers;
 
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
+import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import org.springframework.stereotype.Component;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import static ar.edu.utn.donatrack.mappers.PanelFormato.*;
@@ -56,7 +58,31 @@ public class PanelEntidadMapper {
                 "failure_reason", a.justificacionFallo());
     }
 
-    /** Asignación en camino o lista para entregar. El camión no se informa: la API no lo permite por dueño. */
+    /**
+     * Entrega en camino de la entidad: el destino es su propia sede y el camión, el que reporta el seguimiento.
+     * Sin asignación (el listado no la trae), la fila muestra lo que informa el seguimiento.
+     */
+    public Map<String, Object> entrega(LogisticaDetalles.SeguimientoEntrega s, ApiDtos.Asignacion a, LocalDateTime ahora) {
+        ApiDtos.Bien bien = a == null ? null : a.bien();
+        String titulo = a == null ? null : titulo(a);
+        String unidad = bien == null ? null : minusculas(bien.unidadMedida());
+        String cantidad = a == null || a.cantidadAsignada() == null ? null
+                : numero(a.cantidadAsignada()) + (unidad == null ? "" : " " + unidad);
+        return mapa("id", s.entregaId(),
+                "asignacionId", s.asignacionId(),
+                "donationId", a == null ? null : a.donacionId(),
+                "title", titulo,
+                "status", s.estado(),
+                "status_label", etiquetaEstado(s.estado()),
+                "status_badge", claseEstado(s.estado()),
+                "destinationAddress", ubicacion(s.destino()),
+                "destinationCoords", coordenadas(s.destino()),
+                "goods", List.of(mapa("name", bien == null ? titulo : bien.descripcion(), "quantity", cantidad)),
+                "truck", camion(s.camion(), ahora),
+                "isPerishable", bien != null && bien.fechaDeVencimiento() != null);
+    }
+
+    /** Asignación en camino o lista para entregar (resumen). El camión no se informa: el resumen no consulta el seguimiento. */
     public Map<String, Object> entrega(ApiDtos.Asignacion a) {
         ApiDtos.Bien bien = a.bien();
         String unidad = bien == null ? null : minusculas(bien.unidadMedida());

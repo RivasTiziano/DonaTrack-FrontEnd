@@ -92,6 +92,11 @@ public class WebApiCallerService {
                 .body(body).retrieve().toBodilessEntity();
     }
 
+    public <T> T patch(String url, Object body, Class<T> type) {
+        return client.patch().uri(url).contentType(MediaType.APPLICATION_JSON)
+                .body(body).retrieve().body(type);
+    }
+
     public void delete(String url) {
         client.delete().uri(url).retrieve().toBodilessEntity();
     }

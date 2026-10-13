@@ -3,6 +3,7 @@ package ar.edu.utn.donatrack.services;
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.IncentivosDtos;
+import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import ar.edu.utn.donatrack.exceptions.SesionRequeridaException;
 import ar.edu.utn.donatrack.mappers.PanelDonanteMapper;
 import ar.edu.utn.donatrack.models.SesionUsuario;
@@ -10,6 +11,7 @@ import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
 import ar.edu.utn.donatrack.services.internal.SesionActual;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -19,19 +21,19 @@ import java.util.function.Supplier;
  */
 @Service
 public class PanelDonanteService {
-    private static final Set<String> EN_CURSO = Set.of("LISTA_PARA_ENTREGAR", "EN_TRASLADO");
-
     private final SesionActual sesiones;
     private final DonacionesApiService donacionesApi;
     private final IncentivosApiService incentivosApi;
+    private final LogisticaApiService logisticaApi;
     private final PanelDonanteMapper mapper;
     private final ApiErrorMessages errores;
 
     public PanelDonanteService(SesionActual sesiones, DonacionesApiService donacionesApi, IncentivosApiService incentivosApi,
-                               PanelDonanteMapper mapper, ApiErrorMessages errores) {
+                               LogisticaApiService logisticaApi, PanelDonanteMapper mapper, ApiErrorMessages errores) {
         this.sesiones = sesiones;
         this.donacionesApi = donacionesApi;
         this.incentivosApi = incentivosApi;
+        this.logisticaApi = logisticaApi;
         this.mapper = mapper;
         this.errores = errores;
     }
@@ -125,20 +127,28 @@ public class PanelDonanteService {
         incentivosApi.visibilidad(sesion().getReferenciaId(), visible);
     }
 
-    /** Asignaciones propias que todavía no terminaron de entregarse. */
+    /**
+     * Entregas en camino del donante (req. 9). El seguimiento sale del token y ya trae solo las entregas activas.
+     * Con cada una se busca su asignación (título y categoría) y la entidad destino: tres consultas en total, sin N+1.
+     */
     public Map<String, Object> entregas() {
         Map<String, Object> m = new LinkedHashMap<>();
         Contexto c = contexto(m);
         m.put("user", c.user());
+        var seguimiento = cargar(m, logisticaApi::seguimiento, List.<LogisticaDetalles.SeguimientoEntrega>of());
+        if (seguimiento.isEmpty()) {
+            m.put("activeDonorDeliveries", List.of());
+            return m;
+        }
+        Map<Long, ApiDtos.Asignacion> asignaciones = new HashMap<>();
+        for (var a : cargar(m, () -> donacionesApi.asignacionesDonante(c.ref()), List.<ApiDtos.Asignacion>of()))
+            if (a.id() != null) asignaciones.put(a.id(), a);
         var entidades = beneficiariosPorId(m);
+        LocalDateTime ahora = LocalDateTime.now();
         List<Map<String, Object>> entregas = new ArrayList<>();
-        // Req 9 bloqueado hasta GET /entregas/seguimiento (C4): no se listan entregas en curso todavía.
-        for (var d : List.<ApiDtos.Donacion>of()) {
-            var asignaciones = cargar(m, () -> donacionesApi.asignaciones(d.id()), List.<ApiDtos.Asignacion>of());
-            for (var a : asignaciones) {
-                if (!EN_CURSO.contains(a.estado())) continue;
-                entregas.add(mapper.entrega(a, entidades.get(a.entidadBeneficiariaId())));
-            }
+        for (var s : seguimiento) {
+            var a = s.asignacionId() == null ? null : asignaciones.get(s.asignacionId());
+            entregas.add(mapper.entrega(s, a, nombreEntidad(a, entidades), ahora));
         }
         m.put("activeDonorDeliveries", entregas);
         return m;
@@ -165,6 +175,13 @@ public class PanelDonanteService {
             user = j == null ? null : mapper.perfilJuridico(j, categoria);
         }
         return new Contexto(ref, metricas, user);
+    }
+
+    /** Nombre de la entidad destino de la asignación; si el directorio no la trae, un rótulo con el id. */
+    private static String nombreEntidad(ApiDtos.Asignacion a, Map<Long, ApiDtos.Beneficiario> entidades) {
+        if (a == null || a.entidadBeneficiariaId() == null) return null;
+        var b = entidades.get(a.entidadBeneficiariaId());
+        return b != null ? b.razonSocial() : "Entidad #" + a.entidadBeneficiariaId();
     }
 
     private Map<Long, ApiDtos.Beneficiario> beneficiariosPorId(Map<String, Object> m) {

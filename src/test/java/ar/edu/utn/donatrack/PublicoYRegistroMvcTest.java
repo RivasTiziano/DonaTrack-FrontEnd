@@ -1,5 +1,7 @@
 package ar.edu.utn.donatrack;
 
+import ar.edu.utn.donatrack.dto.EntregaMapaDto;
+import ar.edu.utn.donatrack.dto.EntregaPublicaDto;
 import ar.edu.utn.donatrack.services.AutenticacionApiService;
 import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.IncentivosApiService;
@@ -11,6 +13,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import java.time.LocalDateTime;
+import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -91,6 +95,30 @@ class PublicoYRegistroMvcTest {
                 .andExpect(header().doesNotExist("Location"))
                 .andExpect(content().string(containsString("value=\"Arcos S.A.\"")));
         verifyNoInteractions(registroApi);
+        sinLlamadasALaApi();
+    }
+
+    @Test void detalleMuestraLasFotosRevisadasYLaEntidad() throws Exception {
+        when(publico.detalleEntrega("15")).thenReturn(new EntregaPublicaDto(15L, "Fideos", LocalDateTime.of(2026, 10, 2, 10, 0),
+                5f, "KILOGRAMO", null, "Alimentos", "Secos", new EntregaPublicaDto.EntidadResumen("Comedor Sol", "La Plata"),
+                List.of("https://fotos.example/15.jpg")));
+        mvc.perform(get("/explorar-donaciones/15"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("https://fotos.example/15.jpg")))
+                .andExpect(content().string(containsString("Comedor Sol")))
+                .andExpect(content().string(not(containsString("Este registro no está habilitado"))));
+        sinLlamadasALaApi();
+    }
+
+    @Test void mapaDibujaLosMarcadoresConLaUbicacionDeLaEntidad() throws Exception {
+        when(publico.entregasEnMapa()).thenReturn(List.of(new EntregaMapaDto(1L, LocalDateTime.of(2026, 1, 15, 10, 0),
+                "Alimentos", "Secos", 5f, "KILOGRAMO",
+                new EntregaMapaDto.EntidadUbicada("Comedor Sol", "La Plata", "Buenos Aires", -34.92f, -57.95f))));
+        mvc.perform(get("/explorar-donaciones"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Comedor Sol")))
+                .andExpect(content().string(containsString("-34.92")))
+                .andExpect(content().string(not(containsString("No se muestran ubicaciones de entregas"))));
         sinLlamadasALaApi();
     }
 }

@@ -3,6 +3,7 @@ package ar.edu.utn.donatrack;
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.IncentivosDtos;
+import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import ar.edu.utn.donatrack.dto.donante.MedioDeContactoDto;
 import ar.edu.utn.donatrack.services.DonacionesApiService;
 import ar.edu.utn.donatrack.services.IncentivosApiService;
@@ -157,5 +158,57 @@ class PanelDonanteMvcTest {
         when(donaciones.humano(7L)).thenThrow(new ResourceAccessException("offline"));
         mvc.perform(get("/donante/dashboard").session(TestSesiones.donante(7L)))
                 .andExpect(status().isOk());
+    }
+
+    // ---------- Entregas en camino (req. 9) ----------
+
+    private static LogisticaDetalles.SeguimientoEntrega seguimiento(long entregaId, long asignacionId, LogisticaDetalles.CamionPosicion camion) {
+        return new LogisticaDetalles.SeguimientoEntrega(entregaId, asignacionId, "EN_TRASLADO",
+                new LogisticaDetalles.Destino("La Plata", "Buenos Aires", -34.92, -57.95), camion);
+    }
+
+    @Test void entregasUsanUnaSolaConsultaAlSeguimientoYNoConsultanUbicaciones() throws Exception {
+        when(logistica.seguimiento()).thenReturn(List.of(seguimiento(15L, 5L, null), seguimiento(16L, 6L, null)));
+        when(donaciones.asignacionesDonante(7L)).thenReturn(List.of(asignacion(5L, 40L, 3L, "EN_TRASLADO"),
+                asignacion(6L, 41L, 3L, "EN_TRASLADO")));
+        when(donaciones.beneficiarios()).thenReturn(List.of(fundacionVida()));
+        mvc.perform(get("/donante/dashboard/entregas").session(TestSesiones.donante(7L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Fundación Vida")));
+        verify(logistica, times(1)).seguimiento();
+        verify(donaciones, times(1)).asignacionesDonante(7L);
+        verify(donaciones, times(1)).beneficiarios();
+        verify(logistica, never()).ubicaciones();
+        verify(logistica, never()).ubicacion(anyString());
+    }
+
+    @Test void conCamionMuestraPatenteYUltimaActualizacion() throws Exception {
+        var camion = new LogisticaDetalles.CamionPosicion("AB123CD", -34.9, -57.9, LocalDateTime.of(2026, 10, 13, 10, 30));
+        when(logistica.seguimiento()).thenReturn(List.of(seguimiento(15L, 5L, camion)));
+        when(donaciones.asignacionesDonante(7L)).thenReturn(List.of(asignacion(5L, 40L, 3L, "EN_TRASLADO")));
+        when(donaciones.beneficiarios()).thenReturn(List.of(fundacionVida()));
+        mvc.perform(get("/donante/dashboard/entregas").session(TestSesiones.donante(7L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("AB123CD")))
+                .andExpect(content().string(containsString("Última actualización")))
+                .andExpect(content().string(containsString("10:30")));
+    }
+
+    @Test void sinCamionMuestraSinPosicionTodavia() throws Exception {
+        when(logistica.seguimiento()).thenReturn(List.of(seguimiento(15L, 5L, null)));
+        when(donaciones.asignacionesDonante(7L)).thenReturn(List.of(asignacion(5L, 40L, 3L, "EN_TRASLADO")));
+        when(donaciones.beneficiarios()).thenReturn(List.of(fundacionVida()));
+        mvc.perform(get("/donante/dashboard/entregas").session(TestSesiones.donante(7L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Sin posición todavía")))
+                .andExpect(content().string(containsString("Fundación Vida")));
+    }
+
+    @Test void sinEntregasEnCaminoMuestraEstadoVacioSinConsultarAsignaciones() throws Exception {
+        when(logistica.seguimiento()).thenReturn(List.of());
+        mvc.perform(get("/donante/dashboard/entregas").session(TestSesiones.donante(7L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("No tenés entregas en camino en este momento.")));
+        verify(donaciones, never()).asignacionesDonante(anyLong());
     }
 }

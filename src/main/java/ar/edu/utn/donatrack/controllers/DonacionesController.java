@@ -201,6 +201,17 @@ public class DonacionesController {
         return write(flash, "asignar", () -> service.asignar(donacionId, necesidadId, cantidadAAsignar));
     }
 
+    /** Publica (publicable=true) o despublica (false) una entrega entregada en la landing. Vuelve a Entregas. */
+    @PostMapping("/admin/dashboard/asignaciones/{id}/publicacion")
+    public String publicarAsignacion(@PathVariable Long id, @RequestParam boolean publicable,
+                                     @RequestParam(required = false) String descripcionPublica, RedirectAttributes flash) {
+        String redirect = write(flash, "entregas", () -> flash.addFlashAttribute("publicacion",
+                service.publicarAsignacion(id, publicable, descripcionPublica)));
+        if (flash.getFlashAttributes().containsKey("publicacion"))
+            flash.addFlashAttribute("success", publicable ? "Entrega publicada en la landing." : "Entrega despublicada de la landing.");
+        return redirect;
+    }
+
     @PostMapping("/admin/dashboard/algoritmos")
     public String algoritmo(@RequestParam String nombre, @RequestParam boolean activo, RedirectAttributes flash) {
         return write(flash, "asignar", () -> service.algoritmo(nombre, activo));

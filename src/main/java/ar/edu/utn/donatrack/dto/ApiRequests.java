@@ -1,5 +1,6 @@
 package ar.edu.utn.donatrack.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,4 +19,7 @@ public final class ApiRequests {
     public record Camion(String patente, Float capacidadVolumen, Float altura, Float capacidadCarga) {}
     public record Algoritmo(String nombre, boolean activo) {}
     public record Asignacion(Long donacionId, Long necesidadId, Float cantidadAAsignar) {}
+    /** PATCH /asignaciones/{id}/publicacion. La descripción se omite cuando es nula (despublicar). */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record PublicacionAsignacion(boolean publicable, String descripcionPublica) {}
 }

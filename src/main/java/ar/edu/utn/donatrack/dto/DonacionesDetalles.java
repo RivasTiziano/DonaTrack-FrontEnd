@@ -9,6 +9,10 @@ import java.util.List;
 public final class DonacionesDetalles {
     private DonacionesDetalles() {}
 
+    /** Respuesta de PATCH /asignaciones/{id}/publicacion: fotos que quedan visibles en la landing. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Publicacion(Long asignacionId, boolean publicable, String descripcionPublica, List<String> fotos) {}
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Humano(Long id, String nombre, String apellido, LocalDate fechaNacimiento,
                          String tipoDocumento, String numeroDocumento, String genero,
