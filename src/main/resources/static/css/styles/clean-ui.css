@@ -155,3 +155,5 @@ html.drawer-open:has(.dashboard-mobile-drawer.open),body.drawer-open:has(.dashbo
 
 .registration-page [data-registro-quitar] { border: 0 !important; background: transparent !important; color: #111 !important; }
 .registration-page [data-registro-quitar]:hover { color: #111 !important; text-decoration: underline; text-underline-offset: 4px; }
+
+.truck-map-marker { filter: brightness(0); }

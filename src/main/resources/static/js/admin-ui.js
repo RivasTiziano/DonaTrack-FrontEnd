@@ -55,10 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const map=L.map(container).setView([Number(markers[0].dataset.lat),Number(markers[0].dataset.lng)],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
     const bounds=[];
+    const truckIcon=L.icon({
+      iconUrl:'/img/camion-mapa.webp?v=4',
+      iconSize:[40,40],
+      iconAnchor:[20,20],
+      popupAnchor:[0,-20],
+      className:'truck-map-marker'
+    });
     markers.forEach(m => {
       const point=[Number(m.dataset.lat),Number(m.dataset.lng)];
       const popup=document.createElement('div');popup.textContent=m.textContent.trim();
-      L.marker(point).addTo(map).bindPopup(popup);bounds.push(point);
+      L.marker(point,{icon:truckIcon,title:"Ver ubicación del camión"}).addTo(map).bindPopup(popup);bounds.push(point);
     });
     map.fitBounds(bounds,{padding:[30,30],maxZoom:14});
   });

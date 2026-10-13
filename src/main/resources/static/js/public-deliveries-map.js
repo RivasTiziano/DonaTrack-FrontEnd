@@ -3,7 +3,7 @@
     const status = document.getElementById('public-map-status');
     if (!container) return;
     if (!window.L) { status.textContent = 'No pudimos cargar el mapa. Probá recargar la página.'; return; }
-    const map = L.map(container, { scrollWheelZoom: false }).setView([-34.6037, -58.3816], 11);
+    const map = L.map(container, { scrollWheelZoom: true }).setView([-34.6037, -58.3816], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19
