@@ -20,7 +20,8 @@ Estado al 2026-10-12. El plan completo está en [PLAN-DESMAQUETADO-E5.md](PLAN-D
 1. **Verificación manual** con Docker (sección siguiente): login con cada rol, "Crear acceso", alta de necesidad como entidad, asignación como admin y confirmación de recepción.
 2. **Integrar la rama** `entrega5-desmaquetado-front` a `main` (decide Tomás; push solo con su OK).
 3. Cuando el backend resuelva C1, X1/C3, C4, D1, E1/E2 y F1: reemplazar los comentarios `// PROVISORIO` (buscar con `grep -rn PROVISORIO src/main`).
-4. **Refactor visual** de dashboards y barra lateral por permisos (pendiente, fuera del plan).
+4. **Refactor visual del admin**: plan listo en [PLAN-REFACTOR-VISUAL-ADMIN.md](PLAN-REFACTOR-VISUAL-ADMIN.md) (sin aplicar). Incluye el Panel General, la barra lateral agrupada, el botón gigante de Camiones, la tabla de Donaciones y la foto del hero.
+5. Después: plan visual para los dashboards de donante y entidad.
 
 ## Entorno local con Docker
 - **Backend:** `docker compose up -d` en `../2026-tpa-ma-ma-grupo-18`, rama ENTREGA-5.
