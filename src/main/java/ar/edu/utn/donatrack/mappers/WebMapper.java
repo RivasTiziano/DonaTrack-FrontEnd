@@ -42,8 +42,7 @@ public class WebMapper {
 
         model.put("footerQuickLinks", List.of(
             Map.of("label", "Acerca de", "href", "/#about"),
-            Map.of("label", "Donaciones", "href", "/#donations"),
-            Map.of("label", "Galería", "href", "/#gallery")
+            Map.of("label", "Donaciones", "href", "/#gallery")
         ));
 
         model.put("footerAccessLinks", List.of(
@@ -64,11 +63,13 @@ public class WebMapper {
 
     public Map<String,Object> entregasLanding(List<ar.edu.utn.donatrack.dto.EntregaPublicaDto> entregas) {
         var model = landing(List.of());
+        model.put("publicDeliveries", entregas);
         var recientes = entregas.stream().filter(e -> e.fechaEntrega() != null)
             .sorted(Comparator.comparing(ar.edu.utn.donatrack.dto.EntregaPublicaDto::fechaEntrega).reversed()).toList();
         var mes = java.time.YearMonth.now(java.time.ZoneId.of("America/Argentina/Buenos_Aires"));
         model.put("featuredDonations", recientes.stream().filter(e -> java.time.YearMonth.from(e.fechaEntrega()).equals(mes)).limit(3).map(this::publicCard).toList());
-        model.put("recentDeliveries", recientes.stream().filter(e -> e.imagen() != null && !e.imagen().isBlank()).limit(6).map(e -> {
+        var galleryImages = new java.util.HashSet<String>();
+        model.put("recentDeliveries", recientes.stream().filter(e -> e.imagen() != null && !e.imagen().isBlank()).filter(e -> galleryImages.add(e.imagen())).limit(6).map(e -> {
             Map<String,Object> m = new LinkedHashMap<>();
             m.put("id",e.id()); m.put("image",e.imagen()); m.put("title",e.descripcion()); return m;
         }).toList());
@@ -99,8 +100,7 @@ public class WebMapper {
         Map<String,Object> model = new LinkedHashMap<>();
         model.put("footerQuickLinks", List.of(
             Map.of("label", "Acerca de", "href", "/#about"),
-            Map.of("label", "Donaciones", "href", "/#donations"),
-            Map.of("label", "Galería", "href", "/#gallery")
+            Map.of("label", "Donaciones", "href", "/#gallery")
         ));
         model.put("footerAccessLinks", List.of(
             Map.of("label", "Iniciar sesión", "href", "/login"),

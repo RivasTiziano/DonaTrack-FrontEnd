@@ -21,7 +21,7 @@
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-            <a th:each="option : ${registrationOptions}" th:href="@{${option.path}}" style="background: #ffffff; border: 2px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+            <article class="registration-profile" th:each="option : ${registrationOptions}" style="background: transparent; border: 0; border-radius: 0; padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
                 <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); display: grid; place-items: center;">
                     <i th:attr="data-lucide=${option.icon}" style="width: 32px; height: 32px;"></i>
                 </div>
@@ -29,11 +29,11 @@
                     <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-ink);" th:text="${option.title}">Título</h3>
                     <p style="font-size: 0.875rem; color: var(--color-muted); line-height: 1.4; margin-top: 6px;" th:text="${option.description}">Descripción</p>
                 </div>
-                <button type="button" class="btn btn-outline btn-sm" style="margin-top: auto; pointer-events: none;">
+                <a th:href="@{${option.path}}" class="btn btn-sm registration-start" style="margin-top: auto;" th:aria-label="${'Comenzar registro: ' + option.title}">
                     <span>Comenzar registro</span>
-                    <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
-                </button>
-            </a>
+
+                </a>
+            </article>
         </div>
 
         <div style="text-align: center; font-size: 0.9375rem; color: var(--color-muted);">

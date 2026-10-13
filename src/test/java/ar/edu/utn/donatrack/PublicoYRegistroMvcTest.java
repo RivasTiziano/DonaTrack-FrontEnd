@@ -38,25 +38,19 @@ class PublicoYRegistroMvcTest {
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Entrega de útiles escolares"))))
-                .andExpect(content().string(containsString("/img/hero-donaciones.jpg")))
+                .andExpect(content().string(containsString("/img/landing-donaciones.webp")))
                 .andExpect(content().string(not(containsString("100% trazabilidad verificada"))))
                 .andExpect(content().string(containsString("La transparencia empieza con datos reales")));
         sinLlamadasALaApi();
     }
 
-    @Test void mapaNoLlamaALaApiNiTraeCoordenadasNiUnsplash() throws Exception {
-        mvc.perform(get("/explorar-donaciones"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))))
-                .andExpect(content().string(containsString("No se muestran ubicaciones de entregas. Consultá las entregas públicas en la página principal.")));
+    @Test void mapaPublicoRetiradoNoLlamaALaApi() throws Exception {
+        mvc.perform(get("/explorar-donaciones")).andExpect(status().isNotFound());
         sinLlamadasALaApi();
     }
 
-    @Test void detallePublicoSinDatosMuestraEstadoVacio() throws Exception {
-        mvc.perform(get("/explorar-donaciones/15"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Este registro no está habilitado para consulta pública.")))
-                .andExpect(content().string(not(containsStringIgnoringCase("unsplash"))));
+    @Test void detallePublicoRetiradoNoLlamaALaApi() throws Exception {
+        mvc.perform(get("/explorar-donaciones/15")).andExpect(status().isNotFound());
         sinLlamadasALaApi();
     }
 

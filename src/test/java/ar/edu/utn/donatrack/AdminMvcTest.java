@@ -294,8 +294,6 @@ class AdminMvcTest {
                 "/entidad/dashboard/confirmar",
                 "/entidad/dashboard/entregas",
                 "/entidad/dashboard/notificaciones",
-                "/explorar-donaciones",
-                "/explorar-donaciones/10",
                 "/",
                 "/legal",
                 "/registro"

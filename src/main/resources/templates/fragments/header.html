@@ -13,14 +13,13 @@
 
             <nav class="dt-nav" aria-label="Navegación principal">
                 <a th:href="@{/#about}">Acerca de</a>
-                <a th:href="@{/#donations}">Donaciones</a>
-                <a th:href="@{/#gallery}">Galería</a>
-                <a th:href="@{/explorar-donaciones}">Explorar donaciones</a>
+                <a th:href="@{/#gallery}">Donaciones</a>
+                <a th:href="@{/#mapa-donaciones}">Mapa</a>
             </nav>
 
             <div class="auth-actions">
-                <a th:href="@{/login}" class="nav-auth-link btn btn-ghost-primary">Iniciar sesión</a>
-                <a th:href="@{/registro}" class="nav-auth-link btn btn-primary">Registrarse</a>
+                <a th:href="@{/login}" class="nav-auth-link btn auth-login">Iniciar sesión</a>
+                <a th:href="@{/registro}" class="nav-auth-link btn auth-register">Registrarse</a>
             </div>
 
             <!-- Mobile Hamburger Toggle Button -->
@@ -46,15 +45,14 @@
 
             <div class="mobile-drawer-links">
                 <a th:href="@{/#about}"><i data-lucide="info" style="width: 18px; height: 18px;"></i> Acerca de</a>
-                <a th:href="@{/#donations}"><i data-lucide="package" style="width: 18px; height: 18px;"></i> Donaciones</a>
-                <a th:href="@{/#gallery}"><i data-lucide="image" style="width: 18px; height: 18px;"></i> Galería</a>
-                <a th:href="@{/explorar-donaciones}"><i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> Explorar en Mapa</a>
+                <a th:href="@{/#gallery}"><i data-lucide="package" style="width: 18px; height: 18px;"></i> Donaciones</a>
+                <a th:href="@{/#mapa-donaciones}"><i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> Mapa</a>
                 <a th:href="@{/legal}"><i data-lucide="shield-check" style="width: 18px; height: 18px;"></i> Legal y Privacidad</a>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
-                <a th:href="@{/login}" style="width: 100%; text-decoration: none;" class="btn btn-outline">Iniciar sesión</a>
-                <a th:href="@{/registro}" style="width: 100%; text-decoration: none;" class="btn btn-primary">Registrarse</a>
+                <a th:href="@{/login}" style="width: 100%; text-decoration: none;" class="btn auth-login">Iniciar sesión</a>
+                <a th:href="@{/registro}" style="width: 100%; text-decoration: none;" class="btn auth-register">Registrarse</a>
             </div>
         </aside>
     </div>

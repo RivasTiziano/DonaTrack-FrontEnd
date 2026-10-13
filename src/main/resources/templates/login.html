@@ -11,23 +11,19 @@
     <!-- Scripts -->
     <script th:src="@{/vendor/lucide/lucide.min.js}"></script>
 </head>
-<body style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 10% 20%, #ffe4e6 0%, transparent 35%), radial-gradient(circle at 90% 80%, #ffedd5 0%, transparent 30%), var(--color-bg); padding: 1rem; width: 100%; box-sizing: border-box; overflow-x: hidden;">
-    <div style="width: 100%; max-width: 440px; box-sizing: border-box;">
-        <!-- Top Back Link -->
-        <div style="margin-bottom: 1.25rem;">
-            <a th:href="@{/}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-muted); font-weight: 600; font-size: 0.875rem;">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
-                <span>Volver a la página principal</span>
-            </a>
-        </div>
-
+<body class="login-page" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 10% 20%, #ffe4e6 0%, transparent 35%), radial-gradient(circle at 90% 80%, #ffedd5 0%, transparent 30%), var(--color-bg); padding: 1rem; width: 100%; box-sizing: border-box; overflow-x: hidden;">
+    <div class="login-shell" style="width: 100%; max-width: 440px; box-sizing: border-box;">
+        <a class="login-back" th:href="@{/}" aria-label="Volver a la página principal">
+            <i data-lucide="arrow-left" aria-hidden="true"></i>
+        </a>
+        <a class="brand login-brand" th:href="@{/}">
+            <img th:replace="~{fragments/brand :: mark}" />
+            <span>DonaTrack</span>
+        </a>
         <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 1.5rem;  box-sizing: border-box; width: 100%;">
             <!-- Logo & Heading -->
             <div style="text-align: center; margin-bottom: 1.75rem;">
-                <a class="brand" th:href="@{/}" style="justify-content: center; margin-bottom: 0.75rem;">
-                    <img th:replace="~{fragments/brand :: mark}" />
-                    <span>DonaTrack</span>
-                </a>
+
                 <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--color-ink);">Iniciar Sesión</h1>
                 <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Ingresa a tu cuenta para gestionar tus donaciones</p>
             </div>

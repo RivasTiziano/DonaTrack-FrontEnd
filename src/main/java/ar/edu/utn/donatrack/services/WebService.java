@@ -13,6 +13,4 @@ public class WebService {
     }
     public Map<String,Object> landing() { return mapper.entregasLanding(publico.entregasPublicas()); }
     public Map<String,Object> legal() { return mapper.legal(); }
-    public Map<String,Object> mapa() { return mapper.map(publico.entregasEnMapa()); }
-    public Map<String,Object> detalle(String id) { return mapper.entregaDetalle(publico.detalleEntrega(id)); }
 }
