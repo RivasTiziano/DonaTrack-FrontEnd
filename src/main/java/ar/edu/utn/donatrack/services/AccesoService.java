@@ -43,18 +43,15 @@ public class AccesoService {
         }
     }
 
+    /** Un perfil puede recibir acceso si todavía no tiene cuenta, sea cual sea su estado de registro. */
     public boolean habilitado(String tipo, Long id) {
-        if (!"beneficiarios".equals(tipo)) {
-            String estado = "humanos".equals(tipo) ? donaciones.humano(id).estadoRegistro() : donaciones.juridico(id).estadoRegistro();
-            if (!"PENDIENTE_COMPLETAR".equals(estado)) return false;
-        }
         String rol = switch(tipo) { case "humanos" -> "DONANTE_HUMANO"; case "juridicos" -> "DONANTE_JURIDICO"; default -> "BENEFICIARIA"; };
         return !auth.existeUsuario(rol, id);
     }
 
-    /** Completa el contacto sin cambiar el estado pendiente ni crear el usuario. */
+    /** Completa el contacto sin cambiar el estado pendiente ni crear el usuario. Solo para donantes pendientes sin email. */
     public void completarEmail(String tipo,Long id,String email) {
-        if("beneficiarios".equals(tipo) || !habilitado(tipo,id))
+        if("beneficiarios".equals(tipo) || !"PENDIENTE_COMPLETAR".equals(estadoRegistro(tipo, id)) || !habilitado(tipo,id))
             throw new FormularioInvalidoException("Este perfil no requiere un nuevo acceso o ya tiene cuenta.");
         if(perfil(tipo,id).email()!=null)
             throw new FormularioInvalidoException("El donante ya tiene un email de contacto.");
@@ -76,6 +73,10 @@ public class AccesoService {
         } catch (HttpClientErrorException.Conflict exception) {
             throw new FormularioInvalidoException("Ya existe un usuario con ese email.");
         }
+    }
+
+    private String estadoRegistro(String tipo, Long id) {
+        return "humanos".equals(tipo) ? donaciones.humano(id).estadoRegistro() : donaciones.juridico(id).estadoRegistro();
     }
 
     private Acceso humano(Long id) {

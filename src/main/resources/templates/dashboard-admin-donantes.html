@@ -67,7 +67,7 @@
                         <td data-label="Acciones">
                             <div class="row-actions">
                                 <a class="btn btn-outline action-icon action-edit" th:href="@{/admin/dashboard/donantes/{tipo}/{id}(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" aria-label="Ver o editar" title="Ver o editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></a>
-                                <a th:if="${accesosHabilitados != null and accesosHabilitados.contains((donor.type == 'Humana' ? 'humanos/' : 'juridicos/') + donor.id)}" class="btn btn-outline" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
+                                <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
                                 <details class="row-menu">
                                     <summary aria-label="Más acciones">⋯</summary>
                                     <div class="menu-content">

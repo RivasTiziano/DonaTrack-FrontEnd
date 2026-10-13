@@ -33,6 +33,7 @@
             </div>
 
             <!-- Avisos: sesión vencida y errores del intento de ingreso -->
+            <p th:if="${param.registrado != null}" class="success-message" role="status">Tu cuenta fue creada. Iniciá sesión.</p>
             <p th:if="${param.expirada != null}" role="status" style="background: #fef2f2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">Tu sesión venció. Iniciá sesión nuevamente.</p>
             <p th:if="${error != null}" th:text="${error}" role="alert" style="background: #fef2f2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;"></p>
 

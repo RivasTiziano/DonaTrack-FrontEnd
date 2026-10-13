@@ -13,8 +13,9 @@
                 <p>
                     <strong th:text="${perfil.nombre}">Nombre</strong> · <span th:text="${perfil.tipo == 'beneficiarios' ? 'Entidad beneficiaria' : (perfil.tipo == 'humanos' ? 'Donante' : 'Donante jurídico')}">Rol</span>
                 </p>
-                <p th:if="${perfil.email == null}" class="api-error" role="alert">El perfil no tiene un email de contacto; cargalo antes de crear el acceso.</p>
-                <form th:if="${perfil.email != null}" method="post" th:action="@{${accion}}">
+                <p th:if="${yaTieneAcceso != null}" class="form-hint" role="status">Esta persona ya tiene acceso. No hace falta crear otro.</p>
+                <p th:if="${perfil.email == null and yaTieneAcceso == null}" class="api-error" role="alert">El perfil no tiene un email de contacto; cargalo antes de crear el acceso.</p>
+                <form th:if="${perfil.email != null and yaTieneAcceso == null}" method="post" th:action="@{${accion}}">
                     <fieldset class="form-grid">
                         <legend>Acceso</legend>
                         <label>Email (tomado del perfil)<input class="form-control" type="email" th:value="${perfil.email}" readonly />

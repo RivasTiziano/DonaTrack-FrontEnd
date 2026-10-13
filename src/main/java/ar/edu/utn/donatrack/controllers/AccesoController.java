@@ -72,7 +72,11 @@ public class AccesoController {
     }
 
     private String formulario(Model model, Acceso perfil, String volver) {
-        if (!service.habilitado(perfil.tipo(), perfil.id())) return "redirect:" + volver;
+        if (!service.habilitado(perfil.tipo(), perfil.id())) {
+            cargar(model, perfil, volver);
+            model.addAttribute("yaTieneAcceso", true);
+            return "admin-acceso";
+        }
         if (perfil.email() == null) return "redirect:" + ("beneficiarios".equals(perfil.tipo()) ? "/admin/dashboard/beneficiarios/" + perfil.id() : "/admin/dashboard/donantes/" + perfil.tipo() + "/" + perfil.id()) + "?completarContacto=true";
         cargar(model, perfil, volver);
         return "admin-acceso";

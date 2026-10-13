@@ -1,34 +1,41 @@
 package ar.edu.utn.donatrack.controllers;
 
 import ar.edu.utn.donatrack.dto.AuthDtos;
+import ar.edu.utn.donatrack.exceptions.RegistroRechazadoException;
+import ar.edu.utn.donatrack.forms.RegistroForm;
 import ar.edu.utn.donatrack.models.SesionUsuario;
 import ar.edu.utn.donatrack.services.AutenticacionService;
+import ar.edu.utn.donatrack.services.RegistroService;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
 import ar.edu.utn.donatrack.services.internal.SesionActual;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
-import java.util.Map;
 
 /**
  * Acceso y registro. El login y el logout usan el servicio de autenticación.
- * El registro público todavía no está habilitado: el backend no tiene autoregistro (pedido E1),
- * así que los POST de registro no crean cuentas ni llaman a la API.
+ * El registro público crea la cuenta sin iniciar sesión: al terminar, redirige al login con un aviso.
  */
 @Controller
 public class AutenticacionController {
+    private static final String REGISTRADO = "redirect:/login?registrado";
+    private static final int REPRESENTANTES_INICIALES = 2;
+
     private final AutenticacionService service;
     private final SesionActual sesiones;
     private final ApiErrorMessages errors;
+    private final RegistroService registro;
 
-    public AutenticacionController(AutenticacionService service, SesionActual sesiones, ApiErrorMessages errors) {
+    public AutenticacionController(AutenticacionService service, SesionActual sesiones, ApiErrorMessages errors, RegistroService registro) {
         this.service = service;
         this.sesiones = sesiones;
         this.errors = errors;
+        this.registro = registro;
     }
 
     @GetMapping("/registro")
@@ -39,42 +46,65 @@ public class AutenticacionController {
 
     @GetMapping({"/registro/entidad-beneficiaria", "/registro/beneficiario"})
     public String registerBeneficiary(Model model) {
-        return "register-beneficiary";
+        return formulario(model, "register-beneficiary");
     }
 
     @PostMapping({"/registro/entidad-beneficiaria", "/registro/beneficiario"})
-    public String handleRegisterBeneficiary(@RequestParam Map<String, String> params, Model model) {
-        return registroNoHabilitado(params, model, "register-beneficiary");
+    public String handleRegisterBeneficiary(@ModelAttribute("form") RegistroForm form, BindingResult binding, Model model) {
+        try {
+            registro.registrarEntidad(form, binding);
+            return REGISTRADO;
+        } catch (RegistroRechazadoException exception) {
+            return reenviar(model, form, "register-beneficiary", exception);
+        }
     }
 
     @GetMapping("/registro/donante-humano")
     public String registerDonorHuman(Model model) {
-        return "register-donor-human";
+        return formulario(model, "register-donor-human");
     }
 
     @PostMapping("/registro/donante-humano")
-    public String handleRegisterDonorHuman(@RequestParam Map<String, String> params, Model model) {
-        return registroNoHabilitado(params, model, "register-donor-human");
+    public String handleRegisterDonorHuman(@ModelAttribute("form") RegistroForm form, BindingResult binding, Model model) {
+        try {
+            registro.registrarHumano(form, binding);
+            return REGISTRADO;
+        } catch (RegistroRechazadoException exception) {
+            return reenviar(model, form, "register-donor-human", exception);
+        }
     }
 
     @GetMapping("/registro/donante-organizacion")
     public String registerDonorOrganization(Model model) {
-        return "register-donor-org";
+        return formulario(model, "register-donor-org");
     }
 
     @PostMapping("/registro/donante-organizacion")
-    public String handleRegisterDonorOrg(@RequestParam Map<String, String> params, Model model) {
-        return registroNoHabilitado(params, model, "register-donor-org");
+    public String handleRegisterDonorOrg(@ModelAttribute("form") RegistroForm form, BindingResult binding, Model model) {
+        try {
+            registro.registrarJuridico(form, binding);
+            return REGISTRADO;
+        } catch (RegistroRechazadoException exception) {
+            return reenviar(model, form, "register-donor-org", exception);
+        }
     }
 
-    /** Vuelve a mostrar el formulario con los valores cargados. No crea cuentas ni llama a la API. */
-    private String registroNoHabilitado(Map<String, String> valores, Model model, String vista) {
-        model.addAttribute("valores", valores);
-        model.addAttribute("registroMensaje", REGISTRO_NO_HABILITADO);
+    private String formulario(Model model, String vista) {
+        RegistroForm form = new RegistroForm();
+        form.completarRepresentantes(REPRESENTANTES_INICIALES);
+        model.addAttribute("form", form);
         return vista;
     }
 
-    private static final String REGISTRO_NO_HABILITADO = "El registro en línea todavía no está habilitado. Acercate al depósito: una persona administradora registra tus datos y crea tu acceso.";
+    /** Vuelve a mostrar el formulario con los datos cargados, salvo las contraseñas. No inicia sesión. */
+    private String reenviar(Model model, RegistroForm form, String vista, RegistroRechazadoException exception) {
+        form.limpiarContrasenas();
+        form.completarRepresentantes(REPRESENTANTES_INICIALES);
+        model.addAttribute("form", form);
+        model.addAttribute("apiError", exception.getMessage());
+        model.addAttribute("cuentaExistente", exception.motivo() == RegistroRechazadoException.Motivo.CUENTA_EXISTENTE);
+        return vista;
+    }
 
     @GetMapping("/login")
     public String login() {

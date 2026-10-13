@@ -1,66 +1,143 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
 <head>
-    <title>DonaTrack - Registro Entidad Beneficiaria</title>
+    <title>DonaTrack - Registro de entidad beneficiaria</title>
 </head>
 <body>
-    <main class="registration-page" style="max-width: 680px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
-        <!-- Breadcrumbs -->
+    <main class="registration-page registro-form" th:fragment="main">
         <nav class="dt-breadcrumbs" aria-label="Migas de pan">
-            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <a th:href="@{/}">Inicio</a>
             <span class="separator">/</span>
             <a th:href="@{/registro}">Registro</a>
             <span class="separator">/</span>
-            <span class="current">Entidad Beneficiaria</span>
+            <span class="current">Entidad beneficiaria</span>
         </nav>
 
-        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2.25rem; ">
-            <div style="margin-bottom: 1.75rem;">
-                <span style="font-size: 0.8125rem; font-weight: 700; color: #4338ca; text-transform: uppercase;">Institución / Comedor / Escuela</span>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;">Registro de Entidad Receptora</h1>
-                <p style="color: var(--color-muted); font-size: 0.875rem;">Registra tu entidad para publicar necesidades y recibir donaciones de la red.</p>
+        <section class="registro-card">
+            <header class="registro-encabezado">
+                <span class="registro-etiqueta">Entidad beneficiaria</span>
+                <h1>Registrar tu entidad</h1>
+                <p class="form-hint">Registrá a la organización que recibe donaciones. Los campos con * son obligatorios.</p>
+            </header>
+
+            <div th:if="${apiError != null}" class="registro-alerta" role="alert">
+                <p th:text="${apiError}"></p>
+                <div th:if="${cuentaExistente}">
+                    <p>¿Ya tenés cuenta? <a th:href="@{/login}">Iniciá sesión</a>.</p>
+                    <p>Si te registraron en el depósito, pedí tu acceso a la administración.</p>
+                </div>
             </div>
 
-            <p class="form-hint" role="status" th:if="${registroMensaje != null}" th:text="${registroMensaje}"></p>
-            <form th:action="@{/registro/beneficiario}" method="POST">
-                <div class="form-group">
-                    <label class="form-label" for="ben-name">Nombre de la Institución <span class="required">*</span></label>
-                    <input type="text" id="ben-name" name="nombre" th:value="${valores?.get('nombre')}" class="form-control" placeholder="Ej. Comedor Los Niños Felices" required />
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <form th:action="@{/registro/entidad-beneficiaria}" th:object="${form}" method="post" data-registro-form>
+                <div class="registro-grid">
                     <div class="form-group">
-                        <label class="form-label" for="ben-type">Tipo de Entidad <span class="required">*</span></label>
-                        <select id="ben-type" name="tipoEntidad" class="form-control" required>
-                            <option value="Comedor" th:selected="${valores?.get('tipoEntidad') == 'Comedor'}">Comedor Comunitario</option>
-                            <option value="Escuela" th:selected="${valores?.get('tipoEntidad') == 'Escuela'}">Escuela Rural / Pública</option>
-                            <option value="Hogar" th:selected="${valores?.get('tipoEntidad') == 'Hogar'}">Hogar de Niños / Ancianos</option>
-                            <option value="Centro" th:selected="${valores?.get('tipoEntidad') == 'Centro'}">Centro Cultural Barrial</option>
+                        <label class="form-label" for="razonSocial">Nombre de la entidad (razón social) <span class="required">*</span></label>
+                        <input class="form-control" type="text" id="razonSocial" th:field="*{razonSocial}" placeholder="Ej. Comedor Sol" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('razonSocial')}" th:errors="*{razonSocial}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="tipoEntidad">Tipo de entidad <span class="required">*</span></label>
+                        <select class="form-control" id="tipoEntidad" th:field="*{tipoEntidad}" required>
+                            <option value="">Elegí una opción</option>
+                            <option value="ONG">ONG</option>
+                            <option value="INSTITUCION">Institución</option>
+                            <option value="EMPRESA">Empresa</option>
+                            <option value="GUBERNAMENTAL">Gubernamental</option>
                         </select>
+                        <p class="form-error" th:if="${#fields.hasErrors('tipoEntidad')}" th:errors="*{tipoEntidad}"></p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="rubro">Rubro o actividad <span class="required">*</span></label>
+                    <input class="form-control" type="text" id="rubro" th:field="*{rubro}" placeholder="Ej. Comedor comunitario" required />
+                    <p class="form-error" th:if="${#fields.hasErrors('rubro')}" th:errors="*{rubro}"></p>
+                </div>
+
+                <fieldset class="registro-fieldset">
+                    <legend>Domicilio</legend>
+                    <div class="registro-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="calle">Calle <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="calle" th:field="*{calle}" placeholder="Ej. Av. Rivadavia" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('calle')}" th:errors="*{calle}"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="numero">Número <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="numero" th:field="*{numero}" placeholder="Ej. 5678" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ciudad">Ciudad <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="ciudad" th:field="*{ciudad}" placeholder="Ej. CABA" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('ciudad')}" th:errors="*{ciudad}"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="provincia">Provincia <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="provincia" th:field="*{provincia}" placeholder="Ej. Buenos Aires" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('provincia')}" th:errors="*{provincia}"></p>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email de contacto de la entidad <span class="required">*</span></label>
+                    <input class="form-control" type="email" id="email" th:field="*{email}" placeholder="contacto@entidad.org" autocomplete="email" required />
+                    <span class="form-hint">Es el medio de contacto predeterminado de la entidad y el email con el que va a iniciar sesión.</span>
+                    <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+                </div>
+
+                <fieldset class="registro-fieldset" data-registro-representantes data-registro-minimo="0">
+                    <legend>Personas representantes (opcional)</legend>
+                    <p class="form-hint">Si cargás una persona, indicá su nombre y un correo o un teléfono.</p>
+                    <div data-registro-bloques>
+                        <fieldset class="registro-fieldset" data-registro-bloque th:each="rep, st : *{representantes}">
+                            <legend>Persona representante <span data-registro-numero th:text="${st.count}">1</span></legend>
+                            <div class="registro-grid">
+                                <div class="form-group">
+                                    <label class="form-label" th:for="|rep-${st.index}-nombre|">Nombre y apellido</label>
+                                    <input class="form-control" type="text" th:id="|rep-${st.index}-nombre|" th:name="|representantes[${st.index}].nombre|" th:value="${rep.nombre}" placeholder="Ej. Ana García" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" th:for="|rep-${st.index}-telefono|">Teléfono</label>
+                                    <input class="form-control" type="tel" th:id="|rep-${st.index}-telefono|" th:name="|representantes[${st.index}].telefono|" th:value="${rep.telefono}" placeholder="+54 11 1234-5678" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" th:for="|rep-${st.index}-correo|">Correo</label>
+                                    <input class="form-control" type="email" th:id="|rep-${st.index}-correo|" th:name="|representantes[${st.index}].correo|" th:value="${rep.correo}" placeholder="ana@entidad.org" />
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline js-only" data-registro-quitar>Quitar esta persona</button>
+                        </fieldset>
+                    </div>
+                    <p class="form-error" th:if="${#fields.hasErrors('representantes')}" th:errors="*{representantes}"></p>
+                    <button type="button" class="btn btn-outline js-only" data-registro-agregar>Agregar otra persona representante</button>
+                </fieldset>
+
+                <fieldset class="registro-fieldset">
+                    <legend>Acceso a la cuenta</legend>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Contraseña <span class="required">*</span></label>
+                        <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" required />
+                        <span class="form-hint">Mínimo 12 caracteres.</span>
+                        <p class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="ben-cuit">CUIT / Matrícula</label>
-                        <input type="text" id="ben-cuit" name="cuit" th:value="${valores?.get('cuit')}" class="form-control" placeholder="30-87654321-9" />
+                        <label class="form-label" for="confirmacion">Repetir contraseña <span class="required">*</span></label>
+                        <input class="form-control" type="password" id="confirmacion" name="confirmacion" minlength="12" autocomplete="new-password" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('confirmacion')}" th:errors="*{confirmacion}"></p>
                     </div>
-                </div>
+                </fieldset>
 
-                <div class="form-group">
-                    <label class="form-label" for="ben-email">Correo Electrónico de Contacto <span class="required">*</span></label>
-                    <input type="email" id="ben-email" name="email" th:value="${valores?.get('email')}" class="form-control" placeholder="contacto@institucion.org" required />
+                <div class="registro-acciones">
+                    <button type="submit" class="btn btn-primary registro-boton-envio">
+                        <span>Registrar la entidad</span>
+                    </button>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="ben-address">Dirección de Sede / Recepción de Donaciones <span class="required">*</span></label>
-                    <input type="text" id="ben-address" name="direccion" th:value="${valores?.get('direccion')}" class="form-control" placeholder="Av. Rivadavia 4500, CABA" required />
-                    <span class="form-hint">Aquí llegarán los camiones de logística con las donaciones asignadas.</span>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 1rem;">
-                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
-                    <span>Completar Registro de Entidad</span>
-                </button>
             </form>
-        </div>
+        </section>
+
+        <script th:src="@{/js/registro.js}" defer></script>
     </main>
 </body>
 </html>

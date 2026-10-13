@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/** Páginas públicas sin datos falsos ni llamadas a la API (fase 6) y registro público sin alta de cuentas (fase 7). */
+/** Páginas públicas sin datos falsos ni llamadas a la API (fase 6) y registro público con validación en el front (sin llamadas a la API con datos incompletos). */
 @SpringBootTest
 @AutoConfigureMockMvc
 class PublicoYRegistroMvcTest {
@@ -27,6 +27,7 @@ class PublicoYRegistroMvcTest {
     @MockBean IncentivosApiService incentivos;
     @MockBean LogisticaApiService logistica;
     @MockBean NotificacionesApiService notificaciones;
+    @MockBean ar.edu.utn.donatrack.services.RegistroApiService registroApi;
 
     private void sinLlamadasALaApi() {
         verifyNoInteractions(donaciones, autenticacion, incentivos, logistica, notificaciones);
@@ -59,34 +60,37 @@ class PublicoYRegistroMvcTest {
         sinLlamadasALaApi();
     }
 
-    @Test void registroDonanteHumanoNoRedirigeNiLlamaALaApi() throws Exception {
+    // Con datos incompletos el front muestra los errores junto a cada campo y no llama a la API (fase R: registro propio).
+    @Test void registroDonanteHumanoConDatosIncompletosNoLlamaALaApi() throws Exception {
         mvc.perform(post("/registro/donante-humano")
                         .param("nombre", "Ana")
                         .param("apellido", "Prueba")
                         .param("email", "ana@example.com"))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Location"))
-                .andExpect(content().string(containsString("El registro en línea todavía no está habilitado.")))
+                .andExpect(content().string(containsString("Ingresá tu DNI.")))
                 .andExpect(content().string(containsString("value=\"Ana\"")))
-                .andExpect(content().string(containsString("value=\"ana@example.com\"")));
+                .andExpect(content().string(containsString("value=\"ana@example.com\"")))
+                .andExpect(content().string(not(containsString("no está habilitado"))));
+        verifyNoInteractions(registroApi);
         sinLlamadasALaApi();
     }
 
-    @Test void registroEntidadNoRedirigeNiLlamaALaApi() throws Exception {
-        mvc.perform(post("/registro/beneficiario").param("nombre", "Comedor Sol").param("tipoEntidad", "Hogar"))
+    @Test void registroEntidadConDatosIncompletosNoLlamaALaApi() throws Exception {
+        mvc.perform(post("/registro/beneficiario").param("razonSocial", "Comedor Sol").param("tipoEntidad", "ONG"))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Location"))
-                .andExpect(content().string(containsString("El registro en línea todavía no está habilitado.")))
                 .andExpect(content().string(containsString("value=\"Comedor Sol\"")));
+        verifyNoInteractions(registroApi);
         sinLlamadasALaApi();
     }
 
-    @Test void registroDonanteOrganizacionNoRedirigeNiLlamaALaApi() throws Exception {
+    @Test void registroDonanteOrganizacionConDatosIncompletosNoLlamaALaApi() throws Exception {
         mvc.perform(post("/registro/donante-organizacion").param("razonSocial", "Arcos S.A."))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Location"))
-                .andExpect(content().string(containsString("El registro en línea todavía no está habilitado.")))
                 .andExpect(content().string(containsString("value=\"Arcos S.A.\"")));
+        verifyNoInteractions(registroApi);
         sinLlamadasALaApi();
     }
 }

@@ -1,84 +1,154 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
 <head>
-    <title>DonaTrack - Registro Donante</title>
+    <title>DonaTrack - Registro de persona donante</title>
 </head>
 <body>
-    <main class="registration-page" style="max-width: 680px; margin: 2.5rem auto; padding: 0 1.5rem;" th:fragment="main">
-        <!-- Breadcrumbs -->
+    <main class="registration-page registro-form" th:fragment="main">
         <nav class="dt-breadcrumbs" aria-label="Migas de pan">
-            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
+            <a th:href="@{/}">Inicio</a>
             <span class="separator">/</span>
             <a th:href="@{/registro}">Registro</a>
             <span class="separator">/</span>
-            <span class="current">Donante Persona Humana</span>
+            <span class="current">Persona donante</span>
         </nav>
 
-        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2.25rem; ">
-            <div style="margin-bottom: 1.75rem;">
-                <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Persona Humana</span>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;">Crea tu Cuenta de Donante</h1>
-                <p style="color: var(--color-muted); font-size: 0.875rem;">Completa tus datos personales para sumarte a la red de donantes de DonaTrack.</p>
+        <section class="registro-card">
+            <header class="registro-encabezado">
+                <span class="registro-etiqueta">Persona humana</span>
+                <h1>Crear tu cuenta de donante</h1>
+                <p class="form-hint">Completá tus datos para sumarte a la red de donantes de DonaTrack. Los campos con * son obligatorios.</p>
+            </header>
+
+            <div th:if="${apiError != null}" class="registro-alerta" role="alert">
+                <p th:text="${apiError}"></p>
+                <div th:if="${cuentaExistente}">
+                    <p>¿Ya tenés cuenta? <a th:href="@{/login}">Iniciá sesión</a>.</p>
+                    <p>Si te registraron en el depósito, pedí tu acceso a la administración.</p>
+                </div>
             </div>
 
-            <p class="form-hint" role="status" th:if="${registroMensaje != null}" th:text="${registroMensaje}"></p>
-            <form th:action="@{/registro/donante-humano}" method="POST">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <form th:action="@{/registro/donante-humano}" th:object="${form}" method="post" data-registro-form>
+                <div class="registro-grid">
                     <div class="form-group">
-                        <label class="form-label" for="human-name">Nombre <span class="required">*</span></label>
-                        <input type="text" id="human-name" name="nombre" th:value="${valores?.get('nombre')}" class="form-control" placeholder="Ej. Juan" required />
+                        <label class="form-label" for="nombre">Nombre <span class="required">*</span></label>
+                        <input class="form-control" type="text" id="nombre" th:field="*{nombre}" placeholder="Ej. Juan" autocomplete="given-name" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></p>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="human-lastname">Apellido <span class="required">*</span></label>
-                        <input type="text" id="human-lastname" name="apellido" th:value="${valores?.get('apellido')}" class="form-control" placeholder="Ej. Pérez" required />
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="human-doc">DNI / Documento <span class="required">*</span></label>
-                        <input type="text" id="human-doc" name="documento" th:value="${valores?.get('documento')}" class="form-control" placeholder="12345678" required />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="human-age">Edad <span class="required">*</span></label>
-                        <input type="number" id="human-age" name="edad" th:value="${valores?.get('edad')}" class="form-control" placeholder="25" min="18" required />
-                        <span class="form-hint">Debes ser mayor de 18 años.</span>
+                        <label class="form-label" for="apellido">Apellido <span class="required">*</span></label>
+                        <input class="form-control" type="text" id="apellido" th:field="*{apellido}" placeholder="Ej. Pérez" autocomplete="family-name" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></p>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="human-email">Correo Electrónico <span class="required">*</span></label>
-                    <input type="email" id="human-email" name="email" th:value="${valores?.get('email')}" class="form-control" placeholder="tu@email.com" required />
-                    <span class="form-hint">Medio de contacto principal obligatorio según la normativa de DonaTrack.</span>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="registro-grid">
                     <div class="form-group">
-                        <label class="form-label" for="human-phone">Teléfono / WhatsApp (Opcional)</label>
-                        <input type="tel" id="human-phone" name="telefono" th:value="${valores?.get('telefono')}" class="form-control" placeholder="+54 11 1234-5678" />
+                        <label class="form-label" for="fechaNacimiento">Fecha de nacimiento <span class="required">*</span></label>
+                        <input class="form-control" type="date" id="fechaNacimiento" th:field="*{fechaNacimiento}" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('fechaNacimiento')}" th:errors="*{fechaNacimiento}"></p>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="human-gender">Género</label>
-                        <select id="human-gender" name="genero" class="form-control">
-                            <option value="femenino" th:selected="${valores?.get('genero') == 'femenino'}">Femenino</option>
-                            <option value="masculino" th:selected="${valores?.get('genero') == 'masculino'}">Masculino</option>
-                            <option value="no-binario" th:selected="${valores?.get('genero') == 'no-binario'}">No binario</option>
-                            <option value="otro" th:selected="${valores?.get('genero') == 'otro'}">Otro / Prefiero no decir</option>
-                        </select>
+                        <label class="form-label" for="documento">DNI <span class="required">*</span></label>
+                        <input class="form-control" type="text" id="documento" th:field="*{documento}" placeholder="Ej. 12345678" inputmode="numeric" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('documento')}" th:errors="*{documento}"></p>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="human-address">Dirección / Localidad</label>
-                    <input type="text" id="human-address" name="direccion" th:value="${valores?.get('direccion')}" class="form-control" placeholder="Av. Corrientes 1234, CABA" />
+                    <label class="form-label" for="genero">Género <span class="required">*</span></label>
+                    <select class="form-control" id="genero" th:field="*{genero}" required>
+                        <option value="">Elegí una opción</option>
+                        <option value="FEMENINO">Femenino</option>
+                        <option value="MASCULINO">Masculino</option>
+                        <option value="NO_BINARIO">No binario</option>
+                        <option value="OTRO">Otro</option>
+                        <option value="PREFIERE_NO_INFORMAR">Prefiero no informar</option>
+                    </select>
+                    <p class="form-error" th:if="${#fields.hasErrors('genero')}" th:errors="*{genero}"></p>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 1rem;">
-                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
-                    <span>Crear Mi Cuenta de Donante</span>
-                </button>
+                <fieldset class="registro-fieldset">
+                    <legend>Domicilio</legend>
+                    <div class="registro-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="calle">Calle <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="calle" th:field="*{calle}" placeholder="Ej. Av. Corrientes" autocomplete="address-line1" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('calle')}" th:errors="*{calle}"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="numero">Número <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="numero" th:field="*{numero}" placeholder="Ej. 1234" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ciudad">Ciudad <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="ciudad" th:field="*{ciudad}" placeholder="Ej. CABA" autocomplete="address-level2" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('ciudad')}" th:errors="*{ciudad}"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="provincia">Provincia <span class="required">*</span></label>
+                            <input class="form-control" type="text" id="provincia" th:field="*{provincia}" placeholder="Ej. Buenos Aires" autocomplete="address-level1" required />
+                            <p class="form-error" th:if="${#fields.hasErrors('provincia')}" th:errors="*{provincia}"></p>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="registro-fieldset">
+                    <legend>Medios de contacto</legend>
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email <span class="required">*</span></label>
+                        <input class="form-control" type="email" id="email" th:field="*{email}" placeholder="tu@email.com" autocomplete="email" required />
+                        <span class="form-hint">Es también el email con el que vas a iniciar sesión.</span>
+                        <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+                    </div>
+                    <div class="registro-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="telefono">Teléfono (opcional)</label>
+                            <input class="form-control" type="tel" id="telefono" th:field="*{telefono}" placeholder="+54 11 1234-5678" autocomplete="tel" />
+                            <span class="form-hint">Lo usamos para mensajes de texto (SMS).</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="whatsapp">WhatsApp (opcional)</label>
+                            <input class="form-control" type="tel" id="whatsapp" th:field="*{whatsapp}" placeholder="+54 11 1234-5678" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">Medio de contacto predeterminado <span class="required">*</span></span>
+                        <div class="registro-radios">
+                            <label><input type="radio" th:field="*{predeterminado}" value="EMAIL" /> Email</label>
+                            <label><input type="radio" th:field="*{predeterminado}" value="SMS" /> Teléfono (SMS)</label>
+                            <label><input type="radio" th:field="*{predeterminado}" value="WHATSAPP" /> WhatsApp</label>
+                        </div>
+                        <span class="form-hint">Elegí por cuál medio preferís recibir los avisos. Tiene que ser uno de los que cargaste.</span>
+                        <p class="form-error" th:if="${#fields.hasErrors('predeterminado')}" th:errors="*{predeterminado}"></p>
+                    </div>
+                </fieldset>
+
+                <fieldset class="registro-fieldset">
+                    <legend>Acceso a tu cuenta</legend>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Contraseña <span class="required">*</span></label>
+                        <input class="form-control" type="password" id="password" name="password" minlength="12" autocomplete="new-password" required />
+                        <span class="form-hint">Mínimo 12 caracteres.</span>
+                        <p class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirmacion">Repetir contraseña <span class="required">*</span></label>
+                        <input class="form-control" type="password" id="confirmacion" name="confirmacion" minlength="12" autocomplete="new-password" required />
+                        <p class="form-error" th:if="${#fields.hasErrors('confirmacion')}" th:errors="*{confirmacion}"></p>
+                    </div>
+                </fieldset>
+
+                <div class="registro-acciones">
+                    <button type="submit" class="btn btn-primary registro-boton-envio">
+                        <span>Crear mi cuenta de donante</span>
+                    </button>
+                </div>
             </form>
-        </div>
+        </section>
+
+        <script th:src="@{/js/registro.js}" defer></script>
     </main>
 </body>
 </html>

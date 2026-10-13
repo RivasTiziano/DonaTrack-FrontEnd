@@ -52,27 +52,29 @@ class AccesoMvcTest {
                 email == null ? null : new MedioDeContactoDto("EMAIL", email), List.of(), true);
     }
 
-    @Test void listadoSoloOfreceAccesoPendienteSinCuenta() throws Exception {
+    @Test void listadoOfreceCrearAccesoEnTodasLasFilasSinConsultarCuentas() throws Exception {
         when(donaciones.listarHumanos()).thenReturn(List.of(
             new ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse(7L,"Ana","Con cuenta","DNI","70000007",List.of(),"PENDIENTE_COMPLETAR"),
             new ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse(8L,"Ana","Sin email","DNI","70000008",List.of(),"PENDIENTE_COMPLETAR"),
             new ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse(9L,"Ana","Completa","DNI","70000009",List.of(),"COMPLETO")));
         when(donaciones.listarJuridicos()).thenReturn(List.of());
-        when(donaciones.humano(7L)).thenReturn(humano("ana@example.com"));
-        when(donaciones.humano(8L)).thenReturn(humano(null));
-        when(auth.existeUsuario("DONANTE_HUMANO",7L)).thenReturn(true);
         mvc.perform(get("/admin/dashboard/donantes").session(TestSesiones.admin()))
             .andExpect(status().isOk())
+            .andExpect(content().string(containsString("href=\"/admin/dashboard/donantes/humanos/7/acceso\"")))
             .andExpect(content().string(containsString("href=\"/admin/dashboard/donantes/humanos/8/acceso\"")))
-            .andExpect(content().string(not(containsString("href=\"/admin/dashboard/donantes/humanos/7/acceso\""))))
-            .andExpect(content().string(not(containsString("href=\"/admin/dashboard/donantes/humanos/9/acceso\""))));
+            .andExpect(content().string(containsString("href=\"/admin/dashboard/donantes/humanos/9/acceso\"")));
+        verifyNoInteractions(auth);
+        verify(donaciones, never()).humano(any());
+        verify(donaciones, never()).juridico(any());
     }
 
-    @Test void cuentaExistenteNoOfreceFormularioNiCreaUsuario() throws Exception {
+    @Test void cuentaExistenteMuestraAvisoSinFormularioNiCreaUsuario() throws Exception {
         when(donaciones.humano(7L)).thenReturn(humano("ana@example.com"));
         when(auth.existeUsuario("DONANTE_HUMANO", 7L)).thenReturn(true);
         mvc.perform(get("/admin/dashboard/donantes/humanos/7/acceso").session(TestSesiones.admin()))
-            .andExpect(redirectedUrl("/admin/dashboard/donantes"));
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Esta persona ya tiene acceso.")))
+            .andExpect(content().string(not(containsString("name=\"password\""))));
         mvc.perform(post("/admin/dashboard/donantes/humanos/7/acceso").session(TestSesiones.admin())
             .param("password",PASS).param("confirmacion",PASS)).andExpect(status().isOk());
         verify(auth,never()).crearUsuario(any());
@@ -125,11 +127,39 @@ class AccesoMvcTest {
         verify(donaciones,never()).completarEmail(any(),any(),any());
     }
 
-    @Test void perfilCompletoNoPermiteCrearAcceso() throws Exception {
-        var h=humano("ana@example.com");
-        when(donaciones.humano(7L)).thenReturn(new DonacionesDetalles.Humano(h.id(),h.nombre(),h.apellido(),h.fechaNacimiento(),h.tipoDocumento(),h.numeroDocumento(),h.genero(),h.direccion(),h.mediosDeContacto(),h.medioDeContactoPredeterminado(),"COMPLETO"));
+    private DonacionesDetalles.Humano completo(String email) {
+        var h = humano(email);
+        return new DonacionesDetalles.Humano(h.id(), h.nombre(), h.apellido(), h.fechaNacimiento(), h.tipoDocumento(), h.numeroDocumento(),
+                h.genero(), h.direccion(), h.mediosDeContacto(), h.medioDeContactoPredeterminado(), "COMPLETO");
+    }
+
+    @Test void perfilCompletoSinCuentaPermiteCrearAcceso() throws Exception {
+        when(donaciones.humano(7L)).thenReturn(completo("ana@example.com"));
         mvc.perform(get("/admin/dashboard/donantes/humanos/7/acceso").session(TestSesiones.admin()))
-            .andExpect(redirectedUrl("/admin/dashboard/donantes"));
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("name=\"password\"")));
+        mvc.perform(post("/admin/dashboard/donantes/humanos/7/acceso").session(TestSesiones.admin())
+                        .param("password", PASS).param("confirmacion", PASS))
+                .andExpect(redirectedUrl("/admin/dashboard/donantes"));
+        verify(auth).crearUsuario(new AuthDtos.CrearUsuario("ana@example.com", PASS, "DONANTE_HUMANO", 7L));
+    }
+
+    @Test void completarEmailSoloAplicaAPendientesSinEmail() throws Exception {
+        when(donaciones.humano(7L)).thenReturn(new DonacionesDetalles.Humano(7L, "Ana", "Prueba", null, "DNI", "12345678", "F", null,
+                List.of(), null, "COMPLETO"));
+        mvc.perform(post("/admin/dashboard/donantes/humanos/7/acceso/contacto").session(TestSesiones.admin())
+                        .param("email", "ana@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Este perfil no requiere un nuevo acceso o ya tiene cuenta.")));
+        verify(donaciones, never()).completarEmail(any(), any(), any());
+    }
+
+    @Test void perfilCompletoConCuentaNoPermiteCrearAcceso() throws Exception {
+        when(donaciones.humano(7L)).thenReturn(completo("ana@example.com"));
+        when(auth.existeUsuario("DONANTE_HUMANO", 7L)).thenReturn(true);
+        mvc.perform(get("/admin/dashboard/donantes/humanos/7/acceso").session(TestSesiones.admin()))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("Esta persona ya tiene acceso.")));
         verify(auth,never()).crearUsuario(any());
     }
 

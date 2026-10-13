@@ -32,17 +32,15 @@ public class DonacionesController {
     private final ApiErrorMessages errors;
     private final PanelDonanteService panelDonante;
     private final PanelEntidadService panelEntidad;
-    private final ar.edu.utn.donatrack.services.AccesoService accesos;
 
     public DonacionesController(DonacionesService service, ApiViewSupport views, ApiErrorMessages errors, DonacionesValidator validator,
-                                PanelDonanteService panelDonante, PanelEntidadService panelEntidad, ar.edu.utn.donatrack.services.AccesoService accesos) {
+                                PanelDonanteService panelDonante, PanelEntidadService panelEntidad) {
         this.service = service;
         this.validator = validator;
         this.views = views;
         this.errors = errors;
         this.panelDonante = panelDonante;
         this.panelEntidad = panelEntidad;
-        this.accesos = accesos;
     }
 
     // Listados y operaciones de Donaciones
@@ -254,18 +252,8 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/donantes")
     public String listar(Model model) {
         model.addAttribute("donorsList",List.of());
-        model.addAttribute("accesosHabilitados", java.util.Set.of());
         try {
-            var filas = service.filasDonantes();
-            model.addAttribute("donorsList", filas);
-            var habilitados = new java.util.HashSet<String>();
-            for (var fila : filas) {
-                if (!"PENDIENTE_COMPLETAR".equals(fila.estadoRegistro())) continue;
-                String tipo = !"Humana".equals(fila.type()) ? "juridicos" : "humanos";
-                try { if (accesos.habilitado(tipo, fila.id())) habilitados.add(tipo + "/" + fila.id()); }
-                catch (RestClientException | IllegalStateException e) { /* Fail closed: never offer an unverified account. */ }
-            }
-            model.addAttribute("accesosHabilitados", habilitados);
+            model.addAttribute("donorsList", service.filasDonantes());
         }
         catch(RestClientException | IllegalStateException e) {
             model.addAttribute("errorDonantes","No se pudo obtener el listado de donantes. Verificá que el servicio de Donaciones esté disponible.");

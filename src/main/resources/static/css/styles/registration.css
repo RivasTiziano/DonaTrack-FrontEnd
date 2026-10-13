@@ -309,3 +309,135 @@
 .organization-type-selector select {
   width: 100%;
 }
+
+/* Registro público (formularios de alta). Sin JavaScript, los controles .js-only no se muestran. */
+.registro-form {
+  max-width: 720px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+}
+
+.registro-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+}
+
+.registro-encabezado {
+  margin-bottom: 1.5rem;
+}
+
+.registro-encabezado h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-ink);
+  margin: 0.25rem 0 0.5rem;
+}
+
+.registro-etiqueta {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+}
+
+.registro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.registro-fieldset {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0 0 1.5rem;
+  min-width: 0;
+}
+
+.registro-fieldset legend {
+  font-weight: 700;
+  padding: 0 0.5rem;
+  color: #333;
+}
+
+.registro-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.registro-radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+.registro-radios input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+.registro-bloques {
+  display: grid;
+  gap: 0;
+}
+
+.registro-alerta {
+  background: #fef2f2;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.registro-alerta p {
+  margin: 0 0 0.35rem;
+}
+
+.registro-alerta a {
+  color: inherit;
+  font-weight: 700;
+}
+
+.registro-acciones {
+  margin-top: 1rem;
+}
+
+.registro-acciones .btn {
+  width: 100%;
+  min-height: 48px;
+}
+
+.registro-cargando::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -3px;
+  animation: registro-giro 0.8s linear infinite;
+}
+
+@keyframes registro-giro {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .registro-cargando::before { animation: none; }
+}
+
+.js-only {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .registro-grid { grid-template-columns: 1fr; }
+  .registro-card { padding: 1.25rem; }
+}
