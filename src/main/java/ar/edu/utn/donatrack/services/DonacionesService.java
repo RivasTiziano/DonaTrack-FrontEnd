@@ -5,9 +5,7 @@ import ar.edu.utn.donatrack.forms.*;
 import ar.edu.utn.donatrack.mappers.DonacionesMapper;
 import ar.edu.utn.donatrack.models.DonanteFila;
 import ar.edu.utn.donatrack.validators.DonacionesValidator;
-import ar.edu.utn.donatrack.models.WebDatos;
 import ar.edu.utn.donatrack.mappers.*;
-import static ar.edu.utn.donatrack.services.internal.ConsultaOpcional.lista;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -18,13 +16,11 @@ import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 /** Casos de uso del cliente liviano; no implementa reglas de negocio ni persistencia. */
 @Service
 public class DonacionesService {
-    private final WebMapper webMapper;
-    private final ar.edu.utn.donatrack.validators.WebValidator webValidator;
     private final DonacionesApiService api;
     private final DonacionesMapper mapper;
     private final DonacionesValidator validator;
-    public DonacionesService(DonacionesApiService api, DonacionesMapper mapper, DonacionesValidator validator, WebMapper webMapper, ar.edu.utn.donatrack.validators.WebValidator webValidator) {
-        this.api=api; this.mapper=mapper; this.validator=validator; this.webMapper=webMapper; this.webValidator=webValidator;
+    public DonacionesService(DonacionesApiService api, DonacionesMapper mapper, DonacionesValidator validator) {
+        this.api=api; this.mapper=mapper; this.validator=validator;
     }
 
     public Map<String,Object> camposDonante(DonanteForm form) { return mapper.camposDonante(form); }
@@ -116,6 +112,25 @@ public class DonacionesService {
 
     public List<DonanteJuridicoResponse> listarJuridicos() {
         return api.listarJuridicos();
+    }
+
+    /**
+     * Nombre visible de cada donante (humano o jurídico), armado una sola vez para rankings e historial.
+     * Si la consulta falla, el mapa queda vacío y las vistas muestran el id.
+     */
+    public Map<Long,String> nombresDonantes() {
+        Map<Long,String> nombres = new HashMap<>();
+        try {
+            for (var h : api.listarHumanos()) {
+                if (h.id() != null) nombres.put(h.id(), (h.nombre() + " " + h.apellido()).trim());
+            }
+            for (var j : api.listarJuridicos()) {
+                if (j.id() != null) nombres.putIfAbsent(j.id(), j.razonSocial());
+            }
+        } catch (org.springframework.web.client.RestClientException | IllegalStateException e) {
+            return Map.of();
+        }
+        return nombres;
     }
 
     public void eliminarHumano(Long id) {
@@ -228,15 +243,5 @@ public class DonacionesService {
 
     public String evaluar() {
         return api.evaluar();
-    }
-
-    public Map<String,Object> explorarDonaciones() {
-        return webMapper.map(new WebDatos(lista(api::donaciones),null,List.of(),List.of(),List.of(),List.of(),List.of(),List.of()));
-    }
-    public Map<String,Object> detallePublico(String id) {
-        ApiDtos.Donacion donation=null;
-        try { donation=api.donacion(webValidator.identificador(id)); }
-        catch(org.springframework.web.client.RestClientException | IllegalStateException | FormularioInvalidoException e) { /* Detalle no disponible en la maqueta. */ }
-        return webMapper.donationDetail(id,new WebDatos(List.of(),donation,List.of(),List.of(),List.of(),List.of(),List.of(),List.of()));
     }
 }

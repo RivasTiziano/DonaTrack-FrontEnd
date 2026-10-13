@@ -21,36 +21,37 @@
                 <p style="color: var(--color-muted); font-size: 0.875rem;">Registra tu entidad para publicar necesidades y recibir donaciones de la red.</p>
             </div>
 
-            <form th:action="@{/registro/beneficiario}" method="POST" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { showToast('¡Solicitud de Entidad Enviada!', 'Tu entidad fue registrada y está en proceso de validación.', 'success'); setTimeout(function(){ window.location.href='/entidad/dashboard'; }, 1000); });">
+            <p class="form-hint" role="status" th:if="${registroMensaje != null}" th:text="${registroMensaje}"></p>
+            <form th:action="@{/registro/beneficiario}" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="ben-name">Nombre de la Institución <span class="required">*</span></label>
-                    <input type="text" id="ben-name" class="form-control" placeholder="Ej. Comedor Los Niños Felices" required />
+                    <input type="text" id="ben-name" name="nombre" th:value="${valores?.get('nombre')}" class="form-control" placeholder="Ej. Comedor Los Niños Felices" required />
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="ben-type">Tipo de Entidad <span class="required">*</span></label>
-                        <select id="ben-type" class="form-control" required>
-                            <option value="Comedor">Comedor Comunitario</option>
-                            <option value="Escuela">Escuela Rural / Pública</option>
-                            <option value="Hogar">Hogar de Niños / Ancianos</option>
-                            <option value="Centro">Centro Cultural Barrial</option>
+                        <select id="ben-type" name="tipoEntidad" class="form-control" required>
+                            <option value="Comedor" th:selected="${valores?.get('tipoEntidad') == 'Comedor'}">Comedor Comunitario</option>
+                            <option value="Escuela" th:selected="${valores?.get('tipoEntidad') == 'Escuela'}">Escuela Rural / Pública</option>
+                            <option value="Hogar" th:selected="${valores?.get('tipoEntidad') == 'Hogar'}">Hogar de Niños / Ancianos</option>
+                            <option value="Centro" th:selected="${valores?.get('tipoEntidad') == 'Centro'}">Centro Cultural Barrial</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ben-cuit">CUIT / Matrícula</label>
-                        <input type="text" id="ben-cuit" class="form-control" placeholder="30-87654321-9" />
+                        <input type="text" id="ben-cuit" name="cuit" th:value="${valores?.get('cuit')}" class="form-control" placeholder="30-87654321-9" />
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="ben-email">Correo Electrónico de Contacto <span class="required">*</span></label>
-                    <input type="email" id="ben-email" class="form-control" placeholder="contacto@institucion.org" required />
+                    <input type="email" id="ben-email" name="email" th:value="${valores?.get('email')}" class="form-control" placeholder="contacto@institucion.org" required />
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="ben-address">Dirección de Sede / Recepción de Donaciones <span class="required">*</span></label>
-                    <input type="text" id="ben-address" class="form-control" placeholder="Av. Rivadavia 4500, CABA" required />
+                    <input type="text" id="ben-address" name="direccion" th:value="${valores?.get('direccion')}" class="form-control" placeholder="Av. Rivadavia 4500, CABA" required />
                     <span class="form-hint">Aquí llegarán los camiones de logística con las donaciones asignadas.</span>
                 </div>
 

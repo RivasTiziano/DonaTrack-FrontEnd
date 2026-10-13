@@ -5,7 +5,6 @@
     <link rel="stylesheet" th:href="@{/css/api-views.css}" />
     <a th:href="@{/admin/dashboard}">Volver a administración</a>
     <h1 th:text="${tipo == 'beneficiarios' ? (id == null ? 'Registrar entidad beneficiaria' : 'Editar entidad beneficiaria') : 'Editar datos básicos del donante'}"></h1>
-    <p>Entorno local sin autenticación. No crea una cuenta ni envía un correo de bienvenida.</p>
     <p th:if="${apiError != null}" th:text="${apiError}" class="api-error" role="alert"></p>
     <form th:if="${form != null}" th:object="${form}" method="post"
           th:action="${tipo == 'beneficiarios' ? (id == null ? '/admin/dashboard/beneficiarios/nuevo' : '/admin/dashboard/beneficiarios/' + id) : '/admin/dashboard/donantes/' + tipo + '/' + id}"

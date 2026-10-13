@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donors')}">
+<head><title>Crear acceso - DonaTrack</title></head>
+<body><main th:fragment="main" class="api-view">
+    <link rel="stylesheet" th:href="@{/css/api-views.css}" />
+    <a th:href="@{${volver}}">Volver al listado</a>
+    <h1>Crear acceso</h1>
+    <p th:if="${apiError != null}" th:text="${apiError}" class="api-error" role="alert"></p>
+    <section class="card api-panel">
+        <p><strong th:text="${perfil.nombre}">Nombre</strong> · <span th:text="${perfil.rol}">Rol</span></p>
+        <p th:if="${perfil.email == null}" class="api-error" role="alert">El perfil no tiene un email de contacto; cargalo antes de crear el acceso.</p>
+        <form th:if="${perfil.email != null}" method="post" th:action="@{${accion}}">
+            <fieldset class="api-fields"><legend>Acceso</legend>
+                <label>Email (tomado del perfil)<input class="form-control" type="email" th:value="${perfil.email}" readonly /></label>
+                <label>Contraseña inicial (mínimo 12 caracteres)<input class="form-control" type="password" name="password" minlength="12" required autocomplete="new-password" /></label>
+                <label>Confirmar contraseña<input class="form-control" type="password" name="confirmacion" minlength="12" required autocomplete="new-password" /></label>
+            </fieldset>
+            <button class="btn btn-primary" type="submit">Crear acceso</button>
+        </form>
+    </section>
+</main></body></html>

@@ -28,4 +28,7 @@ public final class IncentivosDtos {
     public record DonanteRanking(Long idReferencia) {}
     public record Posicion(int posicion, int misionesCompletadas, DonanteRanking donante) {}
     public record RankingHistorico(Long id, LocalDate periodo, List<Posicion> posiciones) {}
+    /** Fila lista para la vista: el nombre sale de Donaciones; si no aparece, "Donante #id". */
+    public record FilaRanking(int posicion, Long idDonante, String nombre, long misiones) {}
+    public record FilaHistorial(Long id, LocalDate periodo, List<FilaRanking> posiciones) {}
 }

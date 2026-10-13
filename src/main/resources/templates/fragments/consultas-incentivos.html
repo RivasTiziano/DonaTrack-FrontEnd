@@ -57,7 +57,7 @@
 </section>
 <section th:if="${section == 'historialRanking'}" class="card api-panel">
     <article th:each="r : ${historialRanking}"><h2 th:text="${r.periodo}"></h2>
-        <ul><li th:each="p : ${r.posiciones}" th:text="'Posición ' + ${p.posicion} + ' — Donante ' + ${p.donante != null ? p.donante.idReferencia : 'sin referencia'} + ' — Misiones: ' + ${p.misionesCompletadas}"></li></ul>
+        <ul><li th:each="p : ${r.posiciones}" th:text="'Posición ' + ${p.posicion} + ' — ' + ${p.nombre} + ' — Misiones: ' + ${p.misiones}"></li></ul>
     </article>
 </section>
 </th:block>

@@ -11,20 +11,16 @@ Estado al 2026-10-12. El plan completo está en [PLAN-DESMAQUETADO-E5.md](PLAN-D
 | 3 | DTO alineados con el backend | Hecha y revisada |
 | 4 | Panel del donante con datos reales | Hecha y revisada |
 | 5 | Panel de la entidad con datos reales (necesidades, asignaciones, confirmar recepción) | Hecha y revisada |
-| 6 | Páginas públicas sin datos inventados | En curso o pendiente: ver el último commit |
-| 7 | Registro público con un aviso honesto | En curso o pendiente |
-| 8 | Admin: "Crear acceso", ranking con nombres, borrar plantillas viejas | En curso o pendiente |
-| 9 | Documentación (ENTREGA5-MVC, README, CONTROLLERS-MVC) | Pendiente |
+| 6 | Páginas públicas sin datos inventados | Hecha y revisada |
+| 7 | Registro público con un aviso honesto | Hecha y revisada |
+| 8 | Admin: "Crear acceso", ranking con nombres, borrar plantillas viejas | Hecha y revisada |
+| 9 | Documentación (ENTREGA5-MVC, README, CONTROLLERS-MVC) | Hecha |
 
-Para saber qué quedó hecho de las fases 6 a 8:
-- `grep -rni unsplash src/main` debería dar vacío;
-- debería existir `templates/admin-acceso.html`;
-- los `POST /registro/*` no deberían redirigir a los dashboards.
-
-## Cómo retomar
-1. Correr `mvn -q test`. Tiene que dar verde.
-2. Completar lo que falte de las fases 6, 7 y 8 según el plan, y después la 9.
-3. Verificación manual con Docker (sección siguiente).
+## Próximos pasos
+1. **Verificación manual** con Docker (sección siguiente): login con cada rol, "Crear acceso", alta de necesidad como entidad, asignación como admin y confirmación de recepción.
+2. **Integrar la rama** `entrega5-desmaquetado-front` a `main` (decide Tomás; push solo con su OK).
+3. Cuando el backend resuelva C1, X1/C3, C4, D1, E1/E2 y F1: reemplazar los comentarios `// PROVISORIO` (buscar con `grep -rn PROVISORIO src/main`).
+4. **Refactor visual** de dashboards y barra lateral por permisos (pendiente, fuera del plan).
 
 ## Entorno local con Docker
 - **Backend:** `docker compose up -d` en `../2026-tpa-ma-ma-grupo-18`, rama ENTREGA-5.

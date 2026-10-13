@@ -10,7 +10,8 @@ Los controllers reciben solicitudes del navegador, preparan el modelo y seleccio
 | `IncentivosController` | Categorías, misiones, métricas, insignias y rankings. |
 | `NotificacionesController` | Funcionalidades de notificaciones disponibles para las vistas. |
 | `WebController` | Inicio, legal, privacidad y portadas de dashboards que reúnen varios servicios. |
-| `AutenticacionController` | Login y registro demostrativos; pendiente autenticación real. |
+| `AutenticacionController` | Login y logout contra el Servicio de Autenticación; el registro público muestra un aviso (sin autoregistro en el backend). |
+| `AccesoController` | "Crear acceso": cuentas de donantes y entidades vía `POST /auth/usuarios`. |
 
 `controllers/support/ApiViewSupport` concentra apoyo de presentación. `exceptions/FrontendExceptionHandler` maneja errores de solicitudes MVC.
 
@@ -42,12 +43,21 @@ La sesión, el token antirreenvío y el bloqueo del envío manual permanecen en 
 
 Explorar donaciones, sus detalles, las donaciones y entidades del donante y las necesidades y donaciones del beneficiario pertenecen a DonacionesController. Incentivos del donante pertenece a IncentivosController. Entregas de ambos perfiles y la pantalla de confirmación pertenecen a LogisticaController.
 
-Las URL y plantillas no cambian. Cada pantalla carga sus datos mediante el service correspondiente; ya no consulta un dashboard completo de varios microservicios. Las cabeceras personales todavía usan datos demostrativos, no una identidad autenticada.
+Las URL y plantillas no cambian. Cada pantalla carga sus datos mediante el service correspondiente; ya no consulta un dashboard completo de varios microservicios.
 
 AutenticacionService y AutenticacionMapper concentran exclusivamente la navegación y las opciones de registro existentes. Sus POST no crean usuarios, verifican contraseñas ni emiten tokens. La confirmación de recepción conserva únicamente la pantalla actual: no se agregó una operación real de confirmación.
 
-La refactorización conserva el maquetado y la navegación de demostración del login. No convierte esas pantallas en sesiones autenticadas ni verifica contraseñas. Los datos ilustrativos de los dashboards personales siguen siendo provisionales y se encuentran en `DonanteDashboardMapper` y `BeneficiarioDashboardMapper`; no deben interpretarse como métricas personales reales. Conectar identidad y reemplazar esos ejemplos sigue pendiente de autenticación.
 
 ## Verificación
 
 `mvn clean test` verifica rutas y plantillas existentes, escrituras de los services, transformaciones y validators. Las pruebas utilizan APIs simuladas: no crean cuentas, envían correos ni modifican bases reales.
+
+## Sesión y paneles personales
+
+`SesionActual` guarda la `SesionUsuario` (tokens, rol, permisos, `referenciaId`) en la sesión HTTP.
+`WebApiCallerService` agrega el Bearer y refresca el token; `AccesoInterceptor` (registrado en
+`WebConfig`) exige el rol de cada área y `SesionModelAdvice` expone `sesion` y el contador de
+notificaciones a las vistas. `PanelDonanteService`/`PanelDonanteMapper` y
+`PanelEntidadService`/`PanelEntidadMapper` arman los paneles personales a partir del
+`referenciaId` de la sesión. `PublicoService` concentra las páginas públicas (vacías hasta que
+el backend exponga endpoints públicos).

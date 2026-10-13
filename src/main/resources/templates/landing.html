@@ -20,7 +20,7 @@
                             <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
                         </a>
                     </div>
-                    <div class="stats" aria-label="Estadisticas destacadas">
+                    <div class="stats" aria-label="Estadisticas destacadas" th:if="${not #lists.isEmpty(heroStats)}">
                         <div class="stat" th:each="stat : ${heroStats}">
                             <strong th:text="${stat.value}">0</strong>
                             <span th:text="${stat.label}">Label</span>
@@ -126,16 +126,17 @@
                 <p class="section-copy">Ejemplos de entregas recientes con su trazabilidad.</p>
                 <div class="donation-grid">
                     <article class="donation-card" th:each="donation : ${featuredDonations}">
-                        <img th:src="${donation.image}" th:alt="${donation.item}" />
+                        <img th:if="${donation.image != null}" th:src="${donation.image}" th:alt="${donation.item}" />
                         <h3 th:text="${donation.item}">Item</h3>
-                        <p>
+                        <p th:if="${donation.donorName != null}">
                             <strong>Donante:</strong> <span th:text="${donation.donorName}">Donor</span>
                         </p>
-                        <p class="meta" th:text="${donation.date}">Date</p>
-                        <p class="meta">Beneficiario: <span th:text="${donation.beneficiary}">Beneficiary</span></p>
+                        <p class="meta" th:if="${donation.date != null}" th:text="${donation.date}">Date</p>
+                        <p class="meta" th:if="${donation.beneficiary != null}">Beneficiario: <span th:text="${donation.beneficiary}">Beneficiary</span></p>
                         <button type="button" class="btn btn-outline">Ver detalles</button>
                     </article>
                 </div>
+                <p class="section-copy" role="status" th:if="${#lists.isEmpty(featuredDonations)}">Pronto vas a poder ver acá las donaciones entregadas del último mes.</p>
             </div>
         </section>
 
@@ -149,6 +150,7 @@
                         <figcaption th:text="${item.title}">Title</figcaption>
                     </figure>
                 </div>
+                <p class="section-copy" role="status" th:if="${#lists.isEmpty(recentDeliveries)}">Pronto vas a poder ver acá las donaciones entregadas del último mes.</p>
             </div>
         </section>
 

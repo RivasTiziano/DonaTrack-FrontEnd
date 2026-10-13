@@ -21,55 +21,56 @@
                 <p style="color: var(--color-muted); font-size: 0.875rem;">Completa tus datos personales para sumarte a la red de donantes de DonaTrack.</p>
             </div>
 
-            <form th:action="@{/registro/donante-humano}" method="POST" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { showToast('¡Cuenta Creada!', 'Registro completado con éxito. Redirigiendo a tu panel...', 'success'); setTimeout(function(){ window.location.href='/donante/dashboard'; }, 1000); });">
+            <p class="form-hint" role="status" th:if="${registroMensaje != null}" th:text="${registroMensaje}"></p>
+            <form th:action="@{/registro/donante-humano}" method="POST">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="human-name">Nombre <span class="required">*</span></label>
-                        <input type="text" id="human-name" class="form-control" placeholder="Ej. Juan" required />
+                        <input type="text" id="human-name" name="nombre" th:value="${valores?.get('nombre')}" class="form-control" placeholder="Ej. Juan" required />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="human-lastname">Apellido <span class="required">*</span></label>
-                        <input type="text" id="human-lastname" class="form-control" placeholder="Ej. Pérez" required />
+                        <input type="text" id="human-lastname" name="apellido" th:value="${valores?.get('apellido')}" class="form-control" placeholder="Ej. Pérez" required />
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="human-doc">DNI / Documento <span class="required">*</span></label>
-                        <input type="text" id="human-doc" class="form-control" placeholder="12345678" required />
+                        <input type="text" id="human-doc" name="documento" th:value="${valores?.get('documento')}" class="form-control" placeholder="12345678" required />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="human-age">Edad <span class="required">*</span></label>
-                        <input type="number" id="human-age" class="form-control" placeholder="25" min="18" required />
+                        <input type="number" id="human-age" name="edad" th:value="${valores?.get('edad')}" class="form-control" placeholder="25" min="18" required />
                         <span class="form-hint">Debes ser mayor de 18 años.</span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="human-email">Correo Electrónico <span class="required">*</span></label>
-                    <input type="email" id="human-email" class="form-control" placeholder="tu@email.com" required />
+                    <input type="email" id="human-email" name="email" th:value="${valores?.get('email')}" class="form-control" placeholder="tu@email.com" required />
                     <span class="form-hint">Medio de contacto principal obligatorio según la normativa de DonaTrack.</span>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="human-phone">Teléfono / WhatsApp (Opcional)</label>
-                        <input type="tel" id="human-phone" class="form-control" placeholder="+54 11 1234-5678" />
+                        <input type="tel" id="human-phone" name="telefono" th:value="${valores?.get('telefono')}" class="form-control" placeholder="+54 11 1234-5678" />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="human-gender">Género</label>
-                        <select id="human-gender" class="form-control">
-                            <option value="femenino">Femenino</option>
-                            <option value="masculino">Masculino</option>
-                            <option value="no-binario">No binario</option>
-                            <option value="otro">Otro / Prefiero no decir</option>
+                        <select id="human-gender" name="genero" class="form-control">
+                            <option value="femenino" th:selected="${valores?.get('genero') == 'femenino'}">Femenino</option>
+                            <option value="masculino" th:selected="${valores?.get('genero') == 'masculino'}">Masculino</option>
+                            <option value="no-binario" th:selected="${valores?.get('genero') == 'no-binario'}">No binario</option>
+                            <option value="otro" th:selected="${valores?.get('genero') == 'otro'}">Otro / Prefiero no decir</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="human-address">Dirección / Localidad</label>
-                    <input type="text" id="human-address" class="form-control" placeholder="Av. Corrientes 1234, CABA" />
+                    <input type="text" id="human-address" name="direccion" th:value="${valores?.get('direccion')}" class="form-control" placeholder="Av. Corrientes 1234, CABA" />
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 1rem;">

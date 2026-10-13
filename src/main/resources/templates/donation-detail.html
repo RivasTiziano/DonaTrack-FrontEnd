@@ -11,10 +11,10 @@
             <span class="separator">/</span>
             <a th:href="@{/explorar-donaciones}">Mapa de Donaciones</a>
             <span class="separator">/</span>
-            <span class="current" th:text="${donation.title}">Detalle</span>
+            <span class="current" th:text="${donation != null ? donation.title : 'Detalle'}">Detalle</span>
         </nav>
 
-        <section class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2rem; box-shadow: var(--shadow-md);">
+        <section class="card" th:if="${donation != null}" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2rem; box-shadow: var(--shadow-md);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
                 <a th:href="@{/explorar-donaciones}" class="btn btn-outline btn-sm">
                     <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
@@ -100,6 +100,10 @@
                     <span>Ver Otras Donaciones en el Mapa</span>
                 </a>
             </div>
+        </section>
+        <section class="card" th:if="${donation == null}" role="status" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 2rem; box-shadow: var(--shadow-md);">
+            <p>Esta donación no está disponible públicamente.</p>
+            <a th:href="@{/explorar-donaciones}" class="btn btn-outline btn-sm">Volver al mapa</a>
         </section>
     </main>
 </body>

@@ -51,7 +51,7 @@ public class PanelDonanteService {
                 .sorted(Comparator.comparing(ApiDtos.Donacion::fechaRecepcion, Comparator.nullsLast(Comparator.reverseOrder())))
                 .limit(5).toList();
         m.put("userDonations", donaciones(m, recientes, beneficiariosPorId(m)));
-        m.put("badges", mapper.insignias(cargar(m, () -> incentivosApi.insignias(c.ref()), List.<IncentivosDtos.Insignia>of())));
+        m.put("badges", mapper.insignias(cargarIncentivos(m, () -> incentivosApi.insignias(c.ref()), List.<IncentivosDtos.Insignia>of())));
         return m;
     }
 
@@ -92,10 +92,10 @@ public class PanelDonanteService {
         m.put("user", c.user());
         m.put("donorMetrics", mapper.metricas(c.metricas()));
 
-        var progreso = cargar(m, () -> incentivosApi.progreso(ref), (IncentivosDtos.Progreso) null);
-        var completadas = cargar(m, () -> incentivosApi.misionesCompletadas(ref), List.<IncentivosDtos.MisionCompletada>of());
-        var insignias = cargar(m, () -> incentivosApi.insignias(ref), List.<IncentivosDtos.Insignia>of());
-        var historial = cargar(m, () -> incentivosApi.historialCategorias(ref), List.<IncentivosDtos.Auditoria>of());
+        var progreso = cargarIncentivos(m, () -> incentivosApi.progreso(ref), (IncentivosDtos.Progreso) null);
+        var completadas = cargarIncentivos(m, () -> incentivosApi.misionesCompletadas(ref), List.<IncentivosDtos.MisionCompletada>of());
+        var insignias = cargarIncentivos(m, () -> incentivosApi.insignias(ref), List.<IncentivosDtos.Insignia>of());
+        var historial = cargarIncentivos(m, () -> incentivosApi.historialCategorias(ref), List.<IncentivosDtos.Auditoria>of());
         var categorias = cargar(m, incentivosApi::categorias, List.<IncentivosDtos.Categoria>of());
 
         m.put("incentiveCategories", mapper.categorias(categorias, completadas, c.categoriaActual()));
@@ -138,7 +138,7 @@ public class PanelDonanteService {
         SesionUsuario sesion = sesion();
         Long ref = sesion.getReferenciaId();
         String tipo = sesion.tipoDonante();
-        var metricas = cargar(m, () -> incentivosApi.metricas(ref), (IncentivosDtos.Metricas) null);
+        var metricas = cargarIncentivos(m, () -> incentivosApi.metricas(ref), (IncentivosDtos.Metricas) null);
         String categoria = metricas == null ? null : metricas.categoriaActual();
         Map<String, Object> user = null;
         if ("humanos".equals(tipo)) {
@@ -173,6 +173,22 @@ public class PanelDonanteService {
             out.add(mapper.donacion(d, asignaciones, entidades));
         }
         return out;
+    }
+
+    /**
+     * Datos del donante en incentivos. El servicio responde 404 hasta que el donante registra su primera
+     * donación: eso es "todavía sin actividad", no un error para mostrar.
+     */
+    private <T> T cargarIncentivos(Map<String, Object> m, Supplier<T> consulta, T vacio) {
+        try {
+            T valor = consulta.get();
+            return valor == null ? vacio : valor;
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+            return vacio;
+        } catch (RestClientException | IllegalStateException e) {
+            m.put("apiError", errores.describe(e));
+            return vacio;
+        }
     }
 
     /** Ejecuta una consulta; si falla, deja el mensaje en el modelo y devuelve el valor vacío. */

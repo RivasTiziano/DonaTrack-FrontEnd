@@ -21,41 +21,42 @@
                 <p style="color: var(--color-muted); font-size: 0.875rem;">Suma a tu empresa, ONG o fundación a la red corporativa de donaciones.</p>
             </div>
 
-            <form th:action="@{/registro/donante-organizacion}" method="POST" onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 700, function() { showToast('¡Registro Institucional Creado!', 'Cuenta generada con éxito.', 'success'); setTimeout(function(){ window.location.href='/donante/dashboard'; }, 1000); });">
+            <p class="form-hint" role="status" th:if="${registroMensaje != null}" th:text="${registroMensaje}"></p>
+            <form th:action="@{/registro/donante-organizacion}" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="org-name">Razón Social <span class="required">*</span></label>
-                    <input type="text" id="org-name" class="form-control" placeholder="Ej. Arcos Plateados S.A." required />
+                    <input type="text" id="org-name" name="razonSocial" th:value="${valores?.get('razonSocial')}" class="form-control" placeholder="Ej. Arcos Plateados S.A." required />
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="org-cuit">CUIT <span class="required">*</span></label>
-                        <input type="text" id="org-cuit" class="form-control" placeholder="30-12345678-9" required />
+                        <input type="text" id="org-cuit" name="cuit" th:value="${valores?.get('cuit')}" class="form-control" placeholder="30-12345678-9" required />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="org-type">Tipo de Organización <span class="required">*</span></label>
-                        <select id="org-type" class="form-control" required>
-                            <option value="Empresa">Empresa</option>
-                            <option value="ONG">ONG</option>
-                            <option value="Gubernamental">Gubernamental</option>
-                            <option value="Institución">Institución Educativa/Religiosa</option>
+                        <select id="org-type" name="tipoOrganizacion" class="form-control" required>
+                            <option value="Empresa" th:selected="${valores?.get('tipoOrganizacion') == 'Empresa'}">Empresa</option>
+                            <option value="ONG" th:selected="${valores?.get('tipoOrganizacion') == 'ONG'}">ONG</option>
+                            <option value="Gubernamental" th:selected="${valores?.get('tipoOrganizacion') == 'Gubernamental'}">Gubernamental</option>
+                            <option value="Institución" th:selected="${valores?.get('tipoOrganizacion') == 'Institución'}">Institución Educativa/Religiosa</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="org-email">Correo Electrónico Institucional (Obligatorio) <span class="required">*</span></label>
-                    <input type="email" id="org-email" class="form-control" placeholder="contacto@empresa.com" required />
+                    <input type="email" id="org-email" name="email" th:value="${valores?.get('email')}" class="form-control" placeholder="contacto@empresa.com" required />
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="org-rep">Nombre del Representante Designado</label>
-                        <input type="text" id="org-rep" class="form-control" placeholder="Ej. Roberto Gómez" />
+                        <input type="text" id="org-rep" name="representante" th:value="${valores?.get('representante')}" class="form-control" placeholder="Ej. Roberto Gómez" />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="org-phone">Teléfono de Contacto</label>
-                        <input type="tel" id="org-phone" class="form-control" placeholder="+54 11 4444-4444" />
+                        <input type="tel" id="org-phone" name="telefono" th:value="${valores?.get('telefono')}" class="form-control" placeholder="+54 11 4444-4444" />
                     </div>
                 </div>
 

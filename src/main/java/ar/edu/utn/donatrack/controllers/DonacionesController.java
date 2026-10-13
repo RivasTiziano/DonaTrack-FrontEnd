@@ -390,19 +390,7 @@ public class DonacionesController {
     }
 
     private String invalid(RedirectAttributes flash,String path) { return views.invalid(flash,path); }
-    // Pantallas públicas o personales: conservan sus URL y no requieren prefijo administrativo.
-
-    @GetMapping("/explorar-donaciones")
-    public String map(Model model) {
-        model.addAllAttributes(service.explorarDonaciones());
-        return "map";
-    }
-
-    @GetMapping("/explorar-donaciones/{id}")
-    public String donationDetail(@PathVariable String id, Model model) {
-        model.addAllAttributes(service.detallePublico(id));
-        return "donation-detail";
-    }
+    // Pantallas personales: conservan sus URL y no requieren prefijo administrativo.
 
     @GetMapping("/donante/dashboard/donaciones")
     public String donorDonations(Model model) {

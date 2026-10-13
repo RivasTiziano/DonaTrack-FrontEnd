@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
+import java.util.Map;
 
 /**
  * Acceso y registro. El login y el logout usan el servicio de autenticación.
- * Las pantallas de registro todavía no crean cuentas (se resuelven en la fase 7).
+ * El registro público todavía no está habilitado: el backend no tiene autoregistro (pedido E1),
+ * así que los POST de registro no crean cuentas ni llaman a la API.
  */
 @Controller
 public class AutenticacionController {
@@ -41,8 +43,8 @@ public class AutenticacionController {
     }
 
     @PostMapping({"/registro/entidad-beneficiaria", "/registro/beneficiario"})
-    public String handleRegisterBeneficiary() {
-        return "redirect:/entidad/dashboard";
+    public String handleRegisterBeneficiary(@RequestParam Map<String, String> params, Model model) {
+        return registroNoHabilitado(params, model, "register-beneficiary");
     }
 
     @GetMapping("/registro/donante-humano")
@@ -51,8 +53,8 @@ public class AutenticacionController {
     }
 
     @PostMapping("/registro/donante-humano")
-    public String handleRegisterDonorHuman() {
-        return "redirect:/donante/dashboard";
+    public String handleRegisterDonorHuman(@RequestParam Map<String, String> params, Model model) {
+        return registroNoHabilitado(params, model, "register-donor-human");
     }
 
     @GetMapping("/registro/donante-organizacion")
@@ -61,9 +63,18 @@ public class AutenticacionController {
     }
 
     @PostMapping("/registro/donante-organizacion")
-    public String handleRegisterDonorOrg() {
-        return "redirect:/donante/dashboard";
+    public String handleRegisterDonorOrg(@RequestParam Map<String, String> params, Model model) {
+        return registroNoHabilitado(params, model, "register-donor-org");
     }
+
+    /** Vuelve a mostrar el formulario con los valores cargados. No crea cuentas ni llama a la API. */
+    private String registroNoHabilitado(Map<String, String> valores, Model model, String vista) {
+        model.addAttribute("valores", valores);
+        model.addAttribute("registroMensaje", REGISTRO_NO_HABILITADO);
+        return vista;
+    }
+
+    private static final String REGISTRO_NO_HABILITADO = "El registro en línea todavía no está habilitado. Acercate al depósito: una persona administradora registra tus datos y crea tu acceso.";
 
     @GetMapping("/login")
     public String login() {

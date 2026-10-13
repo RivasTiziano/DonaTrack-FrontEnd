@@ -63,6 +63,7 @@
         </section>
 
         <section class="map-page__content" style="padding: 0 1.5rem 2.5rem 1.5rem; max-width: 1280px; margin: 0 auto; width: 100%;">
+            <p class="section-copy" role="status" th:if="${#lists.isEmpty(donations)}">Pronto vas a poder ver acá las donaciones entregadas del último mes.</p>
             <div class="map-canvas" style="border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-md); position: relative; height: 560px; min-height: 560px; width: 100%;">
                 <div id="map-leaflet" style="height: 560px; min-height: 560px; width: 100%; z-index: 1;"></div>
             </div>
@@ -104,15 +105,15 @@
                 if (Array.isArray(donations)) {
                     donations.forEach(function(donation) {
                         if (!donation.location || donation.location.lat == null) return;
-                        var imgUrl = donation.image_url || donation.image || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&h=200&fit=crop';
-                        var entityName = donation.entity_name || (donation.beneficiary ? donation.beneficiary.name : 'Entidad Beneficiaria');
+                        var imgUrl = donation.image_url || donation.image || '/favicon.svg';
+                        var entityName = donation.entity_name || '—';
                         var detailUrl = '/explorar-donaciones/' + encodeURIComponent(donation.id);
                         var popupHtml = '<div style="font-family: var(--font-sans); min-width: 210px; padding: 4px;">' +
                             '<img src="' + imgUrl + '" alt="' + (donation.title || 'Donación') + '" style="width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />' +
                             '<h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 2px;">' + (donation.title || 'Donación') + '</h4>' +
                             '<p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;">Entidad: <strong>' + entityName + '</strong></p>' +
                             '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                                '<span class="status-badge badge-entregada" style="font-size: 0.7rem;">Entregada</span>' +
+                                '<span class="status-badge badge-entregada" style="font-size: 0.7rem;">' + (donation.status || '') + '</span>' +
                                 '<a href="' + detailUrl + '" style="color: #e11d48; font-weight: 700; font-size: 0.8rem;">Ver detalle &rarr;</a>' +
                             '</div>' +
                         '</div>';

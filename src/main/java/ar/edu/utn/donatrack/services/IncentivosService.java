@@ -4,6 +4,7 @@ import ar.edu.utn.donatrack.mappers.IncentivosMapper;
 import ar.edu.utn.donatrack.validators.IncentivosValidator;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
 @Service
 public class IncentivosService {
     private final IncentivosApiService api;
@@ -18,8 +19,12 @@ public class IncentivosService {
     public void agregarMision(Long id,String tipo,Integer objetivo) {
         validator.mision(tipo,objetivo); api.agregarMision(id,mapper.mision(tipo,objetivo));
     }
-    public List<ApiDtos.Ranking> ranking() {
-        return api.ranking();
+    public List<IncentivosDtos.FilaRanking> rankingConNombres(Map<Long,String> nombres) {
+        return mapper.ranking(api.ranking(), nombres);
+    }
+
+    public List<IncentivosDtos.FilaHistorial> historialConNombres(Map<Long,String> nombres) {
+        return mapper.historial(api.historialRankings(), nombres);
     }
 
     public IncentivosDtos.Metricas metricas(Long id) {
@@ -44,10 +49,6 @@ public class IncentivosService {
 
     public void visibilidad(Long id, boolean visible) {
         api.visibilidad(id, visible);
-    }
-
-    public List<IncentivosDtos.RankingHistorico> historialRankings() {
-        return api.historialRankings();
     }
 
     public List<IncentivosDtos.Categoria> categorias() {

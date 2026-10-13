@@ -122,17 +122,19 @@ graph TD
    ```
 3. Abrir en el navegador:
    ```text
-   http://localhost:8080
+   http://localhost:8090
    ```
 
 ---
 
-## 🔑 Credenciales y Accesos Rápidos de Demostración
+## 🔑 Acceso
 
-La página de **Iniciar Sesión** (`/login`) cuenta con botones de **Acceso Rápido de 1 Clic** para cada rol:
+El inicio de sesión es real: usa el Servicio de Autenticación del backend (JWT). El primer
+administrador se configura en el backend con `AUTH_ADMIN_EMAIL` / `AUTH_ADMIN_PASSWORD`, y las
+cuentas de donantes y entidades se crean desde el panel admin ("Crear acceso"). Ver
+[docs/ENTREGA5-MVC.md](docs/ENTREGA5-MVC.md).
 
-| Perfil | Correo de Prueba | Contraseña | Redirección Directa |
-| :--- | :--- | :--- | :--- |
+--- | :--- | :--- | :--- |
 | 🧑 **Persona Donante** | `donante@donatrack.org` | *(cualquiera)* | `/donante/dashboard` |
 | 🏠 **Entidad Beneficiaria** | `entidad@donatrack.org` | *(cualquiera)* | `/entidad/dashboard` |
 | 🛡️ **Persona Administradora** | `admin@donatrack.org` | *(cualquiera)* | `/admin/dashboard` |
@@ -152,7 +154,7 @@ DonaTrack-FrontEnd/
         │   └── controllers/
         │       └── WebController.java       # Enrutamiento SSR y generación de mock data exhaustiva
         └── resources/
-            ├── application.properties       # Configuración de servidor (puerto 8080)
+            ├── application.properties       # Configuración de servidor (puerto 8090)
             ├── static/
             │   ├── css/
             │   │   ├── index.css            # Archivo maestro de importación de estilos

@@ -22,7 +22,8 @@ public class IncentivosController {
 
     @GetMapping("/admin/dashboard/rankings")
     public String rankings(Model model) {
-        views.load(model, "ranking", service::ranking);
+        var nombres = donaciones.nombresDonantes();
+        views.load(model, "ranking", () -> service.rankingConNombres(nombres));
         model.addAttribute("pageTitle", "Ranking de incentivos");
         model.addAttribute("section", "rankings");
         model.addAttribute("activeTab", "rankings");
@@ -80,7 +81,8 @@ public class IncentivosController {
 
     @GetMapping("/admin/dashboard/incentivos/historial")
     public String historial(Model model) {
-        views.load(model, "historialRanking", service::historialRankings);
+        var nombres = donaciones.nombresDonantes();
+        views.load(model, "historialRanking", () -> service.historialConNombres(nombres));
         return views.page(model, "Historial de rankings", "historialRanking");
     }
 

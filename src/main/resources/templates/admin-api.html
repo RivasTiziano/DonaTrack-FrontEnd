@@ -6,7 +6,6 @@
     <link rel="stylesheet" th:href="@{/css/api-views.css}" />
     <nav class="dt-breadcrumbs" aria-label="Migas de pan"><a th:href="@{/admin/dashboard}">Administración</a><span>/</span><span th:text="${pageTitle}"></span></nav>
     <h1 th:text="${pageTitle}"></h1>
-    <p class="api-notice">Integración REST real. Este entorno de desarrollo todavía no implementa autenticación ni control de acceso.</p>
     <nav class="api-links" aria-label="Módulos administrativos">
         <a th:href="@{/admin/dashboard/donantes}">Donantes</a><a th:href="@{/admin/dashboard/donaciones}">Donaciones</a>
         <a th:href="@{/admin/dashboard/beneficiarios}">Beneficiarios</a><a th:href="@{/admin/dashboard/necesidades}">Necesidades</a>
@@ -105,7 +104,7 @@
     <section th:if="${section == 'beneficiarios'}" class="card api-panel">
         <a class="btn btn-primary" th:href="@{/admin/dashboard/beneficiarios/nuevo}">Registrar entidad beneficiaria</a><p>Seleccioná el ID para consultar y editar los datos de una entidad.</p>
         <div class="api-table"><table><thead><tr><th>ID</th><th>Razón social</th><th>Tipo</th><th>Rubro</th><th>Activo</th></tr></thead><tbody>
-        <tr th:each="b : ${beneficiarios}"><td><a th:href="@{/admin/dashboard/beneficiarios/{id}(id=${b.id})}" th:text="${b.id}"></a><form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${b.id})}" onsubmit="return confirm('¿Eliminar esta entidad? El backend comprobará sus restricciones.');"><button class="btn btn-outline" type="submit">Eliminar</button></form></td><td th:text="${b.razonSocial}"></td><td th:text="${b.tipoEntidad}"></td><td th:text="${b.rubro}"></td><td th:text="${b.activo ? 'Sí' : 'No'}"></td></tr>
+        <tr th:each="b : ${beneficiarios}"><td><a th:href="@{/admin/dashboard/beneficiarios/{id}(id=${b.id})}" th:text="${b.id}"></a><a class="btn btn-outline" th:href="@{/admin/dashboard/beneficiarios/{id}/acceso(id=${b.id})}">Crear acceso</a><form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${b.id})}" onsubmit="return confirm('¿Eliminar esta entidad? El backend comprobará sus restricciones.');"><button class="btn btn-outline" type="submit">Eliminar</button></form></td><td th:text="${b.razonSocial}"></td><td th:text="${b.tipoEntidad}"></td><td th:text="${b.rubro}"></td><td th:text="${b.activo ? 'Sí' : 'No'}"></td></tr>
         </tbody></table></div>
     </section>
     <section th:if="${section == 'camiones'}" class="card api-panel">
@@ -148,8 +147,8 @@
     <section th:if="${section == 'rankings'}" class="card api-panel">
         <p>La API actual ordena por misiones resueltas, no por kilos ni cantidad de donaciones.</p>
         <p th:if="${#lists.isEmpty(ranking) and apiError == null}">No hay posiciones disponibles.</p>
-        <div class="api-table"><table><thead><tr><th>Posición</th><th>Donante ID</th><th>Misiones resueltas</th></tr></thead><tbody>
-        <tr th:each="r, position : ${ranking}"><td th:text="${position.count}"></td><td th:text="${r.idDonante}"></td><td th:text="${r.misionesResueltas}"></td></tr></tbody></table></div>
+        <div class="api-table"><table><thead><tr><th>Posición</th><th>Donante</th><th>Misiones resueltas</th></tr></thead><tbody>
+        <tr th:each="r : ${ranking}"><td th:text="${r.posicion}"></td><td th:text="${r.nombre}"></td><td th:text="${r.misiones}"></td></tr></tbody></table></div>
     </section>
     <section th:if="${section == 'asignar'}" class="card api-panel">
         <h2>Algoritmos</h2><form th:each="a : ${algoritmos}" method="post" th:action="@{/admin/dashboard/algoritmos}" class="api-inline">

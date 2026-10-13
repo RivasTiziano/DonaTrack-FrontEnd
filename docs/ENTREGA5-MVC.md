@@ -1,9 +1,9 @@
-# Entrega 5 — avance MVC sin autenticación
+# Entrega 5 — cliente liviano MVC con autenticación
 
 ## Ejecución
 
 Usar JDK 17 o superior. Desde este proyecto: `mvn spring-boot:run`.
-Abrir http://localhost:8090/admin/dashboard.
+Abrir http://localhost:8090/login. Con Docker: `docker compose up -d --build` (requiere el backend levantado en la red `2026-tpa-ma-ma-grupo-18_default`).
 
 Variables opcionales:
 
@@ -14,14 +14,25 @@ Variables opcionales:
 | LOGISTICA_API_URL | http://localhost:8083 |
 | INCENTIVOS_API_URL | http://localhost:8082 |
 | NOTIFICACIONES_API_URL | http://localhost:8081 |
+| AUTENTICACION_API_URL | http://localhost:8084 |
 | NOTIFICACIONES_ENVIO_MANUAL_HABILITADO | false |
 
 Notificaciones tiene comprobación de conexión y envío manual local en
 `/admin/dashboard/notificaciones`. El envío manual permanece deshabilitado
 por defecto; habilitarlo solo para pruebas locales controladas.
 
-No exponer este frontend a Internet: aún no hay autenticación ni autorización.
-La selección de rol del login original es una demostración, no una sesión segura.
+## Autenticación y sesión
+
+El login llama a `POST /auth/login` del servicio de autenticación. Los tokens quedan en la
+sesión HTTP (solo por cookie) y `WebApiCallerService` agrega `Authorization: Bearer` a cada
+llamada, refrescando el access token un minuto antes de vencer. `/admin/**`, `/donante/**` y
+`/entidad/**` exigen el rol correspondiente (`AccesoInterceptor`); sin sesión redirigen al login.
+Los paneles personales toman siempre al dueño del `referenciaId` de la sesión.
+
+El primer admin lo crea el backend con `AUTH_ADMIN_EMAIL` / `AUTH_ADMIN_PASSWORD`. Las cuentas de
+donantes y entidades se crean desde "Crear acceso" en el listado del admin (`POST /auth/usuarios`),
+con el email del perfil; la contraseña inicial se comunica por fuera del sistema hasta que exista
+el flujo de primer acceso del backend.
 
 ## Arquitectura
 
@@ -76,30 +87,16 @@ procesado una operación: consultar su resultado antes de repetirla.
 Los DTO de bienes recibidos no incluyen el ID de subcategoría: en edición se pide
 seleccionarla explícitamente, sin deducir IDs por nombres ni inventarlos.
 
-## Pasos distintos que quedan para trabajar juntos
+## Pendientes que dependen del backend
 
-1. **Identidad y alcance de los paneles personales.** No se conecta “mis donaciones”,
-   “mis necesidades” ni “mis incentivos” usando IDs fijos o el primer usuario encontrado.
-   Definir identidad real al abordar autenticación; hasta entonces esos paneles son maquetado.
-2. **Edición de colecciones de perfiles.** La creación existente de donantes admite
-   contactos y representantes adicionales. La nueva edición básica conserva esas
-   colecciones, pero no incluye un editor para reemplazarlas ni gestionar sus IDs.
-3. **Donaciones con varios bienes.** Ya se registran varios bienes por envío;
-   el backend sigue siendo responsable de su segmentación.
-4. **Recepción con fotos.** La planificación administrativa por fecha y consulta de
-   GPS ya están conectadas. Falta la identidad y autorización de quien confirma
-   recepción y carga evidencias. No se modifican estados de asignación desde un
-   formulario que suplante a Logística.
-5. **Historial de notificaciones.** El backend actual solo expone enviar notificación
-   y health, no listar/marcar leído. Necesita definir un contrato antes de conectar las vistas.
-6. **Mapa y transparencia pública.** Definir datos autorizados para publicación y
-   su composición entre Donaciones y Logística. Landing, mapa y detalles públicos
-   originales continúan mostrando maquetado, no resultados reales de este avance.
-7. **Autenticación.** No se crean cuentas, tokens, JWT ni se publica CuentaCreada.
-   El login actual debe reemplazarse antes de considerar terminada la entrega 5.
+Detalle en [PLAN-DESMAQUETADO-E5.md](PLAN-DESMAQUETADO-E5.md) (sección 10) y [RETOMAR-E5.md](RETOMAR-E5.md).
 
-La entrega 5 NO está completa. Esta implementación resuelve la base y los circuitos
-repetibles descritos arriba, no los pasos pendientes ni la totalidad de los CRUD.
+1. **C1 — Donaciones del donante.** `GET /donaciones` es solo admin; "Mis donaciones" y el seguimiento del donante quedan vacíos (requisito 5).
+2. **X1/C3 — entregaId para la entidad.** La confirmación de recepción pide el número de entrega a mano (requisito 12).
+3. **C3/C4 — Seguimiento por dueño.** No se muestra la ubicación de los camiones a donante ni entidad (requisitos 9 y 14).
+4. **D1 — Endpoints públicos.** Landing, mapa y detalle público muestran estados vacíos (requisitos 1 y 2).
+5. **E1/E2 — Registro público y primer acceso.** El registro en línea muestra un aviso; las cuentas las crea el admin (requisitos 3 y 20).
+6. **F1 — Fotos.** La recepción envía URLs de fotos; falta la subida de archivos.
 
 ## Verificación
 

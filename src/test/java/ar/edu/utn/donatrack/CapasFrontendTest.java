@@ -21,7 +21,7 @@ class CapasFrontendTest {
     DonacionesApiService api=mock(DonacionesApiService.class);
     DonacionesMapper mapper=new DonacionesMapper();
     DonacionesValidator validator=new DonacionesValidator();
-    DonacionesService service=new DonacionesService(api,mapper,validator,new WebMapper(),new WebValidator());
+    DonacionesService service=new DonacionesService(api,mapper,validator);
 
     DonanteForm form() {
         var f=mock(DonanteForm.class);

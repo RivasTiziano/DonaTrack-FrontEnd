@@ -103,6 +103,7 @@
                             <td style="padding: 1rem; text-align: right;">
                                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                                     <a class="btn btn-outline btn-sm" th:href="@{/admin/dashboard/donantes/{tipo}/{id}(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Editar datos</a>
+                                    <a class="btn btn-outline btn-sm" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
                                     <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante? La API verificará si está permitido.');">
                                         <button type="submit" class="btn btn-outline btn-sm">Eliminar</button>
                                     </form>
@@ -122,92 +123,6 @@
             </div>
         </div>
 
-        <!-- Accessible Modal: Registrar Nuevo Donante -->
-        <div id="modal-new-donor" class="dt-modal" role="dialog" aria-modal="true" aria-labelledby="modal-donor-title" aria-hidden="true">
-            <div class="dt-modal-backdrop" onclick="closeModal('modal-new-donor')"></div>
-            <div class="dt-modal-content">
-                <div class="dt-modal-header">
-                    <h3 id="modal-donor-title" class="dt-modal-title">Registrar Persona Donante en Depósito</h3>
-                    <button type="button" class="dt-modal-close" onclick="closeModal('modal-new-donor')" aria-label="Cerrar modal">
-                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
-                    </button>
-                </div>
-                <form onsubmit="event.preventDefault(); simulateAsyncAction(this.querySelector('.btn-primary'), 600, function() { closeModal('modal-new-donor'); showToast('¡Donante Registrado!', 'Se generó el usuario y se envió el correo de bienvenida.', 'success'); });">
-                    <div class="dt-modal-body">
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Persona <span class="required">*</span></label>
-                            <select class="form-control" id="donor-type-select" onchange="toggleDonorForm(this.value)">
-                                <option value="humana">Persona Humana (Individual)</option>
-                                <option value="juridica">Persona Jurídica (Empresa, ONG, Institución)</option>
-                            </select>
-                        </div>
-
-                        <div id="fields-humana">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div class="form-group">
-                                    <label class="form-label">Nombre <span class="required">*</span></label>
-                                    <input type="text" class="form-control" placeholder="Ej. Ana" required />
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Apellido <span class="required">*</span></label>
-                                    <input type="text" class="form-control" placeholder="Ej. Pérez" required />
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div class="form-group">
-                                    <label class="form-label">DNI / Documento <span class="required">*</span></label>
-                                    <input type="text" class="form-control" placeholder="12345678" required />
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Edad <span class="required">*</span></label>
-                                    <input type="number" class="form-control" placeholder="25" min="18" required />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="fields-juridica" style="display: none;">
-                            <div class="form-group">
-                                <label class="form-label">Razón Social <span class="required">*</span></label>
-                                <input type="text" class="form-control" placeholder="Ej. Arcos Plateados S.A." />
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div class="form-group">
-                                    <label class="form-label">CUIT <span class="required">*</span></label>
-                                    <input type="text" class="form-control" placeholder="30-12345678-9" />
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Tipo Organización</label>
-                                    <select class="form-control">
-                                        <option value="Empresa">Empresa</option>
-                                        <option value="ONG">ONG</option>
-                                        <option value="Gubernamental">Gubernamental</option>
-                                        <option value="Institución">Institución</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Correo Electrónico (Obligatorio) <span class="required">*</span></label>
-                            <input type="email" class="form-control" placeholder="donante@mail.com" required />
-                            <span class="form-hint">Se le enviará un correo con sus credenciales de acceso inicial.</span>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Teléfono / WhatsApp (Opcional)</label>
-                            <input type="tel" class="form-control" placeholder="+54 11 5555-5555" />
-                        </div>
-                    </div>
-                    <div class="dt-modal-footer">
-                        <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-donor')">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
-                            <span>Registrar y Enviar Bienvenida</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
 
         <script>
             function filterDonorsTable(type, btn) {

@@ -69,7 +69,8 @@ class DistribucionControllersMvcTest {
                 "/registro/donante-humano","/registro/donante-organizacion"))
             mvc.perform(get(ruta)).andExpect(status().isOk()).andExpect(handler().handlerType(AutenticacionController.class));
         for(String ruta:List.of("/registro/donante-humano","/registro/donante-organizacion","/registro/entidad-beneficiaria"))
-            mvc.perform(post(ruta)).andExpect(status().is3xxRedirection())
+            // Fase 7: el registro público no crea cuentas; vuelve a mostrar el formulario (200), sin redirigir a un panel.
+            mvc.perform(post(ruta)).andExpect(status().isOk())
                     .andExpect(handler().handlerType(AutenticacionController.class));
         verifyNoInteractions(donaciones,logistica,incentivos);
     }
