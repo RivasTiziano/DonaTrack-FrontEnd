@@ -26,13 +26,16 @@ public class DonacionesService {
 
     public Map<String,Object> camposDonante(DonanteForm form) { return mapper.camposDonante(form); }
 
-    public void crear(String tipo, DonanteForm form) {
+    /** Devuelve el acceso que informa el alta (ENVIADO, SIN_EMAIL, ... o null). */
+    public String crear(String tipo, DonanteForm form) {
         var errors = new BeanPropertyBindingResult(form,"form");
         validator.validar(tipo,form,errors);
         check(errors);
-        if ("humanos".equals(tipo)) api.crearHumano(mapper.humano(form));
-        else api.crearJuridico(mapper.juridico(form));
+        if ("humanos".equals(tipo)) return api.crearHumano(mapper.humano(form));
+        return api.crearJuridico(mapper.juridico(form));
     }
+
+    public AccesoDtos.Respuesta enviarAcceso(String tipo, Long id) { return api.enviarAcceso(tipo, id); }
 
     public void eliminarDonante(String tipo, Long id) {
         if ("humanos".equals(tipo)) api.eliminarHumano(id); else api.eliminarJuridico(id);
@@ -65,14 +68,14 @@ public class DonacionesService {
         else api.actualizarJuridico(id,mapper.juridico(form,api.juridico(id)));
     }
 
-    public void guardarBeneficiario(Long id,PerfilForm form,List<String> nombres,List<String> telefonos,List<String> emails) {
+    /** Devuelve el acceso del alta (null en edición). */
+    public String guardarBeneficiario(Long id,PerfilForm form,List<String> nombres,List<String> telefonos,List<String> emails) {
         var errors=new BeanPropertyBindingResult(form,"form");
         validator.validarPerfil("beneficiarios",form,id,errors);
         if(id==null) {
             validator.validarRepresentantesBeneficiario(nombres,telefonos,emails,errors);
             check(errors);
-            api.crearBeneficiario(mapper.beneficiario(form,nombres,telefonos,emails));
-            return;
+            return api.crearBeneficiario(mapper.beneficiario(form,nombres,telefonos,emails));
         }
         // Lectura previa (no escribe): si la entidad no tiene representantes, el PUT necesita uno cargado.
         var actual=api.beneficiario(id);
@@ -80,6 +83,7 @@ public class DonacionesService {
             validator.validarRepresentantesBeneficiario(nombres,telefonos,emails,errors);
         check(errors);
         api.actualizarBeneficiario(id,mapper.beneficiario(form,actual,nombres,telefonos,emails));
+        return null;
     }
 
     public void donar(Long donanteId,String descripcion,BienForm inicial,BienesAdicionalesForm adicionales) {

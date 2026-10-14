@@ -111,6 +111,16 @@ class AutenticacionMvcTest {
                 .andExpect(content().string(not(containsString(CLAVE))));
     }
 
+    @Test void cuentaConPrimerAccesoPendienteMuestraErrorGenericoDeCredenciales() throws Exception {
+        when(auth.login(anyString(), anyString())).thenThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED,
+                "Unauthorized", HttpHeaders.EMPTY, "{\"detail\":\"Credenciales inválidas\"}".getBytes(StandardCharsets.UTF_8),
+                StandardCharsets.UTF_8));
+        mvc.perform(login("ana@example.com", CLAVE))
+                .andExpect(status().isOk()).andExpect(view().name("login"))
+                .andExpect(model().attribute("error", "Email o contraseña incorrectos."))
+                .andExpect(content().string(not(containsString(CLAVE))));
+    }
+
     @Test void servicioCaidoMuestraMensajeDeConexion() throws Exception {
         when(auth.login(anyString(), anyString())).thenThrow(new ResourceAccessException("offline"));
         mvc.perform(login("ana@example.com", CLAVE))

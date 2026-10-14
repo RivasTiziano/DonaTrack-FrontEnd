@@ -1,5 +1,6 @@
 package ar.edu.utn.donatrack.controllers;
 
+import ar.edu.utn.donatrack.dto.AccesoDtos;
 import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
 import ar.edu.utn.donatrack.services.AccesoService;
 import ar.edu.utn.donatrack.services.AccesoService.Acceso;
@@ -11,12 +12,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Crear acceso para un donante o una entidad. Solo se llega desde la fila del listado: no hay un id libre.
- * La contraseña nunca vuelve a la vista.
+ * Enviar acceso por mail (sirve para enviar y reenviar). Solo se llega desde la fila del listado.
+ * El mail lo envía el back: la contraseña no pasa por el front.
  */
 @Controller
 public class AccesoController {
-    private static final String ACCESO_CREADO = "Acceso creado. Comunicale la contraseña inicial a la persona por un canal seguro.";
     private static final String LISTADO_DONANTES = "/admin/dashboard/donantes";
     private static final String LISTADO_ENTIDADES = "/admin/dashboard/beneficiarios";
 
@@ -34,11 +34,8 @@ public class AccesoController {
     }
 
     @PostMapping("/admin/dashboard/donantes/{tipo:humanos|juridicos}/{id}/acceso")
-    public String crearDonante(@PathVariable String tipo, @PathVariable Long id,
-                               @RequestParam(defaultValue = "") String password,
-                               @RequestParam(defaultValue = "") String confirmacion,
-                               Model model, RedirectAttributes flash) {
-        return crear(service.perfil(tipo, id), password, confirmacion, model, flash, LISTADO_DONANTES);
+    public String enviarDonante(@PathVariable String tipo, @PathVariable Long id, Model model, RedirectAttributes flash) {
+        return enviar(tipo, id, model, flash, LISTADO_DONANTES);
     }
 
     @PostMapping("/admin/dashboard/donantes/{tipo:humanos|juridicos}/{id}/acceso/contacto")
@@ -64,30 +61,26 @@ public class AccesoController {
     }
 
     @PostMapping("/admin/dashboard/beneficiarios/{id}/acceso")
-    public String crearEntidad(@PathVariable Long id,
-                               @RequestParam(defaultValue = "") String password,
-                               @RequestParam(defaultValue = "") String confirmacion,
-                               Model model, RedirectAttributes flash) {
-        return crear(service.perfil("beneficiarios", id), password, confirmacion, model, flash, LISTADO_ENTIDADES);
+    public String enviarEntidad(@PathVariable Long id, Model model, RedirectAttributes flash) {
+        return enviar("beneficiarios", id, model, flash, LISTADO_ENTIDADES);
     }
 
     private String formulario(Model model, Acceso perfil, String volver) {
-        if (!service.habilitado(perfil.tipo(), perfil.id())) {
-            cargar(model, perfil, volver);
-            model.addAttribute("yaTieneAcceso", true);
-            return "admin-acceso";
-        }
-        if (perfil.email() == null) return "redirect:" + ("beneficiarios".equals(perfil.tipo()) ? "/admin/dashboard/beneficiarios/" + perfil.id() : "/admin/dashboard/donantes/" + perfil.tipo() + "/" + perfil.id()) + "?completarContacto=true";
+        if (perfil.email() == null) return redirigirACompletarContacto(perfil);
         cargar(model, perfil, volver);
         return "admin-acceso";
     }
 
-    private String crear(Acceso perfil, String password, String confirmacion, Model model,
-                         RedirectAttributes flash, String volver) {
+    private String enviar(String tipo, Long id, Model model, RedirectAttributes flash, String volver) {
+        Acceso perfil = service.perfil(tipo, id);
+        if (perfil.email() == null) return redirigirACompletarContacto(perfil);
         try {
-            service.crear(perfil, password, confirmacion);
-            flash.addFlashAttribute("success", ACCESO_CREADO);
-            return "redirect:" + volver;
+            AccesoDtos.Respuesta respuesta = service.enviar(perfil);
+            if ("ENVIADO".equals(respuesta.estado())) {
+                flash.addFlashAttribute("success", respuesta.mensaje() + ".");
+                return "redirect:" + volver;
+            }
+            model.addAttribute("apiError", respuesta.mensaje());
         } catch (FormularioInvalidoException exception) {
             model.addAttribute("apiError", exception.getMessage());
         } catch (RestClientException exception) {
@@ -95,6 +88,10 @@ public class AccesoController {
         }
         cargar(model, perfil, volver);
         return "admin-acceso";
+    }
+
+    private static String redirigirACompletarContacto(Acceso perfil) {
+        return "redirect:" + ("beneficiarios".equals(perfil.tipo()) ? "/admin/dashboard/beneficiarios/" + perfil.id() : "/admin/dashboard/donantes/" + perfil.tipo() + "/" + perfil.id()) + "?completarContacto=true";
     }
 
     private void cargar(Model model, Acceso perfil, String volver) {

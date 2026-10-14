@@ -29,6 +29,11 @@ public class AutenticacionService {
         return token;
     }
 
+    /** Primer acceso: guarda la contraseña inicial con el enlace del correo. Los errores llegan como RestClientException. */
+    public void definirContrasenia(String token, String contrasenia) {
+        authApi.definirContrasenia(token, contrasenia);
+    }
+
     /**
      * Nombre para mostrar: razón social o nombre del donante o de la entidad, Administración para ADMIN.
      * Si el perfil no se puede leer, queda la etiqueta del rol. Necesita que la sesión con el token ya esté guardada.

@@ -1,6 +1,7 @@
 package ar.edu.utn.donatrack.controllers;
 
 import ar.edu.utn.donatrack.controllers.support.ApiViewSupport;
+import ar.edu.utn.donatrack.dto.AccesoDtos;
 import ar.edu.utn.donatrack.forms.BienForm;
 import ar.edu.utn.donatrack.forms.DonanteForm;
 import ar.edu.utn.donatrack.forms.PerfilForm;
@@ -243,8 +244,7 @@ public class DonacionesController {
             return "admin-donante-form";
         }
         try {
-            service.crear(tipo,form);
-            flash.addFlashAttribute("success","Donante registrado correctamente.");
+            avisarAcceso(flash, "Donante registrado correctamente.", service.crear(tipo,form));
             return "redirect:/admin/dashboard/donantes";
         } catch (FormularioInvalidoException e) {
             model.addAttribute("apiError",e.getMessage());
@@ -281,7 +281,7 @@ public class DonacionesController {
         model.addAttribute("completarContacto",completarContacto);
         if(completarContacto) {
             model.addAttribute("emailContacto","");
-            model.addAttribute("apiError","Agregá un email de contacto antes de crear el acceso.");
+            model.addAttribute("apiError","Agregá un email de contacto antes de enviar el acceso.");
         }
         prepare(model,tipo,id);
         try {
@@ -349,8 +349,8 @@ public class DonacionesController {
             return "admin-perfil";
         }
         try {
-            service.guardarBeneficiario(id,form,params.get("repNombre"),params.get("repTelefono"),params.get("repEmail"));
-            flash.addFlashAttribute("success","Entidad guardada por Donaciones.");
+            avisarAcceso(flash, "Entidad guardada por Donaciones.",
+                    service.guardarBeneficiario(id,form,params.get("repNombre"),params.get("repTelefono"),params.get("repEmail")));
             return "redirect:/admin/dashboard/beneficiarios";
         } catch(FormularioInvalidoException e) { model.addAttribute("apiError",e.getMessage()); }
         catch(RestClientException | IllegalStateException e) { model.addAttribute("apiError",errors.describe(e)); }
@@ -360,6 +360,18 @@ public class DonacionesController {
     @PostMapping("/admin/dashboard/beneficiarios/{id}/eliminar")
     public String eliminarBeneficiario(@PathVariable Long id, RedirectAttributes flash) {
         return views.write(flash, "/admin/dashboard/beneficiarios", () -> service.eliminarBeneficiario(id));
+    }
+
+    /** Avisa el resultado del acceso que informó el alta. Si no se pudo enviar, el alta igual quedó hecha. */
+    private static void avisarAcceso(RedirectAttributes flash, String base, String acceso) {
+        if (acceso == null) {
+            flash.addFlashAttribute("success", base);
+        } else if ("ENVIADO".equals(acceso)) {
+            flash.addFlashAttribute("success", base + " " + AccesoDtos.mensaje(acceso) + ".");
+        } else {
+            flash.addFlashAttribute("success", base);
+            flash.addFlashAttribute("apiError", "No se pudo enviar el acceso: " + AccesoDtos.mensaje(acceso) + ". Reintentá con \"Enviar acceso\".");
+        }
     }
 
     private void prepare(Model model, String tipo, Long id) {

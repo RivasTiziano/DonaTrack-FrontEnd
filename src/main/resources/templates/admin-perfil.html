@@ -14,7 +14,7 @@
                   th:action="@{/admin/dashboard/donantes/{tipo}/{id}/acceso/contacto(tipo=${tipo},id=${id})}"
                   class="admin-profile-form">
                 <h2>Completar email de contacto</h2>
-                <p>Este paso conserva el perfil pendiente y los demás contactos. Después podrás crear el acceso.</p>
+                <p>Este paso conserva el perfil pendiente y los demás contactos. Después podrás enviar el acceso.</p>
                 <label>Email de contacto
                     <input class="form-control" type="email" name="email" maxlength="255" required
                            autocomplete="email" th:value="${emailContacto}" />

@@ -23,12 +23,7 @@ public final class AuthDtos {
         }
     }
 
-    public record CrearUsuario(String email, String password, String rol, Long referenciaId) {
-        @Override public String toString() {
-            return "CrearUsuario[email=" + email + ", rol=" + rol + ", referenciaId=" + referenciaId + ", password=***]";
-        }
+    public record PrimerAcceso(String token, String contrasenia) {
+        @Override public String toString() { return "PrimerAcceso[token=***, contrasenia=***]"; }
     }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Usuario(Long id, String email, String rol, Long referenciaId) {}
 }

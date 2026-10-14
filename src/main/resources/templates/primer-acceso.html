@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <title>DonaTrack - Elegí tu contraseña</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon.png}" />
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <!-- Scripts -->
+    <script th:src="@{/vendor/lucide/lucide.min.js}"></script>
+</head>
+<body class="login-page" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 10% 20%, #ffe4e6 0%, transparent 35%), radial-gradient(circle at 90% 80%, #ffedd5 0%, transparent 30%), var(--color-bg); padding: 1rem; width: 100%; box-sizing: border-box; overflow-x: hidden;">
+    <div class="login-shell" style="width: 100%; max-width: 440px; box-sizing: border-box;">
+        <a class="login-back" th:href="@{/}" aria-label="Volver a la página principal">
+            <i data-lucide="arrow-left" aria-hidden="true"></i>
+        </a>
+        <a class="brand login-brand" th:href="@{/}">
+            <img th:replace="~{fragments/brand :: mark}" />
+            <span>DonaTrack</span>
+        </a>
+        <div class="card" style="background: #ffffff; border-radius: var(--radius-xl); border: 1px solid var(--color-border); padding: 1.5rem;  box-sizing: border-box; width: 100%;">
+            <!-- Heading -->
+            <div style="text-align: center; margin-bottom: 1.75rem;">
+                <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--color-ink);">Elegí tu contraseña</h1>
+            </div>
+
+            <!-- Enlace sin token: no hay formulario -->
+            <th:block th:if="${enlaceInvalido != null}">
+                <p role="alert" style="background: #fef2f2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">El enlace no es válido. Pedile a la administración que te envíe el acceso de nuevo.</p>
+                <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); text-align: center; font-size: 0.875rem; color: var(--color-muted);">
+                    <a th:href="@{/login}" style="color: var(--color-primary); font-weight: 700;">Ir a iniciar sesión</a>
+                </div>
+            </th:block>
+
+            <th:block th:if="${enlaceInvalido == null}">
+                <p th:if="${error != null}" th:text="${error}" role="alert" style="background: #fef2f2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;"></p>
+
+                <form th:action="@{/primer-acceso}" method="POST" id="primer-acceso-form">
+                    <input type="hidden" name="token" th:value="${token}" />
+
+                    <div class="form-group">
+                        <label class="form-label" for="primer-acceso-contrasenia">Contraseña (mínimo 12 caracteres) <span class="required">*</span></label>
+                        <input type="password" id="primer-acceso-contrasenia" name="contrasenia" class="form-control" minlength="12" required autocomplete="new-password" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="primer-acceso-confirmacion">Confirmar contraseña <span class="required">*</span></label>
+                        <input type="password" id="primer-acceso-confirmacion" name="confirmacion" class="form-control" minlength="12" required autocomplete="new-password" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 48px; margin-top: 0.75rem;">
+                        <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                        <span>Guardar contraseña</span>
+                    </button>
+                </form>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/app-usability.js}"></script>
+    <script th:src="@{/js/ui-controls.js}"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

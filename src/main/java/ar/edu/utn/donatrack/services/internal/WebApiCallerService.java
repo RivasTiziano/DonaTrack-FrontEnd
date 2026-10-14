@@ -82,6 +82,11 @@ public class WebApiCallerService {
                 .body(body).retrieve().body(type);
     }
 
+    /** POST sin cuerpo: la operación se identifica por la URL. */
+    public <T> T post(String url, Class<T> type) {
+        return client.post().uri(url).retrieve().body(type);
+    }
+
     public <T> T post(String url, Object body, ParameterizedTypeReference<T> type) {
         return client.post().uri(url).contentType(MediaType.APPLICATION_JSON)
                 .body(body).retrieve().body(type);

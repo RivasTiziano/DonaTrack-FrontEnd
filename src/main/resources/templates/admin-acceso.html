@@ -1,35 +1,31 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, ${perfil.rol == 'BENEFICIARIA' ? 'beneficiarios' : 'donors'})}">
     <head>
-        <title>Crear acceso - DonaTrack</title>
+        <title>Enviar acceso - DonaTrack</title>
     </head>
     <body>
         <section th:fragment="main" class="api-view">
             <a th:href="@{${volver}}">Volver al listado</a>
-            <h1>Crear acceso</h1>
+            <h1>Enviar acceso</h1>
             <p th:if="${apiError != null}" th:text="${apiError}" class="api-error" role="alert">
             </p>
             <section class="card api-panel">
                 <p>
                     <strong th:text="${perfil.nombre}">Nombre</strong> · <span th:text="${perfil.tipo == 'beneficiarios' ? 'Entidad beneficiaria' : (perfil.tipo == 'humanos' ? 'Donante' : 'Donante jurídico')}">Rol</span>
                 </p>
-                <p th:if="${yaTieneAcceso != null}" class="form-hint" role="status">Esta persona ya tiene acceso. No hace falta crear otro.</p>
-                <p th:if="${perfil.email == null and yaTieneAcceso == null}" class="api-error" role="alert">El perfil no tiene un email de contacto; cargalo antes de crear el acceso.</p>
-                <form th:if="${perfil.email != null and yaTieneAcceso == null}" method="post" th:action="@{${accion}}">
+                <p th:if="${perfil.email == null}" class="api-error" role="alert">El perfil no tiene un email de contacto; cargalo antes de enviar el acceso.</p>
+                <form th:if="${perfil.email != null}" method="post" th:action="@{${accion}}">
                     <fieldset class="form-grid">
                         <legend>Acceso</legend>
                         <label>Email (tomado del perfil)<input class="form-control" type="email" th:value="${perfil.email}" readonly />
                     </label>
-                    <label>Contraseña inicial (mínimo 12 caracteres)<input class="form-control" type="password" name="password" minlength="12" required autocomplete="new-password" />
-                </label>
-                <label>Confirmar contraseña<input class="form-control" type="password" name="confirmacion" minlength="12" required autocomplete="new-password" />
-            </label>
-        </fieldset>
-        <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Crear acceso</button>
-        </div>
-    </form>
-</section>
-</section>
-</body>
+                    </fieldset>
+                    <p class="form-hint">Se enviará un mail de bienvenida a ese email para que la persona elija su contraseña.</p>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" type="submit">Enviar acceso</button>
+                    </div>
+                </form>
+            </section>
+        </section>
+    </body>
 </html>

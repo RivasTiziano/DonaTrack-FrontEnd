@@ -189,6 +189,29 @@ class AdminMvcTest {
                 && "EMAIL".equals(request.medioDeContactoPredeterminado().tipoMedioContacto())));
     }
 
+    @Test void altaDeDonanteConAccesoEnviadoAvisaEnElFlash() throws Exception {
+        when(donaciones.crearHumano(any())).thenReturn("ENVIADO");
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").session(TestSesiones.admin())
+                .param("nombre", "Ana").param("apellido", "Pérez").param("numeroDocumento", "12345678")
+                .param("fechaNacimiento", "1990-01-01").param("genero", "FEMENINO")
+                .param("calle", "Calle").param("numero", "123").param("ciudad", "CABA").param("provincia", "CABA")
+                .param("email", "ana@example.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attribute("success", containsString("Se envió el mail de bienvenida")));
+    }
+
+    @Test void altaDeDonanteConAccesoFallidoAvisaSinPerderElAlta() throws Exception {
+        when(donaciones.crearHumano(any())).thenReturn("ERROR");
+        mvc.perform(post("/admin/dashboard/donantes/nuevo/humanos").session(TestSesiones.admin())
+                .param("nombre", "Ana").param("apellido", "Pérez").param("numeroDocumento", "12345678")
+                .param("fechaNacimiento", "1990-01-01").param("genero", "FEMENINO")
+                .param("calle", "Calle").param("numero", "123").param("ciudad", "CABA").param("provincia", "CABA")
+                .param("email", "ana@example.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attribute("success", containsString("Donante registrado correctamente.")))
+                .andExpect(flash().attribute("apiError", containsString("No se pudo enviar el acceso")));
+    }
+
     @Test void rejectedDonorCreationKeepsSubmittedValuesAndEscapesErrors() throws Exception {
         doThrow(org.springframework.web.client.HttpClientErrorException.create(org.springframework.http.HttpStatus.BAD_REQUEST,
                 "Bad request", org.springframework.http.HttpHeaders.EMPTY,

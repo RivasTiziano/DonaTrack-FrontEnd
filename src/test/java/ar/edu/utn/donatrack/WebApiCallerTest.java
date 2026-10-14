@@ -117,4 +117,26 @@ class WebApiCallerTest {
         service.eliminarJuridico(2L);
         assertThat(method.get()).isEqualTo("DELETE");
     }
+
+    @Test void enviarAccesoPostSinCuerpoALaUrlDelTipoYLeeElEstadoDeLasRespuestasDeError() {
+        endpoint("/donantes/humanos/7/acceso", 200, "{\"estado\":\"ENVIADO\",\"mensaje\":\"Se envió el mail\"}");
+        endpoint("/donantes/juridicos/9/acceso", 409, "{\"estado\":\"YA_TIENE_CUENTA\",\"mensaje\":\"Ya eligió\"}");
+        endpoint("/beneficiarios/3/acceso", 503, "{\"estado\":\"ERROR\",\"mensaje\":\"Reintentá\"}");
+        assertThat(service.enviarAcceso("humanos", 7L).estado()).isEqualTo("ENVIADO");
+        assertThat(method.get()).isEqualTo("POST");
+        assertThat(request.get()).isEmpty();
+        assertThat(service.enviarAcceso("juridicos", 9L)).isEqualTo(new ar.edu.utn.donatrack.dto.AccesoDtos.Respuesta("YA_TIENE_CUENTA", "Ya eligió"));
+        assertThat(service.enviarAcceso("beneficiarios", 3L).estado()).isEqualTo("ERROR");
+    }
+
+    @Test void enviarAccesoDePerfilInexistenteEs404() {
+        endpoint("/donantes/humanos/8/acceso", 404, "{\"detail\":\"No existe\"}");
+        assertThatThrownBy(() -> service.enviarAcceso("humanos", 8L))
+                .isInstanceOf(ar.edu.utn.donatrack.exceptions.PerfilNoEncontradoException.class);
+    }
+
+    @Test void altaDevuelveElAccesoInformadoPorElBack() {
+        endpoint("/beneficiarios", 201, "{\"id\":3,\"razonSocial\":\"Comedor\",\"acceso\":\"SIN_EMAIL\"}");
+        assertThat(service.crearBeneficiario(new ar.edu.utn.donatrack.dto.DonacionesDetalles.CrearBeneficiario("Comedor", "ONG", "Comedor", null, null, java.util.List.of()))).isEqualTo("SIN_EMAIL");
+    }
 }

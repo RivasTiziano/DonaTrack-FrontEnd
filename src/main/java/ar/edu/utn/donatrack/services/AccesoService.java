@@ -1,6 +1,6 @@
 package ar.edu.utn.donatrack.services;
 
-import ar.edu.utn.donatrack.dto.AuthDtos;
+import ar.edu.utn.donatrack.dto.AccesoDtos;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.donante.MedioDeContactoDto;
 import ar.edu.utn.donatrack.exceptions.FormularioInvalidoException;
@@ -11,22 +11,21 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.stream.Stream;
 
 /**
- * Alta de acceso (usuario y contraseña inicial) para un donante o una entidad ya existente en Donaciones.
- * El backend de autenticación no valida que el referenciaId exista ni que coincida con el rol, así que el perfil se relee
- * antes de mostrar el formulario y antes de crear el usuario. El rol sale del tipo de perfil; nunca es ADMIN.
+ * Enviar acceso (mail de bienvenida para el primer acceso, Entrega 1) a un donante o entidad ya cargado;
+ * el back crea o renueva la cuenta pendiente y decide el estado.
+ * El controller lee el perfil (email actual) antes de enviar. El rol sale del tipo de perfil; nunca es ADMIN.
  */
 @Service
 public class AccesoService {
 
-    /** Perfil con el que se crea el acceso. El email sale del perfil (null si no tiene un email de contacto). */
+    /** Perfil con el que se envía el acceso. El email sale del perfil (null si no tiene un email de contacto). */
     public record Acceso(String tipo, Long id, String rol, String nombre, String email) {}
 
     private final DonacionesService donaciones;
-    private final AutenticacionApiService auth;
     private final AccesoValidator validator;
 
-    public AccesoService(DonacionesService donaciones, AutenticacionApiService auth, AccesoValidator validator) {
-        this.donaciones = donaciones; this.auth = auth; this.validator = validator;
+    public AccesoService(DonacionesService donaciones, AccesoValidator validator) {
+        this.donaciones = donaciones; this.validator = validator;
     }
 
     /** Lee el perfil en Donaciones. Si no existe, lanza PerfilNoEncontradoException (404). */
@@ -43,36 +42,21 @@ public class AccesoService {
         }
     }
 
-    /** Un perfil puede recibir acceso si todavía no tiene cuenta, sea cual sea su estado de registro. */
-    public boolean habilitado(String tipo, Long id) {
-        String rol = switch(tipo) { case "humanos" -> "DONANTE_HUMANO"; case "juridicos" -> "DONANTE_JURIDICO"; default -> "BENEFICIARIA"; };
-        return !auth.existeUsuario(rol, id);
-    }
-
-    /** Completa el contacto sin cambiar el estado pendiente ni crear el usuario. Solo para donantes pendientes sin email. */
+    /** Completa el contacto sin cambiar el estado pendiente. Solo para donantes pendientes sin email. */
     public void completarEmail(String tipo,Long id,String email) {
-        if("beneficiarios".equals(tipo) || !"PENDIENTE_COMPLETAR".equals(estadoRegistro(tipo, id)) || !habilitado(tipo,id))
-            throw new FormularioInvalidoException("Este perfil no requiere un nuevo acceso o ya tiene cuenta.");
+        if("beneficiarios".equals(tipo) || !"PENDIENTE_COMPLETAR".equals(estadoRegistro(tipo, id)))
+            throw new FormularioInvalidoException("Este perfil no requiere completar el contacto.");
         if(perfil(tipo,id).email()!=null)
             throw new FormularioInvalidoException("El donante ya tiene un email de contacto.");
         validator.validarEmail(email);
         donaciones.completarEmail(tipo,id,email.trim().toLowerCase(java.util.Locale.ROOT));
     }
 
-    /** Crea el usuario. La contraseña se envía al backend y no se conserva. */
-    public void crear(Acceso perfil, String password, String confirmacion) {
-        perfil = perfil(perfil.tipo(), perfil.id());
+    /** Envía (o reenvía) el acceso. Sin email de contacto no se llama a la API. */
+    public AccesoDtos.Respuesta enviar(Acceso perfil) {
         if (perfil.email() == null)
-            throw new FormularioInvalidoException("El perfil no tiene un email de contacto; cargalo antes de crear el acceso.");
-        if (!habilitado(perfil.tipo(), perfil.id()))
-            throw new FormularioInvalidoException("Este perfil no requiere un nuevo acceso o ya tiene cuenta.");
-        validator.validar(password, confirmacion);
-        // PROVISORIO: reemplazar por flujo de primer acceso con CuentaCreada (pedido backend E2)
-        try {
-            auth.crearUsuario(new AuthDtos.CrearUsuario(perfil.email(), password, perfil.rol(), perfil.id()));
-        } catch (HttpClientErrorException.Conflict exception) {
-            throw new FormularioInvalidoException("Ya existe un usuario con ese email.");
-        }
+            throw new FormularioInvalidoException("El perfil no tiene un email de contacto; cargalo antes de enviar el acceso.");
+        return donaciones.enviarAcceso(perfil.tipo(), perfil.id());
     }
 
     private String estadoRegistro(String tipo, Long id) {

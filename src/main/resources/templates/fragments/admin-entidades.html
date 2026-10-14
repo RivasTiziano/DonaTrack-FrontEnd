@@ -48,7 +48,7 @@
                             </td>
                             <td data-label="Acciones">
                                 <div class="row-actions">
-                                    <a class="btn btn-outline action-access" th:href="@{/admin/dashboard/beneficiarios/{id}/acceso(id=${item.id})}">Crear acceso</a>
+                                    <a class="btn btn-outline action-access" th:href="@{/admin/dashboard/beneficiarios/{id}/acceso(id=${item.id})}">Enviar acceso</a>
                                     <a class="btn btn-outline action-icon action-edit" th:href="@{/admin/dashboard/beneficiarios/{id}(id=${item.id})}" aria-label="Ver o editar" title="Ver o editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></a>
                                     <form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar esta entidad? ');">
                                                 <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>

@@ -1,16 +1,19 @@
 package ar.edu.utn.donatrack.services;
 
+import ar.edu.utn.donatrack.dto.AccesoDtos;
 import ar.edu.utn.donatrack.dto.ApiDtos;
 import ar.edu.utn.donatrack.dto.ApiRequests;
 import ar.edu.utn.donatrack.dto.DonanteRequests;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse;
 import ar.edu.utn.donatrack.dto.donante.DonanteJuridicoResponse;
+import ar.edu.utn.donatrack.exceptions.PerfilNoEncontradoException;
 import ar.edu.utn.donatrack.services.internal.WebApiCallerService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -39,12 +42,37 @@ public class DonacionesApiService {
         return http.getList(url + "/donantes/juridicos", DonanteJuridicoResponse.class);
     }
 
-    public void crearHumano(DonanteRequests.Humano request) {
-        http.post(url + "/donantes/humanos", request, DonanteHumanoResponse.class);
+    /** Devuelve el acceso del alta (ENVIADO, SIN_EMAIL, ... o null). */
+    public String crearHumano(DonanteRequests.Humano request) {
+        AccesoDtos.Alta alta = http.post(url + "/donantes/humanos", request, AccesoDtos.Alta.class);
+        return alta == null ? null : alta.acceso();
     }
 
-    public void crearJuridico(DonanteRequests.Juridico request) {
-        http.post(url + "/donantes/juridicos", request, DonanteJuridicoResponse.class);
+    /** Devuelve el acceso del alta (ENVIADO, SIN_EMAIL, ... o null). */
+    public String crearJuridico(DonanteRequests.Juridico request) {
+        AccesoDtos.Alta alta = http.post(url + "/donantes/juridicos", request, AccesoDtos.Alta.class);
+        return alta == null ? null : alta.acceso();
+    }
+
+    /**
+     * Envía (o reenvía) el acceso del donante o la entidad. Los estados que no son ENVIADO llegan con 400, 409 o 503
+     * y se devuelven igual, con su estado y mensaje. Un 404 significa que el perfil no existe.
+     */
+    public AccesoDtos.Respuesta enviarAcceso(String tipo, Long id) {
+        String urlAcceso = "beneficiarios".equals(tipo)
+                ? url + "/beneficiarios/" + id + "/acceso"
+                : url + "/donantes/" + tipo + "/" + id + "/acceso";
+        try {
+            return http.post(urlAcceso, AccesoDtos.Respuesta.class);
+        } catch (HttpStatusCodeException e) {
+            int status = e.getStatusCode().value();
+            if (status == 404) throw new PerfilNoEncontradoException();
+            if (status == 400 || status == 409 || status == 503) {
+                AccesoDtos.Respuesta respuesta = e.getResponseBodyAs(AccesoDtos.Respuesta.class);
+                if (respuesta != null && respuesta.estado() != null) return respuesta;
+            }
+            throw e;
+        }
     }
 
     public void eliminarHumano(Long id) {
@@ -191,8 +219,10 @@ public class DonacionesApiService {
         return http.get(url + "/beneficiarios/" + id, DonacionesDetalles.Beneficiario.class);
     }
 
-    public void crearBeneficiario(DonacionesDetalles.CrearBeneficiario request) {
-        http.post(url + "/beneficiarios", request, DonacionesDetalles.Beneficiario.class);
+    /** Devuelve el acceso del alta (ENVIADO, SIN_EMAIL, ... o null). */
+    public String crearBeneficiario(DonacionesDetalles.CrearBeneficiario request) {
+        AccesoDtos.Alta alta = http.post(url + "/beneficiarios", request, AccesoDtos.Alta.class);
+        return alta == null ? null : alta.acceso();
     }
 
     public void actualizarBeneficiario(Long id, DonacionesDetalles.ActualizarBeneficiario request) {
