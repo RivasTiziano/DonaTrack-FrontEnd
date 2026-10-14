@@ -111,25 +111,31 @@
         <article class="attention-item" th:each="s : ${sugerencias}">
             <a th:href="@{/admin/dashboard/sugerencias/{id}(id=${s.donacionId})}" th:text="'Ver sugerencia'">
             </a>
-            <p th:text="'Coincidencia de algoritmos: ' + ${s.hayInterseccion}">
+            <p th:text="'Donación: ' + ${donacionesPorId != null and donacionesPorId.get(s.donacionId) != null ? donacionesPorId.get(s.donacionId) : '#' + s.donacionId}">
             </p>
+            <p th:text="${s.hayInterseccion ? 'Coinciden los algoritmos' : 'Sin coincidencia entre algoritmos'}">
+            </p>
+            <ul th:if="${not #lists.isEmpty(s.mejoresNecesidades)}">
+                <li th:each="n : ${s.mejoresNecesidades}" th:text="${n.descripcion} + ' — ' + ${entidades != null and entidades.get(n.entidadBeneficiariaId) != null ? entidades.get(n.entidadBeneficiariaId) : 'Entidad #' + n.entidadBeneficiariaId}">
+                </li>
+            </ul>
         </article>
     </section>
     <section th:if="${section == 'sugerencia' and sugerencia != null}" class="card api-panel">
-        <p th:text="'Donación seleccionada'">
+        <p th:text="'Donación: ' + ${donacionesPorId != null and donacionesPorId.get(sugerencia.donacionId) != null ? donacionesPorId.get(sugerencia.donacionId) : '#' + sugerencia.donacionId}">
         </p>
-        <p th:text="'Coincidencia de algoritmos: ' + ${sugerencia.hayInterseccion}">
+        <p th:text="${sugerencia.hayInterseccion ? 'Coinciden los algoritmos' : 'Sin coincidencia entre algoritmos'}">
         </p>
         <h2>Mejores necesidades</h2>
         <ul>
-            <li th:each="n : ${sugerencia.mejoresNecesidades}" th:text="${n.descripcion}">
+            <li th:each="n : ${sugerencia.mejoresNecesidades}" th:text="${n.descripcion} + ' — ' + ${entidades != null and entidades.get(n.entidadBeneficiariaId) != null ? entidades.get(n.entidadBeneficiariaId) : 'Entidad #' + n.entidadBeneficiariaId}">
             </li>
         </ul>
         <article th:each="t : ${sugerencia.tops}">
             <h3 th:text="${t.nombreAlgoritmo}">
             </h3>
             <ul>
-                <li th:each="n : ${t.topDiezNecesidades}" th:text="${n.descripcion}">
+                <li th:each="n : ${t.topDiezNecesidades}" th:text="${n.descripcion} + ' — ' + ${entidades != null and entidades.get(n.entidadBeneficiariaId) != null ? entidades.get(n.entidadBeneficiariaId) : 'Entidad #' + n.entidadBeneficiariaId}">
                 </li>
             </ul>
         </article>

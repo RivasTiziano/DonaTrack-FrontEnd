@@ -101,6 +101,7 @@ public class DonacionesController {
         load(model, () -> model.addAttribute("donaciones", service.donaciones()));
         load(model, () -> model.addAttribute("necesidades", service.necesidades()));
         load(model, () -> model.addAttribute("algoritmos", service.algoritmos()));
+        load(model, () -> model.addAttribute("entidades", service.nombresEntidades()));
         return page(model, "Matchmaking y asignación", "asignar", "assign");
     }
 
@@ -420,12 +421,16 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/sugerencias")
     public String sugerencias(Model model) {
         views.load(model, "sugerencias", service::sugerencias);
+        views.load(model, "donacionesPorId", service::descripcionesDonaciones);
+        views.load(model, "entidades", service::nombresEntidades);
         return views.page(model, "Sugerencias guardadas", "sugerencias");
     }
 
     @GetMapping("/admin/dashboard/sugerencias/{id}")
     public String sugerencia(@PathVariable Long id, Model model) {
         views.load(model, "sugerencia", () -> service.sugerencia(id));
+        views.load(model, "donacionesPorId", service::descripcionesDonaciones);
+        views.load(model, "entidades", service::nombresEntidades);
         return views.page(model, "Sugerencia de donación", "sugerencia");
     }
 

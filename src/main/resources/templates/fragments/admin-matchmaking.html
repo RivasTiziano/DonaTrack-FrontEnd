@@ -27,6 +27,7 @@
                                 <thead>
                                     <tr>
                                         <th scope="col">Descripción</th>
+                                        <th scope="col">Entidad beneficiaria</th>
                                         <th scope="col">Restante</th>
                                         <th scope="col">Acción</th>
                                     </tr>
@@ -36,6 +37,7 @@
                                         
                                         <td data-label="Descripción" th:text="${n.descripcion}">
                                         </td>
+                                        <td data-label="Entidad beneficiaria" th:text="${entidades != null and entidades.get(n.entidadBeneficiariaId) != null ? entidades.get(n.entidadBeneficiariaId) : 'Entidad #' + n.entidadBeneficiariaId}"></td>
                                         <td data-label="Restante" th:text="${n.cantidadRestante}">
                                         </td>
                                         <td data-label="Acción">
@@ -53,6 +55,7 @@
                                     <thead>
                                         <tr>
                                             <th scope="col">Descripción</th>
+                                            <th scope="col">Entidad beneficiaria</th>
                                             <th scope="col">Restante</th>
                                             <th scope="col">Acción</th>
                                         </tr>
@@ -62,6 +65,7 @@
                                             
                                             <td data-label="Descripción" th:text="${n.descripcion}">
                                             </td>
+                                            <td data-label="Entidad beneficiaria" th:text="${entidades != null and entidades.get(n.entidadBeneficiariaId) != null ? entidades.get(n.entidadBeneficiariaId) : 'Entidad #' + n.entidadBeneficiariaId}"></td>
                                             <td data-label="Restante" th:text="${n.cantidadRestante}">
                                             </td>
                                             <td data-label="Acción">

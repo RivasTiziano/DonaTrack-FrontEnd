@@ -32,7 +32,7 @@
             <div class="onboarding-hint-content">
                 <div class="onboarding-hint-title">Ciclo de vida y trazabilidad de los bienes entregados</div>
                 <p class="onboarding-hint-text">
-                    Tus donaciones pasan por las siguientes etapas: <strong>En depósito</strong> (recepción, pesaje y clasificación por subcategoría) → <strong>Asignación realizada</strong> (match con una necesidad mediante algoritmos) → <strong>Lista para entregar</strong> (consolidación de ruta) → <strong>En traslado</strong> (camión en viaje con telemetría GPS) → <strong>Entregada</strong> (recepción confirmada con fotos verificadas).
+                    Tus donaciones pasan por estos estados: <strong>En depósito</strong> (registrada, disponible para asignar) → <strong>Asignación realizada</strong> (asignada a una entidad beneficiaria) → <strong>Lista para entregar</strong> (con una ruta planificada) → <strong>En traslado</strong> (el camión inició el recorrido) → <strong>Entregada</strong> (la entidad confirmó la entrega). Si no se pudo entregar el día estipulado queda en <strong>Entrega fallida</strong> y vuelve al depósito; el depósito puede marcarla como <strong>Vencida</strong>.
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -40,7 +40,7 @@
             </button>
         </div>
 
-        <!-- Filtros del historial: formulario GET que resuelve el back (estado, categoría y subcategoría) -->
+        <!-- Filtros del historial: formulario GET (categoría y subcategoría las filtra el back; el estado efectivo, el front) -->
         <form method="get" th:action="@{/donante/dashboard/donaciones}" class="card" aria-label="Filtros de donaciones" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
                 <div class="form-group">
@@ -48,7 +48,11 @@
                     <select id="filtro-estado" name="estado" class="form-control">
                         <option value="">Todos los estados</option>
                         <option value="EN_DEPOSITO" th:selected="${filtroEstado == 'EN_DEPOSITO'}">En depósito</option>
-                        <option value="ASIGNACION_REALIZADA" th:selected="${filtroEstado == 'ASIGNACION_REALIZADA'}">Asignada</option>
+                        <option value="ASIGNACION_REALIZADA" th:selected="${filtroEstado == 'ASIGNACION_REALIZADA'}">Asignación realizada</option>
+                        <option value="LISTA_PARA_ENTREGAR" th:selected="${filtroEstado == 'LISTA_PARA_ENTREGAR'}">Lista para entregar</option>
+                        <option value="EN_TRASLADO" th:selected="${filtroEstado == 'EN_TRASLADO'}">En traslado</option>
+                        <option value="ENTREGADA" th:selected="${filtroEstado == 'ENTREGADA'}">Entregada</option>
+                        <option value="ENTREGA_FALLIDA" th:selected="${filtroEstado == 'ENTREGA_FALLIDA'}">Entrega fallida</option>
                         <option value="VENCIDA" th:selected="${filtroEstado == 'VENCIDA'}">Vencida</option>
                     </select>
                 </div>
@@ -79,29 +83,16 @@
         <p th:if="${userDonations.isEmpty()}" class="card" style="padding: 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-muted); font-size: 0.875rem; margin-bottom: 2rem;">No tenés donaciones con esos filtros.</p>
         <div class="dt-cards-grid-3" id="donations-grid">
             <article class="donation-card-box" th:each="donation : ${userDonations}"
-                     th:attr="data-id=${donation.id},
-                              data-title=${donation.title},
-                              data-category=${donation.category},
-                              data-subcategory=${donation.subcategory},
-                              data-status=${donation.status},
-                              data-entity=${donation.entity_name},
-                              data-date=${donation.delivery_date},
-                              data-units=${donation.total_units},
-                              data-unit=${donation.unit},
-                              data-itemtype=${donation.item_type},
-                              data-img=${donation.image_url},
-                              data-recibida=${donation.fecha_recepcion},
-                              data-asignada=${donation.fecha_asignacion},
-                              data-entregada=${donation.fecha_entrega}"
+                     th:attr="data-id=${donation.id}"
                      style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;  display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;">
 
                 <div style="position: relative; height: 180px; overflow: hidden; background: #f8fafc;">
                     <img th:if="${donation.image_url != null}" th:src="${donation.image_url}" th:alt="${donation.title}" style="width: 100%; height: 100%; object-fit: cover;" />
                     <i th:if="${donation.image_url == null}" data-lucide="package" style="position: absolute; inset: 0; margin: auto; width: 48px; height: 48px; color: var(--color-muted);"></i>
                     <span class="status-badge"
-                          th:classappend="${donation.status_badge}"
+                          th:classappend="${donation.estado_donacion_badge}"
                           style="position: absolute; top: 12px; right: 12px;  font-weight: 700;"
-                          th:text="${donation.status_label}">Estado</span>
+                          th:text="${donation.estado_donacion_label}">Estado</span>
 
                     <span style="position: absolute; bottom: 10px; left: 10px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm);" th:text="${donation.item_type}">Tipo Bien</span>
                 </div>
@@ -118,18 +109,29 @@
 
                     <div style="font-size: 0.875rem; color: var(--color-muted); display: flex; flex-direction: column; gap: 0.4rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="building-2" style="width: 16px; height: 16px; color: var(--color-primary); flex-shrink: 0;"></i>
-                            <span>Destino: <strong style="color: var(--color-ink);" th:text="${donation.entity_name}">Entidad</strong></span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="calendar" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Fecha: <strong th:text="${donation.delivery_date}">Fecha</strong></span>
+                            <span>Recepción: <strong th:text="${donation.fecha_recepcion}">Fecha</strong></span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="package" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
-                            <span>Cantidad: <strong th:text="${donation.total_units} + ' ' + ${donation.unit}">25 unidades</strong></span>
+                            <span>Cantidad total: <strong th:text="${donation.total_units} + ' ' + ${donation.unit}">25 unidades</strong></span>
                         </div>
                     </div>
+                    <p th:if="${donation.sin_asignar != null}" style="font-size: 0.875rem; color: var(--color-muted);">
+                        Sin asignar: <strong style="color: var(--color-ink);" th:text="${donation.sin_asignar} + ' ' + ${donation.unit}">10 kilogramo</strong> —
+                        <span class="status-badge badge-deposito">En depósito</span>
+                    </p>
+                    <details th:if="${!donation.asignaciones.isEmpty()}" th:open="${donation.desglose_abierto}" style="font-size: 0.875rem;">
+                        <summary style="cursor: pointer; font-weight: 700; color: var(--color-ink);" th:text="'Asignaciones (' + ${donation.asignaciones.size()} + ')'">Asignaciones</summary>
+                        <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li th:each="a : ${donation.asignaciones}" class="asignacion-fila" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; color: var(--color-muted);">
+                                <strong style="color: var(--color-ink);" th:text="${a.cantidad} + ' ' + ${donation.unit}">5 kilogramo</strong>
+                                <span th:text="'→ ' + ${a.entidad ?: 'Entidad no disponible'}">→ Entidad</span>
+                                <span class="status-badge" th:classappend="${a.estado_badge}" th:text="${a.estado_label}">Estado</span>
+                                <span th:text="${a.fecha_label} + ': ' + ${a.fecha ?: '—'}">Asignación: 01/01/2026</span>
+                            </li>
+                        </ul>
+                    </details>
 
                     <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem;">
                         <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" th:attr="onclick='openDonationDetailModal(' + ${donation.id} + ')'">
@@ -156,39 +158,39 @@
                     </button>
                 </div>
                 <div class="dt-modal-body">
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: center;">
-                        <img id="modal-img" src="" alt="Foto donación" style="display: none; width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover;" />
-                        <div>
-                            <h4 id="modal-title" style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink);">Título de Donación</h4>
-                            <p style="font-size: 0.875rem; color: var(--color-muted);">
-                                <span id="modal-category">Categoría</span> • <span id="modal-units">25 unidades</span>
-                            </p>
-                            <span id="modal-status" class="status-badge badge-entregada" style="margin-top: 4px;">Estado</span>
+                    <div class="traza-donacion" th:each="donation : ${userDonations}" th:attr="data-id=${donation.id}" hidden>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: center;">
+                            <img th:if="${donation.image_url != null}" th:src="${donation.image_url}" alt="Foto donación" style="width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover;" />
+                            <div>
+                                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink);" th:text="${donation.title}">Título de Donación</h4>
+                                <p style="font-size: 0.875rem; color: var(--color-muted);">
+                                    <span th:text="${donation.category}">Categoría</span><span th:if="${donation.subcategory != null}" th:text="' • ' + ${donation.subcategory}"> • Subcategoría</span>
+                                </p>
+                                <p style="font-size: 0.875rem; color: var(--color-muted);">Cantidad total: <strong th:text="${donation.total_units} + ' ' + ${donation.unit}">25 unidades</strong></p>
+                                <p th:if="${donation.fecha_recepcion != null}" style="font-size: 0.875rem; color: var(--color-muted);">Recibida en depósito: <strong th:text="${donation.fecha_recepcion}">01/01/2026</strong></p>
+                                <span class="status-badge" th:classappend="${donation.estado_donacion_badge}" style="margin-top: 4px;" th:text="${donation.estado_donacion_label}">Estado</span>
+                                <p th:if="${donation.sin_asignar_deposito != null}" style="font-size: 0.875rem; color: var(--color-muted); margin-top: 0.35rem;">
+                                    Sin asignar: <strong style="color: var(--color-ink);" th:text="${donation.sin_asignar_deposito} + ' ' + ${donation.unit}">10 kilogramo</strong> —
+                                    <span class="status-badge badge-deposito">En depósito</span>
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Material/HIG Visual Stepper -->
-                    <div class="dt-stepper" id="modal-stepper" aria-label="Progreso de entrega de la donación">
-                        <div class="dt-step completed" id="step-deposito">
-                            <div class="dt-step-bubble"><i data-lucide="package" style="width: 16px; height: 16px;"></i></div>
-                            <span class="dt-step-label">En depósito</span>
-                        </div>
-                        <div class="dt-step completed" id="step-asignacion">
-                            <div class="dt-step-bubble"><i data-lucide="git-merge" style="width: 16px; height: 16px;"></i></div>
-                            <span class="dt-step-label">Asignada</span>
-                        </div>
-                        <div class="dt-step active" id="step-traslado">
-                            <div class="dt-step-bubble"><i data-lucide="truck" style="width: 16px; height: 16px;"></i></div>
-                            <span class="dt-step-label">En traslado</span>
-                        </div>
-                        <div class="dt-step" id="step-entregada">
-                            <div class="dt-step-bubble"><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i></div>
-                            <span class="dt-step-label">Entregada</span>
-                        </div>
-                    </div>
-
-                    <h4 style="font-size: 0.9375rem; font-weight: 700; margin: 1.25rem 0 0.75rem 0; color: var(--color-ink);">Fechas registradas</h4>
-                    <div id="modal-timeline" class="status-timeline" style="display: flex; flex-direction: column; gap: 1rem; padding-left: 1.5rem; position: relative; border-left: 2px solid var(--color-border);">
+                        <p th:if="${donation.asignaciones.isEmpty()}" style="font-size: 0.8125rem; color: var(--color-muted);">Todavía no tiene asignaciones.</p>
+                        <section class="traza-asignacion" th:each="a : ${donation.asignaciones}" style="border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem;">
+                            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;">
+                                <strong style="color: var(--color-ink);" th:text="${a.cantidad} + ' ' + ${donation.unit} + ' → ' + ${a.entidad ?: 'Entidad no disponible'}">5 kilogramo → Entidad</strong>
+                                <span class="status-badge" th:classappend="${a.estado_badge}" th:text="${a.estado_label}">Estado</span>
+                            </div>
+                            <div class="dt-stepper" aria-label="Progreso de la asignación">
+                                <div class="dt-step" th:each="p : ${a.pasos}" th:classappend="${p.clase}">
+                                    <div class="dt-step-bubble"><i th:attr="data-lucide=${p.icono}" style="width: 16px; height: 16px;"></i></div>
+                                    <span class="dt-step-label" th:text="${p.label}">Paso</span>
+                                    <span th:if="${p.fecha != null}" class="dt-step-label" style="font-weight: 400; margin-top: 0;" th:text="${p.fecha}">01/01/2026</span>
+                                </div>
+                            </div>
+                            <p th:if="${a.justificacion != null}" style="font-size: 0.8125rem; color: var(--color-muted);">Justificación: <span th:text="${a.justificacion}">Motivo</span></p>
+                        </section>
                     </div>
                 </div>
                 <div class="dt-modal-footer">
@@ -199,78 +201,16 @@
 
         <!-- Dynamic Filter & Modal Controller Script -->
         <script th:inline="javascript">
-            function badgeDeEstado(status) {
-                if (status === 'ENTREGADA') return 'badge-entregada';
-                if (status === 'EN_TRASLADO') return 'badge-traslado';
-                if (status === 'ASIGNACION_REALIZADA' || status === 'PENDIENTE_RUTA') return 'badge-asignada';
-                if (status === 'LISTA_PARA_ENTREGAR') return 'badge-lista';
-                if (status === 'ENTREGA_FALLIDA' || status === 'VENCIDA') return 'badge-vencida';
-                return 'badge-deposito';
-            }
-
+            // El contenido del modal lo renderiza el servidor (un bloque por donación); acá solo se muestra el que corresponde.
             function openDonationDetailModal(donationId) {
-                const card = document.querySelector('.donation-card-box[data-id="' + donationId + '"]');
-                if (!card) return;
-
-                document.getElementById('modal-title').textContent = card.getAttribute('data-title');
-                document.getElementById('modal-category').textContent = card.getAttribute('data-category') + ' • ' + card.getAttribute('data-subcategory');
-                document.getElementById('modal-units').textContent = card.getAttribute('data-units') + ' ' + card.getAttribute('data-unit');
-
-                const status = card.getAttribute('data-status');
-                const statusBadge = document.getElementById('modal-status');
-                statusBadge.textContent = card.querySelector('.status-badge') ? card.querySelector('.status-badge').textContent : status;
-                statusBadge.className = 'status-badge ' + badgeDeEstado(status);
-
-                const img = card.getAttribute('data-img');
-                const modalImg = document.getElementById('modal-img');
-                if (img) { modalImg.src = img; modalImg.style.display = 'block'; }
-                else { modalImg.removeAttribute('src'); modalImg.style.display = 'none'; }
-
-                // Fechas reales de la API (sin pasos inventados)
-                const timeline = document.getElementById('modal-timeline');
-                timeline.innerHTML = '';
-                const filas = [ ['Recibida en depósito', card.getAttribute('data-recibida')],
-                 ['Asignada', card.getAttribute('data-asignada')],
-                 ['Entrega', card.getAttribute('data-entregada')] ];
-                filas.forEach(([etiqueta, fecha]) => {
-                    if (!fecha) return;
-                    const fila = document.createElement('p');
-                    fila.style.cssText = 'font-size: 0.8125rem; color: var(--color-muted);';
-                    fila.textContent = etiqueta + ': ' + fecha;
-                    timeline.appendChild(fila);
+                const bloques = document.querySelectorAll('#modal-donation-detail .traza-donacion');
+                let encontrado = false;
+                bloques.forEach(b => {
+                    const visible = b.getAttribute('data-id') === String(donationId);
+                    b.hidden = !visible;
+                    if (visible) encontrado = true;
                 });
-                if (!timeline.children.length) {
-                    const vacio = document.createElement('p');
-                    vacio.style.cssText = 'font-size: 0.8125rem; color: var(--color-muted);';
-                    vacio.textContent = 'Todavía no hay fechas registradas para esta donación.';
-                    timeline.appendChild(vacio);
-                }
-
-                // Update Stepper Stages
-                const stepDep = document.getElementById('step-deposito');
-                const stepAsig = document.getElementById('step-asignacion');
-                const stepTras = document.getElementById('step-traslado');
-                const stepEnt = document.getElementById('step-entregada');
-
-                if (stepDep && stepAsig && stepTras && stepEnt) {
-                    [stepDep, stepAsig, stepTras, stepEnt].forEach(s => s.className = 'dt-step');
-                    if (status === 'EN_DEPOSITO') {
-                        stepDep.classList.add('active');
-                    } else if (status === 'ASIGNACION_REALIZADA' || status === 'PENDIENTE_RUTA' || status === 'LISTA_PARA_ENTREGAR') {
-                        stepDep.classList.add('completed');
-                        stepAsig.classList.add('active');
-                    } else if (status === 'EN_TRASLADO') {
-                        stepDep.classList.add('completed');
-                        stepAsig.classList.add('completed');
-                        stepTras.classList.add('active');
-                    } else if (status === 'ENTREGADA') {
-                        stepDep.classList.add('completed');
-                        stepAsig.classList.add('completed');
-                        stepTras.classList.add('completed');
-                        stepEnt.classList.add('completed');
-                    }
-                }
-
+                if (!encontrado) return;
                 openModal('modal-donation-detail');
             }
 

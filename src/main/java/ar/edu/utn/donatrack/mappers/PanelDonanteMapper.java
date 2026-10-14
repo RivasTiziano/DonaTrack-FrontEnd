@@ -44,9 +44,55 @@ public class PanelDonanteMapper {
 
     // ---------- Donaciones ----------
 
-    /** Una donación con sus asignaciones. El estado y la fecha salen de la asignación más reciente. */
+    /**
+     * Estado de E2 que ve el donante: Vencida si el depósito la venció; si no, el de la asignación más reciente
+     * (PENDIENTE_RUTA es 'Asignación realizada'); sin asignaciones, el de la donación.
+     */
+    public static String estadoEfectivo(ApiDtos.Donacion d, List<ApiDtos.Asignacion> asignaciones) {
+        if ("VENCIDA".equals(d.estado())) return "VENCIDA";
+        var reciente = masReciente(asignaciones, ApiDtos.Asignacion::fechaAsignacion);
+        if (reciente != null && reciente.estado() != null) return estadoAsignacion(reciente);
+        return d.estado();
+    }
+
+    /** Estados de E2 que se filtran por la donación misma; los otros cinco, por sus asignaciones. */
+    private static final Set<String> ESTADOS_DONACION = Set.of("EN_DEPOSITO", "VENCIDA");
+
+    /**
+     * Si la donación entra en el filtro de estado (INTERPRETACIÓN: el back asigna en partes). En depósito: no vencida y con
+     * cantidad sin asignar (o sin asignaciones). Vencida: la donación. Los otros cinco: alguna asignación en ese estado
+     * (PENDIENTE_RUTA es 'Asignación realizada').
+     */
+    public static boolean coincideFiltro(ApiDtos.Donacion d, List<ApiDtos.Asignacion> asignaciones, String estado) {
+        if (estado == null) return true;
+        if ("VENCIDA".equals(estado)) return "VENCIDA".equals(d.estado());
+        if ("EN_DEPOSITO".equals(estado)) {
+            if ("VENCIDA".equals(d.estado())) return false;
+            Float libre = d.bien() == null ? null : d.bien().cantidadDisponible();
+            return asignaciones.isEmpty() || (libre != null ? libre > 0 : "EN_DEPOSITO".equals(d.estado()));
+        }
+        return asignaciones.stream().anyMatch(a -> estado.equals(estadoAsignacion(a)));
+    }
+
+    private static String estadoAsignacion(ApiDtos.Asignacion a) {
+        return "PENDIENTE_RUTA".equals(a.estado()) ? "ASIGNACION_REALIZADA" : a.estado();
+    }
+
+    /**
+     * Una donación con sus asignaciones. El estado es el efectivo (ver estadoEfectivo) y la fecha sale de la asignación
+     * más reciente. Sin filtro, el desglose muestra todas las asignaciones, plegado.
+     */
     public Map<String, Object> donacion(ApiDtos.Donacion d, List<ApiDtos.Asignacion> asignaciones,
                                         Map<Long, ApiDtos.Beneficiario> entidades) {
+        return donacion(d, asignaciones, entidades, null);
+    }
+
+    /**
+     * Ver la sobrecarga de tres parámetros. estadoFiltro solo decide qué asignaciones muestra el desglose y si queda
+     * desplegado; el estado de la tarjeta no cambia.
+     */
+    public Map<String, Object> donacion(ApiDtos.Donacion d, List<ApiDtos.Asignacion> asignaciones,
+                                        Map<Long, ApiDtos.Beneficiario> entidades, String estadoFiltro) {
         ApiDtos.Bien bien = d.bien();
         ApiDtos.CategoriaBien categoria = bien == null ? null : bien.categoria();
         String titulo = bien != null && notBlank(bien.descripcion()) ? bien.descripcion() : d.descripcionGeneral();
@@ -55,7 +101,7 @@ public class PanelDonanteMapper {
 
         var primera = asignaciones.isEmpty() ? null : asignaciones.get(0);
         var reciente = masReciente(asignaciones, ApiDtos.Asignacion::fechaAsignacion);
-        String estado = reciente != null ? reciente.estado() : d.estado();
+        String estado = estadoEfectivo(d, asignaciones);
         var base = reciente != null ? reciente : primera;
         Long entidadId = base == null ? null : base.entidadBeneficiariaId();
         ApiDtos.Beneficiario entidad = entidadId == null ? null : entidades.get(entidadId);
@@ -63,6 +109,16 @@ public class PanelDonanteMapper {
                 : (entidad != null ? entidad.razonSocial() : "Entidad no disponible");
         String entrega = reciente != null && reciente.fechaEntrega() != null
                 ? fecha(reciente.fechaEntrega()) : fecha(d.fechaRecepcion());
+
+        Float disponible = bien == null ? null : bien.cantidadDisponible();
+        Object sinAsignar = disponible != null && disponible > 0 && !"VENCIDA".equals(d.estado())
+                && (estadoFiltro == null || ESTADOS_DONACION.contains(estadoFiltro)) ? numero(disponible) : null;
+
+        List<Map<String, Object>> desglose = new ArrayList<>();
+        asignaciones.stream()
+                .filter(a -> estadoFiltro == null || ESTADOS_DONACION.contains(estadoFiltro) || estadoFiltro.equals(estadoAsignacion(a)))
+                .sorted(Comparator.comparing(ApiDtos.Asignacion::fechaAsignacion, Comparator.nullsLast(Comparator.naturalOrder())))
+                .forEach(a -> desglose.add(asignacionFila(a, entidades)));
 
         return mapa("id", d.id(),
                 "title", titulo,
@@ -74,14 +130,70 @@ public class PanelDonanteMapper {
                 "status", estado,
                 "status_label", etiquetaEstado(estado),
                 "status_badge", claseEstado(estado),
+                "estado_donacion", d.estado(),
+                "estado_donacion_label", etiquetaEstado(d.estado()),
+                "estado_donacion_badge", claseEstado(d.estado()),
                 "delivery_date", entrega,
                 "total_units", bien == null ? null : numero(bien.cantidad()),
                 "unit", bien == null ? null : minusculas(bien.unidadMedida()),
+                "sin_asignar", sinAsignar,
+                "sin_asignar_deposito", disponible != null && disponible > 0 && !"VENCIDA".equals(d.estado()) ? numero(disponible) : null,
+                "asignaciones", desglose,
+                "desglose_abierto", estadoFiltro != null && !ESTADOS_DONACION.contains(estadoFiltro),
                 "image_url", bien != null && notBlank(bien.foto()) ? bien.foto() : null,
                 "evidence_photos", List.of(),
-                "fecha_recepcion", fecha(d.fechaRecepcion()),
-                "fecha_asignacion", reciente == null ? null : fecha(reciente.fechaAsignacion()),
-                "fecha_entrega", reciente == null ? null : fecha(reciente.fechaEntrega()));
+                "fecha_recepcion", fecha(d.fechaRecepcion()));
+    }
+
+    /** Pasos de E2 de una asignación, en orden. ENTREGA_FALLIDA reemplaza al último (sale de En traslado). */
+    private static final List<String> PASOS = List.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR",
+            "EN_TRASLADO", "ENTREGADA");
+    private static final Map<String, String> ICONOS = Map.of("EN_DEPOSITO", "package", "ASIGNACION_REALIZADA", "git-merge",
+            "LISTA_PARA_ENTREGAR", "clipboard-check", "EN_TRASLADO", "truck", "ENTREGADA", "check-circle",
+            "ENTREGA_FALLIDA", "x-circle");
+
+    /**
+     * Stepper de una asignación: anteriores completed, actual active (Entregada: completed), fallida failed.
+     * No hay historial de estados en el back: solo se fechan Asignación realizada y Entregada.
+     */
+    private static List<Map<String, Object>> pasos(ApiDtos.Asignacion a) {
+        String estado = estadoAsignacion(a);
+        boolean fallida = "ENTREGA_FALLIDA".equals(estado);
+        int actual = fallida ? PASOS.size() - 1 : PASOS.indexOf(estado);
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (int i = 0; i < PASOS.size(); i++) {
+            String paso = fallida && i == actual ? "ENTREGA_FALLIDA" : PASOS.get(i);
+            String clase = i < actual || (i == actual && "ENTREGADA".equals(paso)) ? "completed"
+                    : i == actual ? (fallida ? "failed" : "active") : "";
+            String fechaPaso = "ASIGNACION_REALIZADA".equals(paso) ? fecha(a.fechaAsignacion())
+                    : "ENTREGADA".equals(paso) ? fecha(a.fechaEntrega()) : null;
+            out.add(mapa("estado", paso, "label", etiquetaEstado(paso), "icono", ICONOS.get(paso),
+                    "clase", clase, "fecha", fechaPaso));
+        }
+        return out;
+    }
+
+    /**
+     * Una parte de la donación: cantidad, entidad, estado de la asignación y su fecha (entrega si ya se entregó).
+     * Incluye el stepper (pasos) y la justificación de la fallida, para el modal de detalle.
+     */
+    private Map<String, Object> asignacionFila(ApiDtos.Asignacion a, Map<Long, ApiDtos.Beneficiario> entidades) {
+        Long entidadId = a.entidadBeneficiariaId();
+        ApiDtos.Beneficiario entidad = entidadId == null ? null : entidades.get(entidadId);
+        String entidadNombre = entidadId == null ? null
+                : (entidad != null ? entidad.razonSocial() : "Entidad no disponible");
+        String estado = estadoAsignacion(a);
+        boolean entregada = "ENTREGADA".equals(a.estado()) && a.fechaEntrega() != null;
+        return mapa("id", a.id(),
+                "cantidad", numero(a.cantidadAsignada()),
+                "entidad", entidadNombre,
+                "estado", estado,
+                "estado_label", etiquetaEstado(estado),
+                "estado_badge", claseEstado(estado),
+                "fecha_label", entregada ? "Entrega" : "Asignación",
+                "fecha", fecha(entregada ? a.fechaEntrega() : a.fechaAsignacion()),
+                "pasos", pasos(a),
+                "justificacion", "ENTREGA_FALLIDA".equals(a.estado()) && notBlank(a.justificacionFallo()) ? a.justificacionFallo() : null);
     }
 
     /** Categorías y subcategorías activas del catálogo, con id, para los combos de filtro. */
@@ -304,10 +416,10 @@ public class PanelDonanteMapper {
     private static Map<String, String> visual(String tipo) {
         if (tipo == null) return Map.of("icon", "award", "label", "Misión", "clase", "");
         return switch (tipo) {
-            case "RACHA" -> Map.of("icon", "flame", "label", "Racha Solidaria", "clase", "badge-racha");
-            case "COMPLETITUD" -> Map.of("icon", "layers", "label", "Completitud de Necesidad", "clase", "badge-completitud");
-            case "DONACIONESEXITOSAS" -> Map.of("icon", "check-circle", "label", "Entregas Exitosas", "clase", "badge-entregas");
-            case "HABILDONADOR" -> Map.of("icon", "award", "label", "Donante Hábil", "clase", "badge-habil");
+            case "RACHA" -> Map.of("icon", "flame", "label", "Racha", "clase", "badge-racha");
+            case "COMPLETITUD" -> Map.of("icon", "layers", "label", "Completitud", "clase", "badge-completitud");
+            case "DONACIONESEXITOSAS" -> Map.of("icon", "check-circle", "label", "Donaciones Exitosas", "clase", "badge-entregas");
+            case "HABILDONADOR" -> Map.of("icon", "award", "label", "Hábil Donador", "clase", "badge-habil");
             default -> Map.of("icon", "award", "label", tipo, "clase", "");
         };
     }

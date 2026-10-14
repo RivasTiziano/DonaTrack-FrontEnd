@@ -111,7 +111,7 @@ class AdminMvcTest {
         mvc.perform(get("/admin/dashboard/importar").session(TestSesiones.admin()).flashAttr("importacion", result))
                 .andExpect(content().string(containsString("csv-import-totals")))
                 .andExpect(content().string(not(containsString("Ver donantes importados"))))
-                .andExpect(content().string(containsString("Email en uso")));
+                .andExpect(content().string(containsString("Fila 11: Email en uso")));
     }
 
     @Test void csvEmptyNeverCallsApi() throws Exception {
@@ -121,11 +121,28 @@ class AdminMvcTest {
     }
 
     @Test void matchmakingRendersNoIntersectionAndIndividualTops() throws Exception {
+        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Comedor Los Pibes", "ONG", "Comedor", true, null, null, List.of())));
         var necesidad = new ApiDtos.Necesidad(5L, 2L, null, "Necesidad real", "EXTRAORDINARIA", null, 0f, 30f, "PENDIENTE");
         var suggestion = new ApiDtos.Sugerencia(false, List.of(), List.of(new ApiDtos.Top("Semantico", List.of(necesidad))), 9L);
         mvc.perform(get("/admin/dashboard/asignar").session(TestSesiones.admin()).flashAttr("sugerencia", suggestion))
                 .andExpect(content().string(containsString("No hay intersección")))
-                .andExpect(content().string(containsString("Necesidad real")));
+                .andExpect(content().string(containsString("Necesidad real")))
+                .andExpect(content().string(containsString("Comedor Los Pibes")));
+    }
+
+    @Test void sugerenciasGuardadasMuestranDonacionYEntidad() throws Exception {
+        var necesidad = new ApiDtos.Necesidad(5L, 2L, null, "Leche para comedor", "EXTRAORDINARIA", null, 0f, 30f, "PENDIENTE");
+        var sugerencia = new ApiDtos.Sugerencia(true, List.of(necesidad), List.of(new ApiDtos.Top("Semantico", List.of(necesidad))), 9L);
+        when(donaciones.sugerencias()).thenReturn(List.of(sugerencia));
+        when(donaciones.sugerencia(9L)).thenReturn(sugerencia);
+        when(donaciones.donaciones()).thenReturn(List.of(new ApiDtos.Donacion(9L, 1L, "Cajas de leche", null, "DISPONIBLE", null)));
+        when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Comedor Los Pibes", "ONG", "Comedor", true, null, null, List.of())));
+        for (String path : List.of("/admin/dashboard/sugerencias", "/admin/dashboard/sugerencias/9"))
+            mvc.perform(get(path).session(TestSesiones.admin()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Donación: Cajas de leche")))
+                    .andExpect(content().string(containsString("Comedor Los Pibes")))
+                    .andExpect(content().string(not(containsString("Coincidencia de algoritmos"))));
     }
 
     @Test void ranksByActualApiMetricNotInventedKilograms() throws Exception {

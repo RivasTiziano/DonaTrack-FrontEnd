@@ -90,8 +90,7 @@ public final class PanelFormato {
         if (estado == null) return "Sin estado";
         return switch (estado) {
             case "EN_DEPOSITO" -> "En depósito";
-            case "ASIGNACION_REALIZADA" -> "Asignada";
-            case "PENDIENTE_RUTA" -> "Pendiente de ruta";
+            case "ASIGNACION_REALIZADA", "PENDIENTE_RUTA" -> "Asignación realizada";
             case "LISTA_PARA_ENTREGAR" -> "Lista para entregar";
             case "PLANIFICADA" -> "Planificada";
             case "EN_TRASLADO" -> "En traslado";

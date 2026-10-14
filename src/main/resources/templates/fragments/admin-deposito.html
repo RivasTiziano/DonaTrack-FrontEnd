@@ -273,7 +273,7 @@
             </strong>
         </article>
     </div>
-    <ul class="csv-import-rejections" th:if="${not #lists.isEmpty(importacion.errores)}"><li th:each="e : ${importacion.errores}" th:text="${e.mensaje}"></li></ul>
+    <ul class="csv-import-rejections" th:if="${not #lists.isEmpty(importacion.errores)}"><li th:each="e : ${importacion.errores}" th:text="'Fila ' + ${e.fila} + ': ' + ${e.mensaje}"></li></ul>
 </div>
 </section>
 <template id="template-bien-extra">

@@ -177,6 +177,13 @@ public class DonacionesService {
         return api.donaciones();
     }
 
+    /** Descripción por id de donación, con una sola llamada a GET /donaciones (sin N+1). */
+    public Map<Long,String> descripcionesDonaciones() {
+        Map<Long,String> descripciones=new HashMap<>();
+        for (var d : api.donaciones()) if (d.id()!=null && d.descripcionGeneral()!=null) descripciones.putIfAbsent(d.id(), d.descripcionGeneral());
+        return descripciones;
+    }
+
     public ApiDtos.Donacion donacion(Long id) {
         return api.donacion(id);
     }
@@ -227,6 +234,13 @@ public class DonacionesService {
 
     public List<ApiDtos.Beneficiario> beneficiarios() {
         return api.beneficiarios();
+    }
+
+    /** Razón social por id de entidad beneficiaria, con una sola llamada a GET /beneficiarios (sin N+1). */
+    public Map<Long,String> nombresEntidades() {
+        Map<Long,String> nombres=new HashMap<>();
+        for (var b : api.beneficiarios()) if (b.id()!=null && b.razonSocial()!=null) nombres.putIfAbsent(b.id(), b.razonSocial());
+        return nombres;
     }
 
     public DonacionesDetalles.Beneficiario beneficiario(Long id) {

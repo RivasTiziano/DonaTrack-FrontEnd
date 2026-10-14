@@ -5,6 +5,7 @@ import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.IncentivosDtos;
 import ar.edu.utn.donatrack.dto.LogisticaDetalles;
 import ar.edu.utn.donatrack.exceptions.SesionRequeridaException;
+import ar.edu.utn.donatrack.mappers.IncentivosMapper;
 import ar.edu.utn.donatrack.mappers.PanelDonanteMapper;
 import ar.edu.utn.donatrack.models.SesionUsuario;
 import ar.edu.utn.donatrack.services.internal.ApiErrorMessages;
@@ -27,15 +28,18 @@ public class PanelDonanteService {
     private final LogisticaApiService logisticaApi;
     private final PanelDonanteMapper mapper;
     private final ApiErrorMessages errores;
+    private final IncentivosMapper incentivosMapper;
 
     public PanelDonanteService(SesionActual sesiones, DonacionesApiService donacionesApi, IncentivosApiService incentivosApi,
-                               LogisticaApiService logisticaApi, PanelDonanteMapper mapper, ApiErrorMessages errores) {
+                               LogisticaApiService logisticaApi, PanelDonanteMapper mapper, ApiErrorMessages errores,
+                               IncentivosMapper incentivosMapper) {
         this.sesiones = sesiones;
         this.donacionesApi = donacionesApi;
         this.incentivosApi = incentivosApi;
         this.logisticaApi = logisticaApi;
         this.mapper = mapper;
         this.errores = errores;
+        this.incentivosMapper = incentivosMapper;
     }
 
     /** Datos comunes a todas las vistas del donante: el perfil (con categoría) y las métricas. */
@@ -44,11 +48,14 @@ public class PanelDonanteService {
     }
 
     /**
-     * Filtros del historial, ya validados por el controller: el estado contra ESTADOS y los ids numéricos.
-     * Los nulos no se envían al back.
+     * Filtros del historial, ya validados por el controller. El estado es uno de los 7 de E2 y se filtra en memoria:
+     * En depósito y Vencida filtran por la donación; los otros cinco, por las donaciones con alguna asignación en ese
+     * estado (se muestran solo esas asignaciones). Ver PanelDonanteMapper.coincideFiltro. Categoría y subcategoría las
+     * filtra el back. Los nulos no se envían.
      */
     public record FiltroDonaciones(String estado, Long categoriaId, Long subcategoriaId) {
-        public static final Set<String> ESTADOS = Set.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "VENCIDA");
+        public static final Set<String> ESTADOS = Set.of("EN_DEPOSITO", "ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR",
+                "EN_TRASLADO", "ENTREGADA", "ENTREGA_FALLIDA", "VENCIDA");
     }
 
     /** Resumen: perfil, últimas cinco donaciones e insignias visibles. */
@@ -68,14 +75,17 @@ public class PanelDonanteService {
     /**
      * Historial de donaciones propias, con filtros. Tres llamadas en total: donaciones del donante,
      * asignaciones del donante (una sola consulta) y beneficiarios (para el nombre de la entidad). Más el catálogo de filtros.
+     * El estado se filtra en memoria (las asignaciones ya están cargadas: sin llamadas extra): En depósito y Vencida
+     * por la donación; los otros cinco, por sus asignaciones.
      */
     public Map<String, Object> donaciones(FiltroDonaciones filtro) {
         Map<String, Object> m = new LinkedHashMap<>();
         Contexto c = contexto(m);
         m.put("user", c.user());
-        var donaciones = cargar(m, () -> donacionesApi.donaciones(c.ref(), filtro.estado(), filtro.categoriaId(), filtro.subcategoriaId()),
+        var donaciones = cargar(m, () -> donacionesApi.donaciones(c.ref(), null, filtro.categoriaId(), filtro.subcategoriaId()),
                 List.<ApiDtos.Donacion>of());
-        m.put("userDonations", filas(m, c.ref(), donaciones));
+        var filas = filas(m, c.ref(), donaciones, filtro.estado());
+        m.put("userDonations", filas);
         m.putAll(mapper.filtrosCatalogo(cargar(m, donacionesApi::categorias, List.<ApiDtos.Categoria>of())));
         m.put("filtroEstado", filtro.estado());
         m.put("filtroCategoriaId", filtro.categoriaId());
@@ -113,7 +123,8 @@ public class PanelDonanteService {
         var completadas = cargarIncentivos(m, () -> incentivosApi.misionesCompletadas(ref), List.<IncentivosDtos.MisionCompletada>of());
         var insignias = cargarIncentivos(m, () -> incentivosApi.insignias(ref), List.<IncentivosDtos.Insignia>of());
         var historial = cargarIncentivos(m, () -> incentivosApi.historialCategorias(ref), List.<IncentivosDtos.Auditoria>of());
-        var categorias = cargar(m, incentivosApi::categorias, List.<IncentivosDtos.Categoria>of());
+        // Escalafón en el orden de la cadena categoriaSiguienteId (Colaborador → Sostenedor → Transformador), no por id.
+        var categorias = incentivosMapper.ordenarCategorias(cargar(m, incentivosApi::categorias, List.<IncentivosDtos.Categoria>of()));
 
         m.put("incentiveCategories", mapper.categorias(categorias, completadas, c.categoriaActual()));
         m.put("missions", mapper.misiones(progreso, c.categoriaActual(), categorias, completadas));
@@ -196,6 +207,11 @@ public class PanelDonanteService {
      * (sin N+1); los beneficiarios, también una sola vez.
      */
     private List<Map<String, Object>> filas(Map<String, Object> m, Long ref, List<ApiDtos.Donacion> donaciones) {
+        return filas(m, ref, donaciones, null);
+    }
+
+    /** Con estadoFiltro, solo las donaciones que lo cumplen (ver PanelDonanteMapper.coincideFiltro). */
+    private List<Map<String, Object>> filas(Map<String, Object> m, Long ref, List<ApiDtos.Donacion> donaciones, String estadoFiltro) {
         if (donaciones.isEmpty()) return List.of();
         var entidades = beneficiariosPorId(m);
         var asignaciones = cargar(m, () -> donacionesApi.asignacionesDonante(ref), List.<ApiDtos.Asignacion>of());
@@ -203,7 +219,11 @@ public class PanelDonanteService {
         for (var a : asignaciones)
             if (a.donacionId() != null) porDonacion.computeIfAbsent(a.donacionId(), k -> new ArrayList<>()).add(a);
         List<Map<String, Object>> out = new ArrayList<>();
-        for (var d : donaciones) out.add(mapper.donacion(d, porDonacion.getOrDefault(d.id(), List.of()), entidades));
+        for (var d : donaciones) {
+            var asig = porDonacion.getOrDefault(d.id(), List.of());
+            if (!PanelDonanteMapper.coincideFiltro(d, asig, estadoFiltro)) continue;
+            out.add(mapper.donacion(d, asig, entidades, estadoFiltro));
+        }
         return out;
     }
 

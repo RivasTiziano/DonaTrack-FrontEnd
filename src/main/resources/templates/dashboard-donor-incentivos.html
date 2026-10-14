@@ -28,7 +28,7 @@
             <div class="onboarding-hint-content">
                 <div class="onboarding-hint-title">Sistema de Niveles y Reconocimiento a Donantes</div>
                 <p class="onboarding-hint-text">
-                    Como persona donante, progresas a través de una cadena jerárquica de <strong>Categorías</strong> (Bronce → Plata → Oro → Platino). Cada categoría contiene una lista de <strong>Misiones</strong> orientadas a constancia mensual, cobertura completa de necesidades comunitarias, diversidad de entidades asistidas y volumen de entregas verificadas con fotos. Cada misión cumplida otorga una <strong>Insignia Premio</strong> de honor.
+                    Como persona donante, avanzás por tres <strong>Categorías</strong>: Colaborador → Sostenedor → Transformador. Para subir de categoría completás sus <strong>Misiones</strong> en orden secuencial: al completar una, se desbloquea la siguiente. Cada misión completada te otorga una <strong>Insignia</strong>, que se ve en tu perfil si la configurás como visible.
                 </p>
             </div>
             <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
@@ -107,8 +107,8 @@
                         <i data-lucide="flame" style="width: 18px; height: 18px;"></i>
                     </div>
                     <div>
-                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Racha Solidaria</strong>
-                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Exige constancia mensual continua sin interrupción de aportes.</p>
+                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Racha</strong>
+                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Realizar una donación durante X meses consecutivos.</p>
                     </div>
                 </div>
 
@@ -117,8 +117,8 @@
                         <i data-lucide="target" style="width: 18px; height: 18px;"></i>
                     </div>
                     <div>
-                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Completitud de Necesidad</strong>
-                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Abastecer el 100% del cupo de una necesidad material concreta.</p>
+                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Completitud</strong>
+                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Realizar donaciones de X categorías distintas.</p>
                     </div>
                 </div>
 
@@ -127,8 +127,8 @@
                         <i data-lucide="layers" style="width: 18px; height: 18px;"></i>
                     </div>
                     <div>
-                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Donante Hábil Multirubro</strong>
-                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Diversificar la ayuda a instituciones de rubros distintos.</p>
+                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Hábil Donador</strong>
+                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Donación que supere X cantidad de bienes.</p>
                     </div>
                 </div>
 
@@ -137,8 +137,8 @@
                         <i data-lucide="package-check" style="width: 18px; height: 18px;"></i>
                     </div>
                     <div>
-                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Entregas Efectivas Verificadas</strong>
-                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Volumen acumulado de entregas efectivas con foto aprobada.</p>
+                        <strong style="font-size: 0.8125rem; color: var(--color-ink); display: block;">Donaciones Exitosas</strong>
+                        <p style="font-size: 0.75rem; color: var(--color-muted); margin: 0; line-height: 1.3;">Lograr X donaciones que sean recibidas exitosamente por una entidad beneficiaria.</p>
                     </div>
                 </div>
             </div>
@@ -170,7 +170,7 @@
                             <!-- Mission Order Badge -->
                             <span style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-ink); color: #ffffff; display: grid; place-items: center; font-size: 0.875rem; font-weight: 800;" th:text="'#' + ${m.orden}">#1</span>
                             <div>
-                                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-muted);" th:text="${m.categoriaNombre}">Sostenedor Plata</span>
+                                <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--color-muted);" th:text="${m.categoriaNombre}">Sostenedor</span>
                                 <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--color-ink); margin-top: 2px;" th:text="${m.nombre}">Título Misión</h3>
                             </div>
                         </div>
@@ -179,7 +179,7 @@
                         <span style="font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.35rem;"
                               th:styleappend="${m.tipo == 'RACHA' ? 'background: #ffedd5; color: #ea580c;' : (m.tipo == 'COMPLETITUD' ? 'background: #e0f2fe; color: #0284c7;' : (m.tipo == 'HABILDONADOR' ? 'background: #f3e8ff; color: #7c3aed;' : 'background: #dcfce7; color: #15803d;'))}">
                             <i th:attr="data-lucide=${m.tipoIcon}" style="width: 13px; height: 13px;"></i>
-                            <span th:text="${m.tipoLabel}">Racha Mensual Solidaria</span>
+                            <span th:text="${m.tipoLabel}">Racha</span>
                         </span>
                     </div>
 
@@ -285,7 +285,7 @@
                     <div style="position: absolute; left: -1.95rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #10b981;"></div>
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <strong style="font-size: 0.9375rem; color: var(--color-ink);">
-                            Ascenso de <span style="color: var(--color-muted);" th:text="${audit.categoriaAnterior}">Bronce</span> → <span style="color: var(--color-primary);" th:text="${audit.categoriaNueva}">Plata</span>
+                            Ascenso de <span style="color: var(--color-muted);" th:text="${audit.categoriaAnterior}">Colaborador</span> → <span style="color: var(--color-primary);" th:text="${audit.categoriaNueva}">Sostenedor</span>
                         </strong>
                         <span style="font-size: 0.75rem; color: var(--color-muted);" th:text="${audit.fecha}">15 Feb 2026</span>
                     </div>
