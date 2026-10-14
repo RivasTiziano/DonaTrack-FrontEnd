@@ -1,8 +1,7 @@
 <!DOCTYPE html><html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donations')}"><head><title>Registrar donación - DonaTrack</title></head><body><section th:fragment="main" class="api-view"><h1>Registrar donación</h1><a class="btn btn-outline" th:href="@{/admin/dashboard/donaciones}">Volver a donaciones</a><div th:replace="~{fragments/admin-ui :: mensajes}"></div><section class="card api-panel">
         
         <form method="post" th:action="@{/admin/dashboard/donaciones}">
-            <label>ID del donante<input class="form-control" type="number" name="donanteId" th:value="${campos != null ? campos.getFirst('donanteId') : ''}" min="1" required />
-        </label>
+            <label>Donante<select class="form-control" name="donanteId" required><option value="">Seleccionar donante</option><option th:each="donante : ${nombresDonantes}" th:value="${donante.key}" th:text="${donante.value}" th:selected="${campos != null and campos.getFirst('donanteId') == #strings.toString(donante.key)}"></option></select></label>
         <label>Descripción general<input class="form-control" name="descripcionGeneral" th:value="${campos != null ? campos.getFirst('descripcionGeneral') : ''}" required />
     </label>
     <fieldset th:replace="~{fragments/api-bien-form :: campos}">

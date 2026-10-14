@@ -7,7 +7,7 @@
         <section th:fragment="main" class="api-view">
             <header th:replace="~{fragments/admin-ui :: header('Personas donantes', 'Registro, contactos y acceso de personas humanas y jurídicas.')}">
             </header>
-            <div class="toolbar">
+            <div class="toolbar donor-create-actions">
                 <a class="btn btn-primary" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Nuevo donante</a>
                 <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes/nuevo/juridicos}">Nuevo donante jurídico</a>
                 <a th:if="${sesion.tiene('IMPORTAR_DONANTES_CSV')}" class="btn btn-outline" th:href="@{/admin/dashboard/importar}">Importar CSV</a>
@@ -66,16 +66,11 @@
                         </td>
                         <td data-label="Acciones">
                             <div class="row-actions">
+                                <a class="btn btn-outline action-access" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
                                 <a class="btn btn-outline action-icon action-edit" th:href="@{/admin/dashboard/donantes/{tipo}/{id}(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" aria-label="Ver o editar" title="Ver o editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></a>
-                                <a class="btn btn-outline" th:href="@{/admin/dashboard/donantes/{tipo}/{id}/acceso(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}">Crear acceso</a>
-                                <details class="row-menu">
-                                    <summary aria-label="Más acciones">⋯</summary>
-                                    <div class="menu-content">
-                                        <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante?');">
+                                <form method="post" th:action="@{/admin/dashboard/donantes/{tipo}/{id}/eliminar(tipo=${donor.type == 'Humana' ? 'humanos' : 'juridicos'},id=${donor.id})}" onsubmit="return confirm('¿Eliminar este donante?');">
                                             <button type="submit" class="btn btn-outline action-icon action-delete" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                                         </form>
-                                    </div>
-                                </details>
                             </div>
                         </td>
                     </tr>

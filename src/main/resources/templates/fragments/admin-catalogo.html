@@ -9,7 +9,7 @@
                     <summary th:text="${c.nombre}">
                     </summary>
                     <ul>
-                        <li th:each="sub : ${c.subCategorias}" th:text="${sub.nombre} + ' · #' + ${sub.id}">
+                        <li th:each="sub : ${c.subCategorias}" th:text="${sub.nombre}">
                         </li>
                     </ul>
                 </details>

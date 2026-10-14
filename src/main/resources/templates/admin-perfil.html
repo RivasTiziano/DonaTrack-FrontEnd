@@ -12,7 +12,7 @@
             </p>
             <form th:if="${completarContacto == true}" method="post"
                   th:action="@{/admin/dashboard/donantes/{tipo}/{id}/acceso/contacto(tipo=${tipo},id=${id})}"
-                  class="card api-panel">
+                  class="admin-profile-form">
                 <h2>Completar email de contacto</h2>
                 <p>Este paso conserva el perfil pendiente y los demás contactos. Después podrás crear el acceso.</p>
                 <label>Email de contacto
@@ -23,7 +23,7 @@
             </form>
             <form th:if="${form != null and completarContacto != true}" th:object="${form}" method="post"
                 th:action="${tipo == 'beneficiarios' ? (id == null ? '/admin/dashboard/beneficiarios/nuevo' : '/admin/dashboard/beneficiarios/' + id) : '/admin/dashboard/donantes/' + tipo + '/' + id}"
-                class="card api-panel">
+                class="admin-profile-form">
                 <fieldset class="form-grid">
                     <legend>Datos básicos</legend>
                     <th:block th:if="${tipo == 'humanos'}">
@@ -55,7 +55,7 @@
 </label>
 </th:block>
 </fieldset>
-<fieldset class="form-grid">
+<fieldset class="form-grid profile-address-grid">
     <legend>Dirección</legend>
     <label>Calle<input class="form-control" th:field="*{calle}" required />
 </label>
@@ -95,7 +95,6 @@
 <label>Email (opcional)<input class="form-control" type="email" name="repEmail" th:value="${repEmail != null and !repEmail.isEmpty() ? repEmail[0] : ''}" />
 </label>
 </fieldset>
-<p th:if="${id != null}">Esta edición conserva los contactos y representantes existentes. No los reemplaza por listas vacías.</p>
 <ul>
     <li th:each="c : ${contactos}" th:text="${c.tipoMedioContacto} + ': ' + ${c.formaContacto}">
     </li>

@@ -60,7 +60,7 @@ public class PanelDonanteMapper {
         Long entidadId = base == null ? null : base.entidadBeneficiariaId();
         ApiDtos.Beneficiario entidad = entidadId == null ? null : entidades.get(entidadId);
         String entidadNombre = entidadId == null ? null
-                : (entidad != null ? entidad.razonSocial() : "Entidad #" + entidadId);
+                : (entidad != null ? entidad.razonSocial() : "Entidad no disponible");
         String entrega = reciente != null && reciente.fechaEntrega() != null
                 ? fecha(reciente.fechaEntrega()) : fecha(d.fechaRecepcion());
 

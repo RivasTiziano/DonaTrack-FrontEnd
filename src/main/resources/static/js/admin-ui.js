@@ -1,6 +1,27 @@
 
 /* Interacciones de presentación: nunca simula una escritura ni inventa resultados. */
 document.addEventListener('DOMContentLoaded', () => {
+  const shell=document.querySelector('.admin-shell');
+  const sidebar=shell?.querySelector('.dashboard-sidebar');
+  const collapse=sidebar?.querySelector('.admin-sidebar-collapse');
+  if(collapse) {
+    sidebar.querySelectorAll('a.sidebar-link').forEach(link => {
+      const label=link.textContent.trim();
+      link.setAttribute('aria-label',label);
+      link.title=label;
+    });
+    const setCollapsed=value => {
+      shell.classList.toggle('admin-sidebar-collapsed',value);
+      collapse.setAttribute('aria-expanded',String(!value));
+      collapse.setAttribute('aria-label',value?'Abrir menú lateral':'Cerrar menú lateral');
+      try { localStorage.setItem('donatrack-admin-sidebar-collapsed',String(value)); } catch {}
+      window.dispatchEvent(new Event('resize'));
+    };
+    let saved=false;
+    try { saved=localStorage.getItem('donatrack-admin-sidebar-collapsed')==='true'; } catch {}
+    setCollapsed(saved);
+    collapse.addEventListener('click',() => setCollapsed(!shell.classList.contains('admin-sidebar-collapsed')));
+  }
   document.querySelectorAll('[data-dialog-open]').forEach(button => button.addEventListener('click', () => {
     const dialog=document.getElementById(button.dataset.dialogOpen);
     if(dialog) {
@@ -41,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
       form.querySelectorAll('button[type="submit"]').forEach(button => {
         button.disabled=true;
         const spinner=document.createElement('span');spinner.className='dt-spinner';spinner.setAttribute('aria-hidden','true');
-        button.prepend(spinner);button.append(' Procesando…');
+        if(form.dataset.loadingText) { button.replaceChildren(spinner, document.createTextNode(' ' + form.dataset.loadingText)); }
+        else { button.prepend(spinner);button.append(' Procesando…'); }
       });
     },300);
   }));
@@ -71,4 +93,53 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const target=location.hash ? document.getElementById(location.hash.slice(1)) : null;
   if(target?.tagName==='DETAILS') target.open=true;
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-donation-url], [data-row-url]').forEach(row => {
+    row.addEventListener('click', event => {
+      if (event.target.closest('a,button,input,select,textarea,form,summary')) return;
+      if (window.getSelection()?.toString()) return;
+      window.location.assign(row.dataset.rowUrl || row.dataset.donationUrl);
+    });
+    row.addEventListener('keydown', event => {
+      if (event.target !== row || !['Enter',' '].includes(event.key)) return;
+      event.preventDefault();
+      window.location.assign(row.dataset.rowUrl || row.dataset.donationUrl);
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+ document.querySelectorAll('[data-csv-dropzone]').forEach(zone => {
+  const input=zone.querySelector('input[type="file"]');
+  const label=zone.querySelector('[data-csv-file-label]');
+  let depth=0;
+  const update=() => {
+   zone.classList.remove('is-dragging');
+   zone.classList.toggle('has-file',!!input.files.length);
+   label.textContent=input.files.length ? input.files[0].name : 'Seleccioná o arrastrá un archivo CSV';
+  };
+  zone.addEventListener('dragenter',event => {
+   if(!event.dataTransfer?.types.includes('Files')) return;
+   event.preventDefault(); depth++; zone.classList.add('is-dragging');
+   label.textContent='';
+  });
+  zone.addEventListener('dragover',event => { event.preventDefault(); if(event.dataTransfer) event.dataTransfer.dropEffect='copy'; });
+  zone.addEventListener('dragleave',() => { depth=Math.max(0,depth-1); if(!depth) update(); });
+  zone.addEventListener('drop',event => {
+   event.preventDefault(); depth=0;
+   if(event.dataTransfer?.files.length) {
+    const file=event.dataTransfer.files[0];
+    if(!file.name.toLowerCase().endsWith('.csv')) {
+     update(); label.textContent='Seleccioná un archivo con extensión .csv'; return;
+    }
+    const transfer=new DataTransfer(); transfer.items.add(file);
+    input.files=transfer.files; input.dispatchEvent(new Event('change',{bubbles:true}));
+   }
+   update();
+  });
+  input.addEventListener('change',update);
+  update();
+ });
 });

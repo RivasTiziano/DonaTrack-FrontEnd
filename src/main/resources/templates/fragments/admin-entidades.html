@@ -2,11 +2,12 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
     <body>
         <th:block th:fragment="contenido">
+            <div th:if="${section == 'beneficiarios'}" class="beneficiary-create-actions"><a class="btn btn-outline" th:href="@{/admin/dashboard/beneficiarios/nuevo}">Registrar entidad beneficiaria</a></div>
             <section th:if="${section == 'beneficiarios'}" class="card api-panel">
                 <div class="toolbar">
                     <label>Buscar entidad<input class="form-control" type="search" data-filter-table="tabla-beneficiarios"/>
                 </label>
-                <a class="btn btn-outline" th:href="@{/admin/dashboard/beneficiarios/nuevo}">Registrar entidad beneficiaria</a>
+                
             </div>
             <th:block th:if="${beneficiarios.isEmpty() and apiError == null}">
                 <div th:replace="~{fragments/admin-ui :: vacio('Todavía no hay entidades.', '/admin/dashboard/beneficiarios/nuevo', 'Crear nuevo registro')}">
@@ -16,7 +17,6 @@
                 <table class="data-table" id="tabla-beneficiarios">
                     <thead>
                         <tr>
-                            <th scope="col">ID</th>
                             <th scope="col">Razón social</th>
                             <th scope="col">Tipo</th>
                             <th scope="col">Rubro</th>
@@ -27,10 +27,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="item : ${beneficiarios}" data-record>
-                            <td data-label="ID">
-                                <span th:text="${item.id}">
-                                </span>
-                            </td>
+                            
                             <td data-label="Razón social">
                                 <span th:text="${item.razonSocial}">
                                 </span>
@@ -51,17 +48,11 @@
                             </td>
                             <td data-label="Acciones">
                                 <div class="row-actions">
+                                    <a class="btn btn-outline action-access" th:href="@{/admin/dashboard/beneficiarios/{id}/acceso(id=${item.id})}">Crear acceso</a>
                                     <a class="btn btn-outline action-icon action-edit" th:href="@{/admin/dashboard/beneficiarios/{id}(id=${item.id})}" aria-label="Ver o editar" title="Ver o editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></a>
-                                    <a class="btn btn-outline" th:href="@{/admin/dashboard/beneficiarios/{id}/acceso(id=${item.id})}">Crear acceso</a>
-                                    <details class="row-menu">
-                                        <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
-                                        <div class="menu-content">
-                                            <a class="btn btn-outline" th:href="@{/admin/dashboard/asignaciones(entidadBeneficiariaId=${item.id})}">Asignaciones</a>
-                                            <form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar esta entidad? ');">
+                                    <form method="post" th:action="@{/admin/dashboard/beneficiarios/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar esta entidad? ');">
                                                 <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                                             </form>
-                                        </div>
-                                    </details>
                                 </div>
                             </td>
                         </tr>
@@ -69,11 +60,12 @@
                 </table>
             </div>
         </section>
-        <section th:if="${section == 'necesidades'}" class="card api-panel">
+        <div th:if="${section == 'necesidades'}" class="panel-create-actions"><a class="btn btn-primary" href="#alta-necesidades">Nuevo registro</a></div>
+<section th:if="${section == 'necesidades'}" class="card api-panel">
             <div class="toolbar">
                 <label>Buscar<input type="search" class="form-control" data-filter-table="tabla-necesidades"/>
             </label>
-            <a class="btn btn-primary" href="#alta-necesidades">Nuevo registro</a>
+            
         </div>
         <div class="toolbar">
             <label>Entidad<select class="form-control" data-filter-table="tabla-necesidades" data-field="entidad">
@@ -103,7 +95,7 @@
     <table class="data-table" id="tabla-necesidades">
         <thead>
             <tr>
-                <th scope="col">ID</th>
+                
                 <th scope="col">Entidad</th>
                 <th scope="col">Descripción</th>
                 <th scope="col">Tipo</th>
@@ -115,13 +107,9 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="item : ${necesidades}" data-record th:data-tipo="${item.tipoNecesidad}" th:data-estado="${item.estado}" th:data-entidad="${item.entidadBeneficiariaId}">
-                <td data-label="ID">
-                    <span th:text="${item.necesidadId}">
-                    </span>
-                </td>
+            <tr th:each="item : ${necesidades}" data-record tabindex="0" th:data-row-url="@{/admin/dashboard/necesidades/{id}(id=${item.necesidadId})}" aria-label="Abrir detalle de la necesidad" th:data-tipo="${item.tipoNecesidad}" th:data-estado="${item.estado}" th:data-entidad="${item.entidadBeneficiariaId}">
                 <td data-label="Entidad">
-                    <span th:text="${item.entidadBeneficiariaId}">
+                    <span th:each="entidad : ${beneficiarios}" th:if="${entidad.id == item.entidadBeneficiariaId}" th:text="${entidad.razonSocial}">
                     </span>
                 </td>
                 <td data-label="Descripción">
@@ -152,16 +140,11 @@
                 </td>
                 <td data-label="Acciones">
                     <div class="row-actions">
-                        <a class="btn btn-outline" th:href="@{/admin/dashboard/necesidades/{id}(id=${item.necesidadId})}">Detalle</a>
+                        
                         <button type="button" class="btn btn-outline action-icon action-edit" th:data-dialog-open="'editar-necesidad-' + ${item.necesidadId}" aria-label="Editar" title="Editar"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></button>
-                        <details class="row-menu">
-                            <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
-                            <div class="menu-content">
-                                <form method="post" th:action="@{/admin/dashboard/necesidades/{id}/eliminar(id=${item.necesidadId})}" onsubmit="return confirm('¿Eliminar esta necesidad? ');">
+                        <form method="post" th:action="@{/admin/dashboard/necesidades/{id}/eliminar(id=${item.necesidadId})}" onsubmit="return confirm('¿Eliminar esta necesidad? ');">
                                     <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
                                 </form>
-                            </div>
-                        </details>
                     </div>
                 </td>
             </tr>
@@ -197,7 +180,7 @@
     <form method="post" th:action="@{/admin/dashboard/necesidades}">
         <label>Entidad beneficiaria<select class="form-control" name="entidadBeneficiariaId" required>
             <option value="">Seleccionar</option>
-            <option th:each="b : ${beneficiarios}" th:value="${b.id}" th:text="${b.razonSocial} + ' (ID ' + ${b.id} + ')'">
+            <option th:each="b : ${beneficiarios}" th:value="${b.id}" th:text="${b.razonSocial}">
             </option>
         </select>
     </label>

@@ -10,8 +10,7 @@
                             <a th:href="@{/admin/dashboard/incentivos/categorias/{id}(id=${c.id})}" th:text="${c.nombre}">
                             </a>
                         </h3>
-                        <p class="muted" th:if="${c.categoriaSiguienteId != null}" th:text="'Siguiente categoría: #' + ${c.categoriaSiguienteId}">
-                        </p>
+                        <p class="muted" th:each="siguiente : ${categoriasIncentivos}" th:if="${c.categoriaSiguienteId != null and siguiente.id == c.categoriaSiguienteId}" th:text="'Siguiente categoría: ' + ${siguiente.nombre}"></p>
                         <ul class="attention-list">
                             <li th:each="m : ${c.misiones}">
                                 <strong th:text="${m.nombre}">
@@ -98,9 +97,9 @@
     <p>Consulta administrativa por un donante seleccionado. No representa al usuario conectado.</p>
     <label>Seleccionar donante<select class="form-control" data-navigate-select>
         <option value="">Elegir un donante para ver su ficha</option>
-        <option th:each="d : ${humanos}" th:value="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre + ' ' + d.apellido + ' (#' + d.id + ')'}">
+        <option th:each="d : ${humanos}" th:value="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre + ' ' + d.apellido}">
         </option>
-        <option th:each="d : ${juridicos}" th:value="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial + ' (#' + d.id + ')'}">
+        <option th:each="d : ${juridicos}" th:value="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial}">
         </option>
     </select>
 </label>
@@ -110,11 +109,11 @@
 </div>
 <ul id="lista-incentivos" class="attention-list">
     <li data-record th:each="d : ${humanos}">
-        <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre} + ' ' + ${d.apellido} + ' (ID ' + ${d.id} + ')'">
+        <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre} + ' ' + ${d.apellido}">
         </a>
     </li>
     <li data-record th:each="d : ${juridicos}">
-        <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial} + ' (ID ' + ${d.id} + ')'">
+        <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial}">
         </a>
     </li>
 </ul>

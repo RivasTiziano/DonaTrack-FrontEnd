@@ -30,14 +30,14 @@ class RankingNombresMvcTest {
     @MockBean LogisticaApiService logistica;
     @MockBean NotificacionesApiService notificaciones;
 
-    @Test void rankingMuestraNombreYDonanteSinNombreComoId() throws Exception {
+    @Test void rankingMuestraNombreSinExponerIdentificadores() throws Exception {
         when(incentivos.ranking()).thenReturn(List.of(new ApiDtos.Ranking(7L, 8), new ApiDtos.Ranking(99L, 3)));
         when(donaciones.listarHumanos()).thenReturn(List.of(new DonanteHumanoResponse(7L, "Ana", "Prueba", "DNI", "12345678", List.of(), "APROBADO")));
         when(donaciones.listarJuridicos()).thenReturn(List.of());
         mvc.perform(get("/admin/dashboard/rankings").session(TestSesiones.admin()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ana Prueba")))
-                .andExpect(content().string(containsString("Donante #99")));
+                .andExpect(content().string(containsString("Nombre no disponible")));
         verify(donaciones, times(1)).listarHumanos();
         verify(donaciones, times(1)).listarJuridicos();
     }

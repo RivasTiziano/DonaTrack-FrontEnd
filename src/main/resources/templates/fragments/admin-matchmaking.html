@@ -9,7 +9,7 @@
                         <form method="post" th:action="@{/admin/dashboard/asignar/sugerir}">
                             <label>Donación<select class="form-control" name="donacionId" required>
                                 <option value="">Seleccionar</option>
-                                <option th:each="d : ${donaciones}" th:value="${d.id}" th:text="'#' + ${d.id} + ' · ' + ${d.descripcionGeneral}">
+                                <option th:each="d : ${donaciones}" th:value="${d.id}" th:text="${d.descripcionGeneral}">
                                 </option>
                             </select>
                         </label>
@@ -18,7 +18,7 @@
                         </div>
                     </form>
                     <div th:if="${sugerencia != null}">
-                        <h3 th:text="'Sugerencia para donación #' + ${sugerencia.donacionId}">
+                        <h3 th:text="'Sugerencia de asignación'">
                         </h3>
                         <p th:text="${sugerencia.hayInterseccion ? 'Hay coincidencias entre algoritmos.' : 'No hay intersección; revisá los tops de cada algoritmo.'}">
                         </p>
@@ -26,7 +26,6 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th scope="col">Necesidad</th>
                                         <th scope="col">Descripción</th>
                                         <th scope="col">Restante</th>
                                         <th scope="col">Acción</th>
@@ -34,8 +33,7 @@
                                 </thead>
                                 <tbody>
                                     <tr th:each="n : ${sugerencia.mejoresNecesidades}">
-                                        <td data-label="Necesidad" th:text="${n.necesidadId}">
-                                        </td>
+                                        
                                         <td data-label="Descripción" th:text="${n.descripcion}">
                                         </td>
                                         <td data-label="Restante" th:text="${n.cantidadRestante}">
@@ -54,7 +52,6 @@
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            <th scope="col">Necesidad</th>
                                             <th scope="col">Descripción</th>
                                             <th scope="col">Restante</th>
                                             <th scope="col">Acción</th>
@@ -62,8 +59,7 @@
                                     </thead>
                                     <tbody>
                                         <tr th:each="n : ${top.topDiezNecesidades}">
-                                            <td data-label="Necesidad" th:text="${n.necesidadId}">
-                                            </td>
+                                            
                                             <td data-label="Descripción" th:text="${n.descripcion}">
                                             </td>
                                             <td data-label="Restante" th:text="${n.cantidadRestante}">
@@ -86,13 +82,13 @@
                         <form method="post" th:action="@{/admin/dashboard/asignar}">
                             <label>Donación<select class="form-control" name="donacionId" required>
                                 <option value="">Seleccionar</option>
-                                <option th:each="d : ${donaciones}" th:value="${d.id}" th:text="'#' + ${d.id} + ' · disponible ' + ${d.bien.cantidadDisponible} + ' ' + ${d.bien.unidadMedida}">
+                                <option th:each="d : ${donaciones}" th:value="${d.id}" th:text="${d.descripcionGeneral} + ' · disponible ' + ${d.bien.cantidadDisponible} + ' ' + ${d.bien.unidadMedida}">
                                 </option>
                             </select>
                         </label>
                         <label>Necesidad<select class="form-control" name="necesidadId" required>
                             <option value="">Seleccionar</option>
-                            <option th:each="n : ${necesidades}" th:value="${n.necesidadId}" th:text="'#' + ${n.necesidadId} + ' · ' + ${n.descripcion} + ' · restante ' + ${n.cantidadRestante}">
+                            <option th:each="n : ${necesidades}" th:value="${n.necesidadId}" th:text="${n.descripcion} + ' · restante ' + ${n.cantidadRestante}">
                             </option>
                         </select>
                     </label>

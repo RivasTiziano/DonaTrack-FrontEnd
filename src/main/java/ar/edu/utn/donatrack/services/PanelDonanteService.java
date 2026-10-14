@@ -181,7 +181,7 @@ public class PanelDonanteService {
     private static String nombreEntidad(ApiDtos.Asignacion a, Map<Long, ApiDtos.Beneficiario> entidades) {
         if (a == null || a.entidadBeneficiariaId() == null) return null;
         var b = entidades.get(a.entidadBeneficiariaId());
-        return b != null ? b.razonSocial() : "Entidad #" + a.entidadBeneficiariaId();
+        return b != null ? b.razonSocial() : "Entidad no disponible";
     }
 
     private Map<Long, ApiDtos.Beneficiario> beneficiariosPorId(Map<String, Object> m) {

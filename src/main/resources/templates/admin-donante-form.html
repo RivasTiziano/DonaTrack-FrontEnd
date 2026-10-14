@@ -2,7 +2,6 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donors')}">
 <head><title>Registrar donante - DonaTrack</title></head><body><section th:fragment="main" class="api-view">
     <h1 th:text="${tipo == 'humanos' ? 'Registrar persona humana' : 'Registrar persona jurídica'}"></h1>
-    <p>No crea usuario ni contraseña. Los datos y requisitos se validan en Donaciones.</p>
     <div th:replace="~{fragments/admin-ui :: mensajes}"></div>
     <form class="card api-panel" method="post" th:action="@{/admin/dashboard/donantes/nuevo/{tipo}(tipo=${tipo})}">
         <fieldset class="form-grid"><legend>Datos de la persona</legend>

@@ -9,7 +9,6 @@
             </a>
             <th:block th:unless="${compacto}">
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('GESTIONAR_DONANTES') or sesion.tiene('REGISTRAR_DONACIONES') or sesion.tiene('IMPORTAR_DONANTES_CSV'))}">
-                    <h2>DEPÓSITO</h2>
                     <a th:if="${sesion.tiene('GESTIONAR_DONANTES')}" class="sidebar-link" th:classappend="${activeTab == 'donors'} ? 'active'" th:href="@{/admin/dashboard/donantes}">
                         <i aria-hidden="true" data-lucide="users">
                         </i>
@@ -27,7 +26,6 @@
                     </a>
                 </section>
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('VER_ENTIDADES_BENEFICIARIAS') or sesion.tiene('ASIGNAR_DONACIONES'))}">
-                    <h2>ENTIDADES</h2>
                     <a th:if="${sesion.tiene('VER_ENTIDADES_BENEFICIARIAS')}" class="sidebar-link" th:classappend="${activeTab == 'beneficiarios'} ? 'active'" th:href="@{/admin/dashboard/beneficiarios}">
                         <i aria-hidden="true" data-lucide="building-2">
                         </i>
@@ -40,7 +38,6 @@
                     </a>
                 </section>
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('ASIGNAR_DONACIONES'))}">
-                    <h2>ASIGNACIÓN</h2>
                     <a th:if="${sesion.tiene('ASIGNAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'assign'} ? 'active'" th:href="@{/admin/dashboard/asignar}">
                         <i aria-hidden="true" data-lucide="git-merge">
                         </i>
@@ -48,7 +45,6 @@
                     </a>
                 </section>
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('GESTIONAR_CAMIONES') or sesion.tiene('SEGUIR_ENTREGAS'))}">
-                    <h2>LOGÍSTICA</h2>
                     <a th:if="${sesion.tiene('GESTIONAR_CAMIONES')}" class="sidebar-link" th:classappend="${activeTab == 'trucks'} ? 'active'" th:href="@{/admin/dashboard/camiones}">
                         <i aria-hidden="true" data-lucide="truck">
                         </i>
@@ -71,7 +67,6 @@
                     </a>
                 </section>
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('VER_RANKINGS') or sesion.tiene('GESTIONAR_MISIONES'))}">
-                    <h2>INCENTIVOS</h2>
                     <a th:if="${sesion.tiene('VER_RANKINGS')}" class="sidebar-link" th:classappend="${activeTab == 'rankings'} ? 'active'" th:href="@{/admin/dashboard/rankings}">
                         <i aria-hidden="true" data-lucide="trophy">
                         </i>
@@ -89,7 +84,6 @@
                     </a>
                 </section>
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('REGISTRAR_DONACIONES'))}">
-                    <h2>CATÁLOGO</h2>
                     <a th:if="${sesion.tiene('REGISTRAR_DONACIONES')}" class="sidebar-link" th:classappend="${activeTab == 'catalogo'} ? 'active'" th:href="@{/admin/dashboard/catalogo}">
                         <i aria-hidden="true" data-lucide="folder-tree">
                         </i>
@@ -102,7 +96,6 @@
                     </a>
                 </section>
                 <section class="admin-nav-group" th:if="${sesion != null and (sesion.tiene('GESTIONAR_USUARIOS'))}">
-                    <h2>SISTEMA</h2>
                     <a th:if="${sesion.tiene('GESTIONAR_USUARIOS')}" class="sidebar-link" th:classappend="${activeTab == 'notificaciones'} ? 'active'" th:href="@{/admin/dashboard/notificaciones}">
                         <i aria-hidden="true" data-lucide="bell">
                         </i>

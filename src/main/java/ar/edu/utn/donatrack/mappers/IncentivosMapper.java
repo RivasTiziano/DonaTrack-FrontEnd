@@ -56,7 +56,7 @@ public class IncentivosMapper {
 
     private static String nombre(Map<Long,String> nombres, Long id) {
         if (id == null) return "Sin referencia";
-        return nombres.getOrDefault(id, "Donante #" + id);
+        return nombres.getOrDefault(id, "Nombre no disponible");
     }
 
     public IncentivosDtos.MisionRequest mision(String tipo,Integer objetivo) { return new IncentivosDtos.MisionRequest(tipo,objetivo); }

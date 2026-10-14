@@ -239,7 +239,7 @@
         dashDrawer.classList.add('open');
         dashDrawer.setAttribute('aria-hidden','false');
         dashToggleBtn.setAttribute('aria-expanded','true');
-        document.querySelectorAll('.dashboard-header,.dashboard-body,.dashboard-bottom-nav').forEach(el => el.inert=true);
+        document.querySelectorAll('.dashboard-header,.dashboard-body,.dashboard-bottom-nav,.admin-account-position,.admin-mobile-toggle').forEach(el => el.inert=true);
         dashDrawerCloseBtn?.focus();
         dashBackdrop.classList.add('open');
         document.body.classList.add('drawer-open');
@@ -250,7 +250,7 @@
         dashDrawer.classList.remove('open');
         dashDrawer.setAttribute('aria-hidden','true');
         dashToggleBtn.setAttribute('aria-expanded','false');
-        document.querySelectorAll('.dashboard-header,.dashboard-body,.dashboard-bottom-nav').forEach(el => el.inert=false);
+        document.querySelectorAll('.dashboard-header,.dashboard-body,.dashboard-bottom-nav,.admin-account-position,.admin-mobile-toggle').forEach(el => el.inert=false);
         dashToggleBtn.focus();
         dashBackdrop.classList.remove('open');
         document.body.classList.remove('drawer-open');

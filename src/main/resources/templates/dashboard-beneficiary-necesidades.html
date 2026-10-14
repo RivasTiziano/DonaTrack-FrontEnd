@@ -6,19 +6,11 @@
 <body>
     <main class="beneficiary-needs-view" th:fragment="main">
         <!-- Breadcrumbs -->
-        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
-            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
-            <span class="separator">/</span>
-            <a th:href="@{/entidad/dashboard}">Panel Entidad</a>
-            <span class="separator">/</span>
-            <span class="current">Mis Necesidades</span>
-        </nav>
 
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
                 <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Gestión de Necesidades Materiales</h1>
-                <p style="color: var(--color-muted); font-size: 0.9375rem;">Publicá las solicitudes de tu entidad para que el sistema las vincule con donaciones en depósito.</p>
             </div>
             <button type="button" class="btn btn-primary" onclick="openModal('modal-new-need')">
                 <i data-lucide="plus" style="width: 18px; height: 18px;"></i>

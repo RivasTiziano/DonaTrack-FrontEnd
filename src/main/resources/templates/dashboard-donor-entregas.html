@@ -6,19 +6,11 @@
 <body>
     <main class="donor-deliveries-view" th:fragment="main">
         <!-- Breadcrumbs -->
-        <nav class="dt-breadcrumbs" aria-label="Migas de pan">
-            <a th:href="@{/}"><i data-lucide="home" style="width: 14px; height: 14px;"></i> Inicio</a>
-            <span class="separator">/</span>
-            <a th:href="@{/donante/dashboard}">Panel Donante</a>
-            <span class="separator">/</span>
-            <span class="current">Seguimiento de Entregas</span>
-        </nav>
 
         <!-- Header -->
         <div class="dt-page-header">
             <div>
                 <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Seguimiento de Entregas</h1>
-                <p style="color: var(--color-muted); font-size: 0.875rem; margin-top: 2px;">Destino de tus donaciones en camino y dónde está el camión que las lleva.</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <a th:href="@{/donante/dashboard/entregas}" class="btn btn-outline btn-sm">

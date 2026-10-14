@@ -3,16 +3,8 @@
     <body>
         <header th:fragment="header(titulo,descripcion)" class="page-header">
             <div>
-                <nav class="dt-breadcrumbs" aria-label="Migas de pan">
-                    <a th:href="@{/admin/dashboard}">Administración</a>
-                    <span aria-hidden="true">/</span>
-                    <span th:text="${titulo}">
-                    </span>
-                </nav>
                 <h1 th:text="${titulo}">
                 </h1>
-                <p th:text="${descripcion}">
-                </p>
             </div>
         </header>
         <div th:fragment="mensajes">

@@ -15,11 +15,10 @@
                 </p>
                 <a th:href="@{/admin/dashboard/bienes}">Volver al listado y editar</a>
             </section>
-            <section th:if="${section == 'necesidad' and necesidad != null}" class="card api-panel">
+            <section th:if="${section == 'necesidad' and necesidad != null}" class="card api-panel need-details">
+                <p th:each="entidad : ${beneficiarios}" th:if="${entidad.id == necesidad.entidadBeneficiariaId}">Entidad: <strong th:text="${entidad.razonSocial}"></strong></p>
                 <h2 th:text="${necesidad.descripcion}">
                 </h2>
-                <p th:text="'Entidad ID: ' + ${necesidad.entidadBeneficiariaId}">
-                </p>
                 <p th:text="'Recibido: ' + ${necesidad.cantidadRecibida} + '; restante: ' + ${necesidad.cantidadRestante}">
                 </p>
                 <span th:replace="~{fragments/admin-ui :: estado(${necesidad.estado})}">
@@ -49,8 +48,6 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th scope="col">Asignación</th>
-                        <th scope="col">Donación</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
@@ -58,10 +55,8 @@
                 </thead>
                 <tbody>
                     <tr th:each="a : ${asignaciones}" data-record>
-                        <td data-label="Asignación" th:text="${a.id}">
-                        </td>
-                        <td data-label="Donación" th:text="${a.donacionId}">
-                        </td>
+                        
+                        
                         <td data-label="Cantidad" th:text="${a.cantidadAsignada}">
                         </td>
                         <td data-label="Estado">
@@ -114,20 +109,20 @@
         </form>
         <p th:if="${sugerencias != null and sugerencias.isEmpty() and apiError == null}">No hay sugerencias guardadas.</p>
         <article class="attention-item" th:each="s : ${sugerencias}">
-            <a th:href="@{/admin/dashboard/sugerencias/{id}(id=${s.donacionId})}" th:text="'Donación ' + ${s.donacionId}">
+            <a th:href="@{/admin/dashboard/sugerencias/{id}(id=${s.donacionId})}" th:text="'Ver sugerencia'">
             </a>
             <p th:text="'Coincidencia de algoritmos: ' + ${s.hayInterseccion}">
             </p>
         </article>
     </section>
     <section th:if="${section == 'sugerencia' and sugerencia != null}" class="card api-panel">
-        <p th:text="'Donación ' + ${sugerencia.donacionId}">
+        <p th:text="'Donación seleccionada'">
         </p>
         <p th:text="'Coincidencia de algoritmos: ' + ${sugerencia.hayInterseccion}">
         </p>
         <h2>Mejores necesidades</h2>
         <ul>
-            <li th:each="n : ${sugerencia.mejoresNecesidades}" th:text="${n.descripcion} + ' (ID ' + ${n.necesidadId} + ')'">
+            <li th:each="n : ${sugerencia.mejoresNecesidades}" th:text="${n.descripcion}">
             </li>
         </ul>
         <article th:each="t : ${sugerencia.tops}">

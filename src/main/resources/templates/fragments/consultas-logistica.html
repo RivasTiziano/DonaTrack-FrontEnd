@@ -12,7 +12,7 @@
                 <a th:href="@{/admin/dashboard/seguimiento/{patente}(patente=${camion.patente})}">Última ubicación GPS</a>
             </section>
             <section th:if="${section == 'entrega' and entrega != null}" class="card api-panel">
-                <h2 th:text="'Asignación #' + ${entrega.asignacionId}">
+                <h2 th:text="'Entrega'">
                 </h2>
                 <span th:replace="~{fragments/admin-ui :: estado(${entrega.estado})}">
                 </span>
@@ -33,7 +33,7 @@
                 <p th:text="'Fecha: ' + ${ruta.fecha}">
                 </p>
                 <a class="btn btn-outline" th:href="@{/admin/dashboard/paradas}">Todas las paradas</a>
-                <p th:text="'Chofer: ' + ${ruta.chofer} + ' — Camión ID: ' + ${ruta.camionId}">
+                <p th:text="'Chofer: ' + ${ruta.chofer}">
                 </p>
                 <p th:text="'Distancia: ' + ${ruta.totalDistanciaKm} + ' km; duración: ' + ${ruta.totalDuracionMins} + ' minutos'">
                 </p>
@@ -50,7 +50,7 @@
             <section th:if="${section == 'paradas'}" class="card api-panel">
                 <p th:if="${paradas != null and paradas.isEmpty() and apiError == null}">No hay paradas.</p>
                 <article th:each="p : ${paradas}">
-                    <a th:href="@{/admin/dashboard/paradas/{id}(id=${p.id})}" th:text="'Parada ' + ${p.id} + ' — orden ' + ${p.orden}">
+                    <a th:href="@{/admin/dashboard/paradas/{id}(id=${p.id})}" th:text="'Parada ' + ${p.orden}">
                     </a>
                 </article>
             </section>
@@ -61,7 +61,7 @@
                 </p>
                 <ul>
                     <li th:each="e : ${parada.entregas}">
-                        <a th:href="@{/admin/dashboard/entregas/{id}(id=${e.id})}" th:text="'Entrega ' + ${e.id} + ' — ' + ${e.estado}">
+                        <a th:href="@{/admin/dashboard/entregas/{id}(id=${e.id})}" th:text="${@adminEstados.etiqueta(e.estado)}">
                         </a>
                     </li>
                 </ul>

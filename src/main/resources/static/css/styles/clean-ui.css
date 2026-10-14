@@ -62,7 +62,7 @@ body:has(.registration-page) { background:radial-gradient(circle at 10% 20%,#ffe
 .registration-state,.status-pendiente,.status-completo { color:#171717!important;background:none!important;border:0!important; }
 .dashboard-body { display:grid;grid-template-columns:var(--sidebar-width) minmax(0,1fr); }
 .dashboard-main-content { margin-left:0!important;width:100%!important;min-width:0; }
-.admin-shell .sidebar-link { min-height:40px;padding:.35rem .6rem;font-size:.85rem; }
+.admin-shell .sidebar-link { min-height:40px;padding:.35rem .6rem;font-size:.9rem; }
 .admin-shell .admin-nav-group { margin:.45rem 0; }
 .admin-shell .admin-nav-group h2 { margin:.55rem .6rem .25rem;font-size:.7rem; }
 .admin-shell .panel-kpis { grid-template-columns:repeat(3,minmax(0,1fr));align-items:start; }
@@ -157,3 +157,255 @@ html.drawer-open:has(.dashboard-mobile-drawer.open),body.drawer-open:has(.dashbo
 .registration-page [data-registro-quitar]:hover { color: #111 !important; text-decoration: underline; text-underline-offset: 4px; }
 
 .truck-map-marker { filter: brightness(0); }
+
+@media (min-width: 901px) {
+  .admin-shell .dashboard-sidebar {
+    position: fixed !important;
+    top: var(--header-height) !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: calc(100dvh - var(--header-height)) !important;
+    overflow-y: auto !important;
+  }
+  .admin-shell .dashboard-main-content { grid-column: 2; }
+}
+
+.admin-sidebar-controls { display: none; }
+@media (min-width: 901px) {
+  .admin-sidebar-controls { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .admin-shell .admin-sidebar-collapse { display: grid; place-items: center; width: 36px; height: 36px; padding: 6px; border: 0 !important; background: transparent !important; opacity: 0; transition: opacity 180ms ease; }
+  .admin-shell .dashboard-sidebar:hover .admin-sidebar-collapse,
+  .admin-shell .dashboard-sidebar:focus-within .admin-sidebar-collapse { opacity: 1; }
+  .admin-sidebar-collapse svg { width: 22px; height: 22px; }
+  .admin-sidebar-collapse .sidebar-open-icon { display: none; }
+  .admin-shell .dashboard-sidebar { transition: width 240ms ease, padding 240ms ease; }
+  .admin-shell .dashboard-body { transition: grid-template-columns 240ms ease; }
+  .admin-shell.admin-sidebar-collapsed { --sidebar-width: 72px; }
+  .admin-sidebar-collapsed .dashboard-sidebar { padding: 1.5rem 8px; }
+  .admin-sidebar-collapsed .admin-sidebar-controls { justify-content: center; }
+  .admin-shell.admin-sidebar-collapsed .admin-sidebar-collapse { opacity: 1; }
+  .admin-sidebar-collapsed .sidebar-close-icon { display: none; }
+  .admin-sidebar-collapsed .admin-sidebar-collapse .sidebar-open-icon { display: block; }
+  .admin-sidebar-collapsed .dashboard-sidebar .sidebar-link { justify-content: center; padding: .5rem; }
+  .admin-sidebar-collapsed .dashboard-sidebar .sidebar-link span { display: none; }
+  .admin-sidebar-collapsed .dashboard-sidebar .sidebar-link svg { flex-shrink: 0; width: 22px; height: 22px; }
+}
+
+/* Admin navigation lives in the sidebar; the profile remains independently accessible. */
+.admin-shell { --header-height: 0px; padding-top: 0 !important; }
+.admin-shell .dashboard-main-content { padding-top: 28px !important; padding-right: 88px; min-height: 100dvh; }
+.admin-account-position { position: fixed; top: 20px; right: 24px; z-index: 950; }
+.admin-shell .admin-sidebar-controls { align-items: center; justify-content: space-between; gap: 6px; min-height: 48px; margin-bottom: 18px; }
+.admin-sidebar-brand { gap: 8px; font-size: 1.1rem; white-space: nowrap; }
+.admin-sidebar-brand .brand-mark { width: 38px; height: 38px; }
+.admin-shell .admin-mobile-toggle { display: none; }
+@media (min-width: 901px) {
+  .admin-sidebar-collapsed .admin-sidebar-brand { display: none; }
+  .admin-sidebar-collapsed .admin-sidebar-controls { justify-content: center; }
+}
+@media (max-width: 900px) {
+  .admin-shell .admin-mobile-toggle { display: grid; place-items: center; position: fixed; top: 20px; left: 16px; width: 44px; height: 44px; z-index: 950; border: 0 !important; background: #fff !important; }
+  .admin-mobile-toggle svg { width: 24px; height: 24px; }
+  .admin-account-position { right: 16px; }
+}
+
+@media (max-width: 900px) { .admin-shell .dashboard-main-content { padding-top: 76px !important; padding-right: 1rem; } }
+
+.admin-overview .page-header { margin-bottom: 20px; }
+.admin-overview .panel-kpis { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 18px; padding-bottom: 22px; margin-bottom: 22px; border-bottom: 1px solid #e2e8f0; }
+.admin-overview .overview-metric { min-width: 0; padding: 0; background: transparent; border: 0; border-radius: 0; }
+.admin-overview .overview-metric h2 { font-size: 13px; font-weight: 600; margin: 0 0 6px; color: #525252; }
+.admin-overview .overview-metric .kpi-value { display: block; font-size: 30px; font-weight: 750; line-height: 1.15; color: #111; }
+.admin-overview .overview-metric.danger-text .kpi-value { color: #be123c; }
+.admin-overview .overview-metric small, .admin-overview .overview-metric p { font-size: 11px; color: #525252; margin: 5px 0 0; line-height: 1.35; }
+.admin-overview .overview-grid { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 32px; margin-bottom: 22px; }
+.admin-overview .overview-section { min-width: 0; background: transparent; border: 0; border-radius: 0; padding: 0; }
+.admin-overview .overview-section h2 { margin: 0 0 12px; font-size: 19px; font-weight: 700; }
+.admin-overview .overview-section h3 { margin: 12px 0 5px; font-size: 14px; font-weight: 650; }
+.admin-overview .overview-section > p { margin: 0 0 6px; font-size: 13px; color: #525252; }
+.admin-overview .panel-list { padding: 0; margin: 0; list-style: none; }
+.admin-overview .panel-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0; border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; background: transparent; font-size: 13px; }
+.admin-overview .panel-list li p { margin: 3px 0 0; font-size: 12px; }
+.admin-overview .panel-list .btn { min-height: 32px; padding: 5px 10px; font-size: 12px; }
+.admin-overview .overview-bottom { padding-top: 18px; border-top: 1px solid #e2e8f0; }
+.admin-overview .overview-bottom:not(:has(> section:nth-child(2))) { grid-template-columns: 1fr; }
+.admin-overview .admin-map { height: 300px; min-height: 300px; border: 0; border-radius: 10px; margin: 0 0 8px; }
+@media (max-width:1200px) { .admin-overview .panel-kpis { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px 24px; } }
+@media (max-width:700px) {
+ .admin-overview .panel-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .admin-overview .overview-grid { grid-template-columns: 1fr; gap: 22px; }
+ .admin-overview .overview-metric .kpi-value { font-size: 26px; }
+ .admin-overview .admin-map { height: 260px; min-height: 260px; }
+}
+
+.admin-overview .overview-section { display: block; gap: 0; }
+.admin-overview .overview-metric small { display: inline; }
+.admin-overview .overview-metric > p { display: inline; margin-left: 4px; }
+.admin-overview .overview-section .panel-list:empty { display: none; }
+
+/* Shared action buttons for administrator, donor and beneficiary panels. */
+.dashboard-shell .dashboard-main-content .btn:not(.action-icon):not(.btn-danger) {
+  border: 0 !important;
+  background: #fff !important;
+  color: #111 !important;
+}
+.dashboard-shell .dashboard-main-content .btn:not(.action-icon):not(.btn-danger):hover:not(:disabled):not([aria-disabled="true"]) {
+  background: linear-gradient(110deg, #be123c 0%, #e11d48 55%, #ef4444 100%) !important;
+  color: #fff !important;
+}
+
+.admin-shell .toolbar.donor-create-actions { justify-content: flex-end; gap: 8px; }
+
+.action-icon.action-edit, .action-icon.action-edit:hover { border: 0 !important; background: transparent !important; background-image: none !important; border-radius: 0; box-shadow: none !important; }
+
+.action-icon.action-delete, .action-icon.action-delete:hover { border: 0 !important; background: transparent !important; background-image: none !important; border-radius: 0; }
+
+@media (min-width: 901px) {
+ .admin-shell .dashboard-main-content:has(.donation-list-panel) { max-width: none; padding-right: 24px; }
+ .admin-shell .donation-list-panel { width: 100%; min-width: 0; box-sizing: border-box; }
+ .admin-shell .donation-list-panel .api-table { width: 100%; overflow-x: auto; }
+ .admin-shell #tabla-donaciones { width: 100%; min-width: 1100px; table-layout: auto; }
+ .admin-shell #tabla-donaciones th, .admin-shell #tabla-donaciones td { white-space: nowrap; vertical-align: middle; padding: 12px 14px; }
+ .admin-shell #tabla-donaciones .row-actions { flex-wrap: nowrap; gap: 8px; }
+ .admin-shell #tabla-donaciones .row-actions form { margin: 0; flex-shrink: 0; }
+ .admin-shell #tabla-donaciones .btn { white-space: nowrap; flex-shrink: 0; }
+}
+
+#tabla-donaciones .donation-clickable-row { cursor: pointer; }
+#tabla-donaciones .donation-clickable-row td { transition: background-color 180ms ease; }
+#tabla-donaciones .donation-clickable-row:hover td,
+#tabla-donaciones .donation-clickable-row:focus-visible td { background-color: #e9edf2; }
+
+@media (min-width: 901px) {
+ .admin-shell .donation-list-panel .api-table { overflow-x: visible; }
+ .admin-shell #tabla-donaciones { min-width: 0; table-layout: fixed; }
+ .admin-shell #tabla-donaciones th, .admin-shell #tabla-donaciones td { white-space: normal; overflow-wrap: anywhere; padding: 10px 8px; }
+ .admin-shell #tabla-donaciones th:nth-child(1) { width: 5%; }
+ .admin-shell #tabla-donaciones th:nth-child(2) { width: 14%; }
+ .admin-shell #tabla-donaciones th:nth-child(3) { width: 24%; }
+ .admin-shell #tabla-donaciones th:nth-child(4) { width: 18%; }
+ .admin-shell #tabla-donaciones th:nth-child(5) { width: 11%; }
+ .admin-shell #tabla-donaciones th:nth-child(6) { width: 11%; }
+ .admin-shell #tabla-donaciones th:nth-child(7) { width: 11%; }
+ .admin-shell #tabla-donaciones th:nth-child(8) { width: 6%; }
+ .admin-shell #tabla-donaciones td .status-chip { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+ .admin-shell #tabla-donaciones .row-actions { gap: 0; justify-content: center; }
+}
+
+@media (min-width: 901px) {
+ .admin-shell #tabla-donaciones th:nth-child(1) { width: 16%; }
+ .admin-shell #tabla-donaciones th:nth-child(2) { width: 25%; }
+ .admin-shell #tabla-donaciones th:nth-child(3) { width: 19%; }
+ .admin-shell #tabla-donaciones th:nth-child(4) { width: 12%; }
+ .admin-shell #tabla-donaciones th:nth-child(5) { width: 11%; }
+ .admin-shell #tabla-donaciones th:nth-child(6) { width: 11%; }
+ .admin-shell #tabla-donaciones th:nth-child(7) { width: 6%; }
+}
+
+.admin-shell .csv-import-section { padding: 0; border: 0; background: transparent; }
+.csv-import-section h2 { font-size: 18px; margin: 16px 0; }
+.csv-import-totals { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin: 16px 0; }
+.csv-import-metric { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 0; background: transparent; padding: 0; }
+.csv-import-metric h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.csv-import-metric .kpi-value { font-size: 28px; line-height: 1.2; }
+.csv-dropzone { display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 1px dashed #a3a3a3; border-radius: 10px; background: #fff; transition: background-color 180ms ease,border-color 180ms ease; }
+.csv-dropzone.is-dragging { border: 2px dashed #e11d48; padding: 19px; background: #fff1f2; }
+.csv-dropzone.has-file { border-color: #525252; }
+.csv-drop-hint { font-size: 14px; color: #525252; }
+.csv-dropzone.is-dragging .csv-drop-hint { color: #be123c; font-weight: 600; }
+.csv-import-rejections { font-size: 13px; color: #be123c; margin: 12px 0; }
+@media(max-width:600px) { .csv-import-totals { gap: 8px; } .csv-import-metric { flex-direction: column; align-items: flex-start; } .csv-import-metric h3 { font-size: 12px; } }
+
+.admin-shell #donors-table td[data-label="Acciones"] { vertical-align: middle; }
+.admin-shell #donors-table .row-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; }
+.admin-shell #donors-table .row-actions > * { flex-shrink: 0; }
+.admin-shell #donors-table .row-actions > form { display: flex; align-items: center; margin: 0; }
+.admin-shell #donors-table .row-actions .btn { white-space: nowrap; }
+.admin-shell #donors-table .row-actions .action-icon { min-width: 36px; min-height: 40px; }
+
+.csv-import-metric { justify-content: flex-start; gap: 12px; }
+.csv-drop-hint:empty { display: none; }
+
+.admin-shell .admin-profile-form { background: transparent; border: 0; border-radius: 0; padding: 0; }
+
+/* Consistent row actions across every dashboard role. */
+.dashboard-shell .row-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; }
+.dashboard-shell .row-actions > * { flex-shrink: 0; }
+.dashboard-shell .row-actions > .action-access { order: 0; }
+.dashboard-shell .row-actions > .action-edit { order: 1; }
+.dashboard-shell .row-actions > form:has(.action-delete), .dashboard-shell .row-actions > .action-delete { order: 2; }
+.dashboard-shell .row-actions > form { display: flex; align-items: center; margin: 0; }
+.dashboard-shell .row-actions .btn { white-space: nowrap; }
+.dashboard-shell .row-actions .action-icon { min-width: 36px; min-height: 40px; }
+
+.admin-shell .beneficiary-create-actions { display: flex; justify-content: flex-end; margin: 0 0 8px; }
+
+.admin-shell .dashboard-main-content:has(.admin-profile-form) { max-width: none; }
+.admin-shell .admin-profile-form .profile-address-grid { width: 100%; min-width: 0; box-sizing: border-box; }
+.admin-shell .profile-address-grid label { min-width: 0; }
+.admin-shell .profile-address-grid input { width: 100%; min-width: 0; }
+@media(min-width:1100px) { .admin-shell .admin-profile-form .profile-address-grid { grid-template-columns: minmax(0,1.4fr) minmax(0,.6fr) repeat(4,minmax(0,1fr)); } }
+@media(min-width:601px) and (max-width:1099px) { .admin-shell .admin-profile-form .profile-address-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+.dashboard-shell .panel-create-actions { display: flex; justify-content: flex-end; margin: 0 0 8px; }
+
+.admin-shell label:has(select[data-filter-table="tabla-necesidades"][data-field="tipo"]) { min-width: 180px; }
+.animated-select-options { overflow-x: hidden; }
+.animated-select .animated-select-option { white-space: normal; overflow-wrap: anywhere; box-sizing: border-box; }
+
+.dashboard-shell tr[data-row-url] { cursor: pointer; }
+.dashboard-shell tr[data-row-url] td { transition: background-color 180ms ease; }
+.dashboard-shell tr[data-row-url]:hover td,
+.dashboard-shell tr[data-row-url]:focus-visible td { background-color: #e9edf2; }
+
+.admin-shell #tabla-necesidades .status-chip, .admin-shell .need-details .status-chip { background: transparent !important; border: 0 !important; border-radius: 0; padding: 0; font-size: .9rem; font-weight: 650; }
+
+@media (min-width: 701px) {
+ .admin-shell .api-view:has(> .panel-create-actions),
+ .admin-shell .api-view:has(> .beneficiary-create-actions),
+ .admin-shell .api-view:has(> .donor-create-actions) { display: grid; grid-template-columns: minmax(0,1fr) auto; column-gap: 16px; row-gap: 0; align-items: center; }
+ .admin-shell .api-view:has(> .panel-create-actions) > *,
+ .admin-shell .api-view:has(> .beneficiary-create-actions) > *,
+ .admin-shell .api-view:has(> .donor-create-actions) > * { grid-column: 1 / -1; }
+ .admin-shell .api-view:has(> .panel-create-actions) > .page-header,
+ .admin-shell .api-view:has(> .beneficiary-create-actions) > .page-header,
+ .admin-shell .api-view:has(> .donor-create-actions) > .page-header { grid-column: 1; grid-row: 1; margin: 0; }
+ .admin-shell .api-view > .panel-create-actions,
+ .admin-shell .api-view > .beneficiary-create-actions,
+ .admin-shell .api-view > .donor-create-actions { grid-column: 2; grid-row: 1; margin: 0; }
+ .admin-shell .api-view:has(.donation-list-panel) > .panel-create-actions { margin-right: 64px; }
+}
+.admin-shell .api-view:has(> .panel-create-actions) > .api-panel,
+.admin-shell .api-view:has(> .beneficiary-create-actions) > .api-panel { margin-top: 12px; }
+@media(max-width:700px) {
+ .admin-shell .api-view > .page-header { margin-bottom: 4px; }
+ .admin-shell .api-view > .panel-create-actions,
+ .admin-shell .api-view > .beneficiary-create-actions,
+ .admin-shell .api-view > .donor-create-actions { margin-top: 0; margin-bottom: 0; }
+}
+
+.animated-select-options { width: max-content; min-width: 100%; max-width: calc(100vw - 32px); right: auto; box-sizing: border-box; overflow-x: hidden; }
+.animated-select .animated-select-option { white-space: nowrap; overflow-wrap: normal; }
+.admin-shell label:has(select[data-filter-table="tabla-necesidades"][data-field="estado"]) { min-width: 180px; }
+
+.dashboard-shell :is(.status-chip,.status-badge,.registration-state,.notif-badge) {
+ background: transparent !important;
+ background-image: none !important;
+ border: 0 !important;
+ border-radius: 0;
+ padding: 0;
+}
+.dashboard-shell .status-chip { font-size: .9rem; }
+
+.dashboard-shell li[data-row-url] { cursor: pointer; transition: background-color 180ms ease; }
+.dashboard-shell li[data-row-url]:hover, .dashboard-shell li[data-row-url]:focus-visible { background-color: #e9edf2; }
+
+.admin-shell .truck-edit-dialog { position: fixed; inset: 0; margin: auto; width: min(520px,calc(100vw - 32px)); max-height: calc(100dvh - 48px); padding: 24px; border: 0; border-radius: 16px; box-sizing: border-box; }
+.truck-edit-summary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 24px; margin: 0 0 24px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
+.truck-edit-summary dt { font-size: 13px; color: #525252; margin-bottom: 4px; }
+.truck-edit-summary dd { margin: 0; font-size: 16px; font-weight: 650; }
+.truck-edit-dialog form > label { display: block; font-size: 14px; }
+.truck-edit-dialog .animated-select { margin-top: 8px; }
+.truck-edit-dialog .animated-select-options { position: static; width: 100%; min-width: 0; max-height: 0; padding: 0; border-width: 0; transition: max-height 240ms ease,opacity 240ms ease; }
+.truck-edit-dialog .animated-select.is-open .animated-select-options { max-height: 150px; padding: 4px; margin-top: 6px; border-width: 1px; }
+.truck-edit-dialog .form-actions { margin: 20px 0 0; justify-content: flex-end; }

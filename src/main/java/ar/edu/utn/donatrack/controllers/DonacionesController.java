@@ -57,6 +57,7 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/donaciones/nueva")
     public String nuevaDonacion(Model model) {
         load(model, () -> model.addAttribute("categorias", service.categorias()));
+        load(model, () -> model.addAttribute("nombresDonantes", service.nombresDonantes()));
         return "admin-donacion-nueva";
     }
 
@@ -143,6 +144,7 @@ public class DonacionesController {
         } catch(FormularioInvalidoException e) { model.addAttribute("apiError", e.getMessage()); }
         catch(RestClientException e) { model.addAttribute("apiError", errors.describe(e)); }
         load(model, () -> model.addAttribute("categorias", service.categorias()));
+        load(model, () -> model.addAttribute("nombresDonantes", service.nombresDonantes()));
         return "admin-donacion-nueva";
     }
 
@@ -376,6 +378,7 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/necesidades/{id}")
     public String necesidad(@PathVariable Long id, Model model) {
         views.load(model, "necesidad", () -> service.necesidad(id));
+        views.load(model, "beneficiarios", service::beneficiarios);
         return views.page(model, "Detalle de necesidad", "necesidad");
     }
 

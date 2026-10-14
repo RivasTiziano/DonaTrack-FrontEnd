@@ -2,85 +2,10 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
     <body>
         <th:block th:fragment="contenido">
-            <section th:if="${section == 'camiones'}" class="card api-panel">
-                <div class="toolbar">
-                    <label>Buscar patente<input class="form-control" type="search" data-filter-table="tabla-camiones"/>
-                </label>
-                <a class="btn btn-primary" href="#alta-camiones">Nuevo camión</a>
-            </div>
-            <th:block th:if="${camiones.isEmpty() and apiError == null}">
-                <div th:replace="~{fragments/admin-ui :: vacio('No hay camiones registrados.', '#alta-camiones', 'Crear nuevo registro')}">
-                </div>
-            </th:block>
-            <div class="api-table">
-                <table class="data-table" id="tabla-camiones">
-                    <thead>
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Patente</th>
-                            <th scope="col">Carga / Volumen / Altura</th>
-                            <th scope="col">Estado</th>
-                            <th scope="col">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="item : ${camiones}" data-record>
-                            <td data-label="ID">
-                                <span th:text="${item.id}">
-                                </span>
-                            </td>
-                            <td data-label="Patente">
-                                <span th:text="${item.patente}">
-                                </span>
-                            </td>
-                            <td data-label="Capacidades">
-                                <span th:text="${item.capacidadCarga + ' kg / ' + item.capacidadVolumen + ' m³ / ' + item.altura + ' m'}">
-                                </span>
-                            </td>
-                            <td data-label="Estado">
-                                <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
-                                </span>
-                            </td>
-                            <td data-label="Acciones">
-                                <div class="row-actions">
-                                    <a class="btn btn-outline" th:href="@{/admin/dashboard/camiones/{id}(id=${item.id})}">Detalle</a>
-                                    <button type="button" class="btn btn-outline" th:data-dialog-open="'estado-camion-' + ${item.id}">Cambiar estado</button>
-                                    <details class="row-menu">
-                                        <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
-                                        <div class="menu-content">
-                                            <form method="post" th:action="@{/admin/dashboard/camiones/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar este camión? ');">
-                                                <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
-                                            </form>
-                                        </div>
-                                    </details>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <th:block th:each="item : ${camiones}">
-                <dialog class="dialog" th:id="'estado-camion-' + ${item.id}" th:attr="aria-labelledby='estado-camion-title-' + ${item.id}">
-                    <div class="dialog-header">
-                        <h2 th:id="'estado-camion-title-' + ${item.id}">Estado del camión</h2>
-                        <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
-                    </div>
-                    <form method="post" th:action="@{/admin/dashboard/camiones/{id}/estado(id=${item.id})}">
-                        <label>Estado<select class="form-control" name="estado">
-                            <option value="DISPONIBLE">Disponible</option>
-                            <option value="EN_RUTA">En ruta</option>
-                            <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
-                        </select>
-                    </label>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" type="submit">Actualizar</button>
-                    </div>
-                </form>
-            </dialog>
-        </th:block>
-        <details class="form-panel" id="alta-camiones">
+<section th:if="${section == 'camiones'}" class="card api-panel">
+<details class="form-panel" id="alta-camiones">
             <summary>Nuevo camión</summary>
-            <form method="post" th:action="@{/admin/dashboard/camiones}" class="form-stack">
+            <form method="post" th:action="@{/admin/dashboard/camiones}" class="form-stack" data-loading-text="Creando…">
                 <div class="form-grid">
                     <label>Patente<input class="form-control" name="patente" required />
                 </label>
@@ -96,6 +21,74 @@
 </div>
 </form>
 </details>
+                <div class="toolbar">
+                    <label>Buscar patente<input class="form-control" type="search" data-filter-table="tabla-camiones"/>
+                </label>
+                
+            </div>
+            <th:block th:if="${camiones.isEmpty() and apiError == null}">
+                <div th:replace="~{fragments/admin-ui :: vacio('No hay camiones registrados.', '#alta-camiones', 'Crear nuevo registro')}">
+                </div>
+            </th:block>
+            <div class="api-table">
+                <table class="data-table" id="tabla-camiones">
+                    <thead>
+                        <tr>
+                            <th scope="col">Patente</th>
+                            <th scope="col">Carga / Volumen / Altura</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${camiones}" data-record tabindex="0" th:data-row-url="@{/admin/dashboard/camiones/{id}(id=${item.id})}" aria-label="Abrir detalle">
+                            
+                            <td data-label="Patente">
+                                <span th:text="${item.patente}">
+                                </span>
+                            </td>
+                            <td data-label="Capacidades">
+                                <span th:text="${item.capacidadCarga + ' kg / ' + item.capacidadVolumen + ' m³ / ' + item.altura + ' m'}">
+                                </span>
+                            </td>
+                            <td data-label="Estado">
+                                <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
+                                </span>
+                            </td>
+                            <td data-label="Acciones">
+                                <div class="row-actions">
+                                    
+                                    <button type="button" class="btn btn-outline action-icon action-edit" th:data-dialog-open="'estado-camion-' + ${item.id}" aria-label="Editar camión" title="Editar camión"><svg th:replace="~{fragments/ui-icons :: edit}"></svg></button>
+                                    <form method="post" th:action="@{/admin/dashboard/camiones/{id}/eliminar(id=${item.id})}" onsubmit="return confirm('¿Eliminar este camión? ');">
+                                                <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar" title="Eliminar"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
+                                            </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <th:block th:each="item : ${camiones}">
+                <dialog class="dialog truck-edit-dialog" th:id="'estado-camion-' + ${item.id}" th:attr="aria-labelledby='estado-camion-title-' + ${item.id}">
+                    <div class="dialog-header">
+                        <h2 th:id="'estado-camion-title-' + ${item.id}">Editar camión</h2>
+                        <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
+                    </div>
+                    <dl class="truck-edit-summary"><div><dt>Patente</dt><dd th:text="${item.patente}"></dd></div><div><dt>Carga máxima</dt><dd th:text="${item.capacidadCarga} + ' kg'"></dd></div><div><dt>Volumen</dt><dd th:text="${item.capacidadVolumen} + ' m³'"></dd></div><div><dt>Altura</dt><dd th:text="${item.altura} + ' m'"></dd></div></dl>
+<form method="post" th:action="@{/admin/dashboard/camiones/{id}/estado(id=${item.id})}">
+                        <label>Estado<select class="form-control" name="estado">
+                            <option value="DISPONIBLE" th:selected="${item.estado == 'DISPONIBLE'}">Disponible</option>
+                            <option value="EN_RUTA" th:selected="${item.estado == 'EN_RUTA'}">En ruta</option>
+                            <option value="FUERA_DE_SERVICIO" th:selected="${item.estado == 'FUERA_DE_SERVICIO'}">Fuera de servicio</option>
+                        </select>
+                    </label>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" type="submit">Guardar estado</button>
+                    </div>
+                </form>
+            </dialog>
+        </th:block>
+        
 </section>
 <section th:if="${section == 'entregas'}" class="card api-panel">
     <div class="toolbar">
@@ -117,8 +110,6 @@
     <table class="data-table" id="tabla-entregas">
         <thead>
             <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Asignación</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Camión</th>
                 <th scope="col">Justificación</th>
@@ -127,14 +118,8 @@
         </thead>
         <tbody>
             <tr th:each="item : ${entregas}" data-record th:data-estado="${item.estado}" th:classappend="${item.estado == 'NO_RECIBIDA'} ? 'danger-text'">
-                <td data-label="ID">
-                    <span th:text="${item.id}">
-                    </span>
-                </td>
-                <td data-label="Asignación">
-                    <span th:text="${item.asignacionId}">
-                    </span>
-                </td>
+                
+                
                 <td data-label="Estado">
                     <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
                     </span>
@@ -195,10 +180,6 @@
 <div th:if="${planificacion != null}">
     <p th:text="'Entregas: ' + ${planificacion.cantidadEntregas} + '; lotes: ' + ${planificacion.cantidadLotes}">
     </p>
-    <ul>
-        <li th:each="requestId : ${planificacion.requestIds}" th:text="${requestId}">
-        </li>
-    </ul>
 </div>
 <div class="toolbar">
     <label>Fecha<input class="form-control" type="date" data-filter-table="tabla-rutas" data-field="fecha"/>
@@ -210,9 +191,7 @@
     <table class="data-table" id="tabla-rutas">
         <thead>
             <tr>
-                <th scope="col">ID</th>
                 <th scope="col">Fecha</th>
-                <th scope="col">Camión</th>
                 <th scope="col">Chofer</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Distancia / Duración</th>
@@ -220,19 +199,13 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="item : ${rutas}" data-record th:data-fecha="${item.fecha}">
-                <td data-label="ID">
-                    <span th:text="${item.id}">
-                    </span>
-                </td>
+            <tr th:each="item : ${rutas}" data-record th:data-fecha="${item.fecha}" tabindex="0" th:data-row-url="@{/admin/dashboard/rutas/{id}(id=${item.id})}" aria-label="Abrir detalle">
+                
                 <td data-label="Fecha">
                     <span th:text="${item.fecha}">
                     </span>
                 </td>
-                <td data-label="Camión">
-                    <span th:text="${item.camionId}">
-                    </span>
-                </td>
+                
                 <td data-label="Chofer">
                     <span th:text="${item.chofer}">
                     </span>
@@ -247,7 +220,7 @@
                 </td>
                 <td data-label="Acciones">
                     <div class="row-actions">
-                        <a class="btn btn-outline" th:href="@{/admin/dashboard/rutas/{id}(id=${item.id})}">Detalle</a>
+                        
                         <details class="row-menu">
                             <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
                             <div class="menu-content">

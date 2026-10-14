@@ -46,7 +46,14 @@ class AdminMvcTest {
 
     @Test void rendersAllAdministrativePagesWithoutBackends() throws Exception {
         for (String path : List.of("", "/donantes", "/donaciones", "/bienes", "/catalogo", "/beneficiarios", "/necesidades", "/camiones", "/rankings", "/asignar", "/importar", "/entregas", "/rutas"))
-            mvc.perform(get("/admin/dashboard" + path).session(TestSesiones.admin())).andExpect(status().isOk());
+        {
+            var result = mvc.perform(get("/admin/dashboard" + path).session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("admin-sidebar-brand")))
+                .andExpect(content().string(containsString("admin-account-position")))
+                .andExpect(content().string(not(containsString("dashboard-header-left"))))
+                .andReturn();
+        }
     }
 
     @Test void rendersHumanAndJuridicalDonorsAndFilters() throws Exception {
@@ -102,8 +109,8 @@ class AdminMvcTest {
         mvc.perform(multipart("/admin/dashboard/importar").file(file).session(TestSesiones.admin()))
                 .andExpect(status().is3xxRedirection()).andExpect(flash().attribute("importacion", result));
         mvc.perform(get("/admin/dashboard/importar").session(TestSesiones.admin()).flashAttr("importacion", result))
-                .andExpect(content().string(containsString("data-label=\"Fila\"")))
-                .andExpect(content().string(containsString(">11</span>")))
+                .andExpect(content().string(containsString("csv-import-totals")))
+                .andExpect(content().string(not(containsString("Ver donantes importados"))))
                 .andExpect(content().string(containsString("Email en uso")));
     }
 
@@ -125,7 +132,7 @@ class AdminMvcTest {
         when(incentivos.ranking()).thenReturn(List.of(new ApiDtos.Ranking(101L, 8)));
         mvc.perform(get("/admin/dashboard/rankings").session(TestSesiones.admin()))
                 .andExpect(content().string(containsString("Misiones resueltas")))
-                .andExpect(content().string(containsString("101")));
+                .andExpect(content().string(containsString("Nombre no disponible")));
     }
 
     @Test void goodsFormBindsNumbersAndDates() throws Exception {
