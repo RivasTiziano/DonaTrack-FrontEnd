@@ -24,9 +24,7 @@ public final class IncentivosDtos {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Progreso(Long idMision, String nombreMision, String descripcionMision, Integer valorActual,
                            Integer valorObjetivo, Double porcentajeProgreso, Boolean completada, Integer orden, String mensaje) {}
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record DonanteRanking(Long idReferencia) {}
-    public record Posicion(int posicion, int misionesCompletadas, DonanteRanking donante) {}
+    public record Posicion(int posicion, Long donanteId, int misionesCompletadas) {}
     public record RankingHistorico(Long id, LocalDate periodo, List<Posicion> posiciones) {}
     /** Fila lista para la vista: el nombre sale de Donaciones; si no aparece, "Donante #id". */
     public record FilaRanking(int posicion, Long idDonante, String nombre, long misiones) {}

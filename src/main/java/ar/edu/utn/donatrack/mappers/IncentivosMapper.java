@@ -23,7 +23,7 @@ public class IncentivosMapper {
         for (var h : historial) {
             List<IncentivosDtos.FilaRanking> posiciones = new ArrayList<>();
             if (h.posiciones() != null) for (var p : h.posiciones()) {
-                Long id = p.donante() != null ? p.donante().idReferencia() : null;
+                Long id = p.donanteId();
                 posiciones.add(new IncentivosDtos.FilaRanking(p.posicion(), id, nombre(nombres, id), p.misionesCompletadas()));
             }
             filas.add(new IncentivosDtos.FilaHistorial(h.id(), h.periodo(), posiciones));

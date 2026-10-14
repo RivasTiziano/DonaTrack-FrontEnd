@@ -170,14 +170,20 @@ class ApiCoberturaTest {
         assertThat(mapper.readTree(requests.get("PATCH /incentivos/donantes/1/insignias/visibilidad")).path("insigniasVisibles").asBoolean()).isFalse();
     }
 
-    @Test void rankingHistoryReadsEntityContractNotMonthlyRankingDto() {
+    @Test void historialDeRankingsLeeElContratoNuevoYMuestraNombres() {
         route("GET","/incentivos/rankings/historial",200,"""
-            [{"id":1,"periodo":"2026-10-01","posiciones":[{"posicion":1,"misionesCompletadas":2,
-            "donante":{"idReferencia":9,"categoriaActual":null,"insigniasVisibles":true,"progresos":[]}}]}]
+            [{"id":2,"periodo":"2026-10-01","posiciones":[{"posicion":1,"donanteId":9,"misionesCompletadas":2}]},
+             {"id":1,"periodo":"2026-09-01","posiciones":[{"posicion":1,"donanteId":4,"misionesCompletadas":5}]}]
             """);
-        var posicion = incentivos.historialRankings().get(0).posiciones().get(0);
-        assertThat(posicion.donante().idReferencia()).isEqualTo(9);
+        var historial = incentivos.historialRankings();
+        var posicion = historial.get(0).posiciones().get(0);
+        assertThat(posicion.donanteId()).isEqualTo(9L);
         assertThat(posicion.misionesCompletadas()).isEqualTo(2);
+        var filas = new ar.edu.utn.donatrack.mappers.IncentivosMapper().historial(historial, Map.of(9L,"Ana Real",4L,"Beto Real"));
+        assertThat(filas).extracting(IncentivosDtos.FilaHistorial::periodo)
+                .containsExactly(LocalDate.of(2026,10,1),LocalDate.of(2026,9,1));
+        assertThat(filas.get(0).posiciones().get(0).nombre()).isEqualTo("Ana Real");
+        assertThat(filas.get(1).posiciones().get(0).nombre()).isEqualTo("Beto Real");
     }
 
     @Test void asignacionYBeneficiarioLeenLosCamposAmpliadosDelContrato() {

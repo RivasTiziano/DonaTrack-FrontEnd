@@ -81,7 +81,7 @@ class CoberturaMvcTest {
         when(incentivos.historialCategorias(1L)).thenReturn(List.of(new IncentivosDtos.Auditoria(1L,null,"Solidario",null)));
         when(incentivos.progreso(1L)).thenReturn(new IncentivosDtos.Progreso(null,null,null,null,null,null,null,null,"Todas las misiones han sido completadas"));
         when(incentivos.historialRankings()).thenReturn(List.of(new IncentivosDtos.RankingHistorico(1L,LocalDate.of(2026,10,1),
-                List.of(new IncentivosDtos.Posicion(1,2,new IncentivosDtos.DonanteRanking(1L))))));
+                List.of(new IncentivosDtos.Posicion(1,1L,2)))));
     }
 
     @Test void rendersEveryNewPageWithActualContractFields() throws Exception {
