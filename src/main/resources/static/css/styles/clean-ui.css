@@ -666,3 +666,9 @@ html.drawer-open:has(.dashboard-mobile-drawer.open),body.drawer-open:has(.dashbo
 .beneficiary-shell .receipt-not-received > summary::-webkit-details-marker { display: none; }
 .beneficiary-shell .receipt-not-received > summary:hover { color: #be123c; text-decoration: underline; }
 .beneficiary-shell .receipt-not-received form { display: grid; gap: 10px; margin-top: 12px; }
+
+/* Diálogos modales de los paneles: el reset global `* { margin: 0 }` anula el `margin: auto` con que el navegador centra
+   un <dialog> abierto con showModal(), y sin fondo propio toma `Canvas` del sistema (negro en modo oscuro). */
+:is(.admin-shell, .donor-shell, .beneficiary-shell) dialog { background: #fff; color: #171717; border-radius: 16px; padding: 24px; box-sizing: border-box; max-width: calc(100vw - 32px); }
+:is(.admin-shell, .donor-shell, .beneficiary-shell) dialog:modal { position: fixed; inset: 0; margin: auto; max-height: calc(100dvh - 48px); overflow-y: auto; }
+:is(.admin-shell, .donor-shell, .beneficiary-shell) dialog::backdrop { background: rgb(15 23 42 / 40%); }
