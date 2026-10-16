@@ -49,7 +49,7 @@ class PanelAdminMvcTest {
         when(logistica.camiones()).thenReturn(List.of(new ApiDtos.Camion(3L,"AB123CD",30f,3f,2000f,"DISPONIBLE")));
         when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(10L,9L,"NO_RECIBIDA","Depósito cerrado",List.of(),3L,"AB123CD",2L,null,null,null),
                 new ApiDtos.Entrega(11L,8L,"EN_TRASLADO",null,List.of(),3L,"AB123CD",2L,null,null,null)));
-        when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L,"Chofer",hoy,"PLANIFICADA",3L,50.0,60)));
+        when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L,"Chofer",hoy,"PLANIFICADA",3L,50.0,60,List.of())));
         when(logistica.ubicaciones()).thenReturn(List.of(new LogisticaDetalles.Seguimiento("AB123CD",-34.6,-58.4,0f,
                 hoy.atStartOfDay(),1L,3,1,2,33.0,"Comedor")));
         when(incentivos.ranking()).thenReturn(List.of(new ApiDtos.Ranking(101L,8),new ApiDtos.Ranking(102L,6),new ApiDtos.Ranking(103L,4),new ApiDtos.Ranking(104L,2)));

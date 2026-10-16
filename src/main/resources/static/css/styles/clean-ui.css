@@ -672,3 +672,14 @@ html.drawer-open:has(.dashboard-mobile-drawer.open),body.drawer-open:has(.dashbo
 :is(.admin-shell, .donor-shell, .beneficiary-shell) dialog { background: #fff; color: #171717; border-radius: 16px; padding: 24px; box-sizing: border-box; max-width: calc(100vw - 32px); }
 :is(.admin-shell, .donor-shell, .beneficiary-shell) dialog:modal { position: fixed; inset: 0; margin: auto; max-height: calc(100dvh - 48px); overflow-y: auto; }
 :is(.admin-shell, .donor-shell, .beneficiary-shell) dialog::backdrop { background: rgb(15 23 42 / 40%); }
+
+/* Columnas cortas de las tablas del admin (N°, patente): sin corte de línea. */
+.admin-shell .data-table .cell-nowrap { white-space: nowrap; }
+
+/* Detalle de entrega del admin */
+.admin-shell .entrega-detalle { display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; margin: 16px 0 24px; }
+.admin-shell .entrega-detalle dt { color: var(--color-muted); font-size: 14px; }
+.admin-shell .entrega-detalle dd { margin: 0; }
+.admin-shell .entrega-detalle ul { margin: 0; padding-left: 18px; }
+.admin-shell .entrega-fotos { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.admin-shell .entrega-fotos img { width: 180px; height: 135px; object-fit: cover; border-radius: 12px; border: 1px solid var(--color-border); }

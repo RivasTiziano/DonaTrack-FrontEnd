@@ -24,10 +24,12 @@ public class LogisticaController {
     private final PanelEntidadService panelEntidad;
     private final FotosRecepcion fotosRecepcion;
     private final ar.edu.utn.donatrack.services.ImagenesRecepcion imagenesRecepcion;
+    private final ar.edu.utn.donatrack.services.DonacionesService donaciones;
 
     public LogisticaController(LogisticaService service, ApiViewSupport views, ApiErrorMessages errors,
                                PanelDonanteService panelDonante, PanelEntidadService panelEntidad, FotosRecepcion fotosRecepcion,
-                               ar.edu.utn.donatrack.services.ImagenesRecepcion imagenesRecepcion) {
+                               ar.edu.utn.donatrack.services.ImagenesRecepcion imagenesRecepcion,
+                               ar.edu.utn.donatrack.services.DonacionesService donaciones) {
         this.service = service;
         this.views = views;
         this.errors = errors;
@@ -35,6 +37,7 @@ public class LogisticaController {
         this.panelEntidad = panelEntidad;
         this.fotosRecepcion = fotosRecepcion;
         this.imagenesRecepcion = imagenesRecepcion;
+        this.donaciones = donaciones;
     }
 
     // Operaciones y listados
@@ -47,13 +50,13 @@ public class LogisticaController {
 
     @GetMapping("/admin/dashboard/entregas")
     public String entregas(Model model) {
-        load(model, () -> model.addAttribute("entregas", service.entregas()));
+        load(model, () -> model.addAttribute("entregas", service.entregasTabla(donaciones::nombresEntidades)));
         return page(model, "Entregas logísticas", "entregas", "trucks");
     }
 
     @GetMapping("/admin/dashboard/rutas")
     public String rutas(Model model) {
-        load(model, () -> model.addAttribute("rutas", service.rutas()));
+        load(model, () -> model.addAttribute("rutas", service.rutasTabla()));
         return page(model, "Rutas logísticas", "rutas", "trucks");
     }
 
@@ -99,7 +102,14 @@ public class LogisticaController {
     @GetMapping("/admin/dashboard/entregas/{id}")
     public String entrega(@PathVariable Long id, Model model) {
         views.load(model, "entrega", () -> service.entrega(id));
-        return views.page(model, "Seguimiento de entrega", "entrega");
+        // Nombre de la entidad destino: una sola consulta; si falla, el detalle se muestra igual.
+        if (model.getAttribute("entrega") instanceof ar.edu.utn.donatrack.dto.ApiDtos.Entrega e && e.entidadBeneficiariaId() != null) {
+            try {
+                var b = donaciones.beneficiario(e.entidadBeneficiariaId());
+                if (b != null) model.addAttribute("entregaDestino", b.razonSocial());
+            } catch (RuntimeException ignored) { }
+        }
+        return views.page(model, "Entrega #" + id, "entrega");
     }
 
     @GetMapping("/admin/dashboard/rutas/{id}")

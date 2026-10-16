@@ -14,6 +14,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.ResourceAccessException;
 import java.util.List;
+import java.util.function.Function;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -177,10 +178,30 @@ class AdminMvcTest {
         when(donaciones.beneficiarios()).thenReturn(List.of(new ApiDtos.Beneficiario(2L, "Entidad Real", "ONG", "Comedor", true, null, null, List.of())));
         when(logistica.camiones()).thenReturn(List.of(new ApiDtos.Camion(3L, "AB123CD", 30f, 3f, 2000f, "DISPONIBLE")));
         when(logistica.entregas()).thenReturn(List.of(new ApiDtos.Entrega(1L, 7L, "EN_TRASLADO", null, List.of(), 3L, "AB123CD", null, null, null, null)));
-        when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L, "Chofer", java.time.LocalDate.now(), "PLANIFICADA", 3L, 50.0, 60)));
+        when(logistica.rutas()).thenReturn(List.of(new ApiDtos.Ruta(1L, "Chofer", java.time.LocalDate.now(), "PLANIFICADA", 3L, 50.0, 60, List.of())));
         when(donaciones.algoritmos()).thenReturn(List.of(new ApiDtos.Algoritmo("Semantico", true)));
         for (String path : List.of("bienes", "necesidades", "beneficiarios", "catalogo", "camiones", "entregas", "rutas", "asignar"))
             mvc.perform(get("/admin/dashboard/" + path).session(TestSesiones.admin())).andExpect(status().isOk());
+    }
+
+    @Test void rutasMuestranNumeroPatenteYEntregasConUnaSolaLlamadaACamiones() throws Exception {
+        var hoy = java.time.LocalDate.now();
+        Function<Long, ApiDtos.Entrega> entrega = id -> new ApiDtos.Entrega(id, 7L, "PENDIENTE", null, List.of(), 3L, null, null, null, null, null);
+        var paradas = List.of(
+                new ar.edu.utn.donatrack.dto.LogisticaDetalles.Parada(1L, 1, null, List.of(entrega.apply(13L)), null),
+                new ar.edu.utn.donatrack.dto.LogisticaDetalles.Parada(2L, 2, null, List.of(entrega.apply(14L)), null));
+        when(logistica.camiones()).thenReturn(List.of(new ApiDtos.Camion(3L, "AB123CD", 30f, 3f, 2000f, "DISPONIBLE")));
+        when(logistica.rutas()).thenReturn(List.of(
+                new ApiDtos.Ruta(5L, null, hoy, "PLANIFICADA", 3L, 50.0, 60, paradas),
+                new ApiDtos.Ruta(6L, null, hoy, "PLANIFICADA", 99L, 10.0, 20, null)));
+        mvc.perform(get("/admin/dashboard/rutas").session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("#5")))
+                .andExpect(content().string(containsString("#6")))
+                .andExpect(content().string(containsString("AB123CD")))
+                .andExpect(content().string(containsString("2 · #13, #14")))
+                .andExpect(content().string(containsString("—")));
+        verify(logistica, times(1)).camiones();
     }
 
     @Test void updateNecessityUsesPutContractWithoutChangingOwner() throws Exception {

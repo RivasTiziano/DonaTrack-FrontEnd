@@ -6,7 +6,11 @@ import ar.edu.utn.donatrack.validators.LogisticaValidator;
 import ar.edu.utn.donatrack.validators.RecepcionValidator;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import ar.edu.utn.donatrack.models.EntregaFila;
+import ar.edu.utn.donatrack.models.RutaFila;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 @Service
 public class LogisticaService {
     private final LogisticaApiService api;
@@ -54,6 +58,20 @@ public class LogisticaService {
         return api.entregas();
     }
 
+    /**
+     * Entregas para la tabla del admin: la entidad destino se resuelve con una sola llamada
+     * (nombres por id, ej. GET /beneficiarios) y sin N+1. Si esa llamada falla, el destino queda "—".
+     */
+    public List<EntregaFila> entregasTabla(java.util.function.Supplier<Map<Long,String>> nombresEntidades) {
+        List<ApiDtos.Entrega> entregas=api.entregas();
+        if(entregas==null||entregas.isEmpty()) return List.of();
+        Map<Long,String> nombres;
+        try { nombres=nombresEntidades.get(); } catch(RuntimeException e) { nombres=null; }
+        Map<Long,String> porId=nombres==null?Map.of():nombres;
+        return entregas.stream().filter(java.util.Objects::nonNull)
+                .map(e->EntregaFila.de(e,e.entidadBeneficiariaId()==null?null:porId.get(e.entidadBeneficiariaId()))).toList();
+    }
+
     public ApiDtos.Entrega entrega(Long id) {
         return api.entrega(id);
     }
@@ -72,6 +90,18 @@ public class LogisticaService {
 
     public List<ApiDtos.Ruta> rutas() {
         return api.rutas();
+    }
+
+    /** Rutas para la tabla del admin: patente resuelta con una sola llamada a /camiones (sin N+1). */
+    public List<RutaFila> rutasTabla() {
+        List<ApiDtos.Ruta> rutas=api.rutas();
+        Map<Long,String> patentes=new HashMap<>();
+        if(rutas!=null&&!rutas.isEmpty()) {
+            List<ApiDtos.Camion> camiones;
+            try { camiones=api.camiones(); } catch(RuntimeException e) { camiones=List.of(); }
+            if(camiones!=null) for(var c:camiones) if(c!=null&&c.id()!=null) patentes.put(c.id(),c.patente());
+        }
+        return rutas==null?List.of():rutas.stream().map(r->RutaFila.de(r,patentes.get(r.camionId()))).toList();
     }
 
     public void finalizarRuta(Long id) {

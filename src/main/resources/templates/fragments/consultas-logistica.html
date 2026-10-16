@@ -12,20 +12,39 @@
                 <a th:href="@{/admin/dashboard/seguimiento/{patente}(patente=${camion.patente})}">Última ubicación GPS</a>
             </section>
             <section th:if="${section == 'entrega' and entrega != null}" class="card api-panel">
-                <h2 th:text="'Entrega'">
+                <h2 th:text="'Entrega #' + ${entrega.id}">
                 </h2>
                 <span th:replace="~{fragments/admin-ui :: estado(${entrega.estado})}">
                 </span>
-                <p th:text="'Camión: ' + ${entrega.camionPatente}">
-                </p>
-                <p th:text="${entrega.justificacion}">
-                </p>
-                <h2>Referencias de fotografías</h2>
-                <ul>
-                    <li th:each="foto : ${entrega.fotos}" th:text="${foto}">
-                    </li>
-                </ul>
-                
+                <dl class="entrega-detalle">
+                    <dt>Asignación</dt>
+                    <dd th:text="${entrega.asignacionId != null} ? '#' + ${entrega.asignacionId} : '—'"></dd>
+                    <dt>Destino</dt>
+                    <dd th:text="${entregaDestino != null} ? ${entregaDestino} : (${entrega.entidadBeneficiariaId != null} ? 'Entidad #' + ${entrega.entidadBeneficiariaId} : '—')"></dd>
+                    <dt>Dirección</dt>
+                    <dd th:text="${entrega.direccion != null} ? ${entrega.direccion.calle} + ' ' + ${entrega.direccion.numero} + ', ' + ${entrega.direccion.ciudad} + ', ' + ${entrega.direccion.provincia} : '—'"></dd>
+                    <dt>Bienes</dt>
+                    <dd>
+                        <span th:if="${entrega.bienes == null or entrega.bienes.isEmpty()}">—</span>
+                        <ul th:unless="${entrega.bienes == null or entrega.bienes.isEmpty()}">
+                            <li th:each="b : ${entrega.bienes}" th:text="${b.descripcion} + (${b.cantidad != null} ? ' (' + ${#numbers.formatDecimal(b.cantidad, 1, 'POINT', 0, 'COMMA')} + ')' : '')"></li>
+                        </ul>
+                    </dd>
+                    <dt>Camión</dt>
+                    <dd th:text="${entrega.camionPatente != null} ? ${entrega.camionPatente} : 'Sin asignar (se asigna al iniciar la ruta)'"></dd>
+                    <th:block th:if="${entrega.justificacion != null and !#strings.isEmpty(entrega.justificacion)}">
+                        <dt>Justificación</dt>
+                        <dd th:text="${entrega.justificacion}"></dd>
+                    </th:block>
+                </dl>
+                <h2>Fotografías de la recepción</h2>
+                <p th:if="${entrega.fotos == null or entrega.fotos.isEmpty()}">Sin fotografías (se cargan al confirmar la recepción).</p>
+                <div class="entrega-fotos" th:unless="${entrega.fotos == null or entrega.fotos.isEmpty()}">
+                    <a th:each="foto : ${entrega.fotos}" th:href="${foto}" target="_blank" rel="noopener noreferrer">
+                        <img th:src="${foto}" alt="Fotografía de la recepción" loading="lazy" />
+                    </a>
+                </div>
+
             </section>
             <section th:if="${section == 'ruta' and ruta != null}" class="card api-panel">
                 <span th:replace="~{fragments/admin-ui :: estado(${ruta.estado})}">

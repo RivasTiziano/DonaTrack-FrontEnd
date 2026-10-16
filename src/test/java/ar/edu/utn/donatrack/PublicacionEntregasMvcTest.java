@@ -43,6 +43,31 @@ class PublicacionEntregasMvcTest {
                 .andExpect(content().string(not(containsString("publicar-asignacion-6"))));
     }
 
+    @Test void laTablaMuestraNumeroDestinoYBienConUnaSolaLlamadaABeneficiarios() throws Exception {
+        var conBienes = new ApiDtos.Entrega(20L, 9L, "PLANIFICADA", null, List.of(), 3L, "AB123CD", 3L, null, null,
+                List.of(new ApiDtos.BienEntrega("Fideos secos", 5f), new ApiDtos.BienEntrega("Arroz", 2.5f)));
+        var sinEntidad = new ApiDtos.Entrega(21L, 10L, "PLANIFICADA", null, List.of(), 3L, "AB123CD", 99L, null, null, null);
+        when(logistica.entregas()).thenReturn(List.of(conBienes, sinEntidad));
+        when(donaciones.beneficiarios()).thenReturn(List.of(
+                new ApiDtos.Beneficiario(3L, "Comedor Los Pibes", null, null, true, null, null, null)));
+        mvc.perform(get("/admin/dashboard/entregas").session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("#20")))
+                .andExpect(content().string(containsString("#21")))
+                .andExpect(content().string(containsString("Comedor Los Pibes")))
+                .andExpect(content().string(containsString("Fideos secos (5), Arroz (2,5)")));
+        verify(donaciones, times(1)).beneficiarios();
+    }
+
+    @Test void siBeneficiariosFallaLaTablaIgualCarga() throws Exception {
+        when(logistica.entregas()).thenReturn(List.of(entrega(7L, 5L, "ENTREGADA")));
+        when(donaciones.beneficiarios()).thenThrow(new IllegalStateException("caído"));
+        mvc.perform(get("/admin/dashboard/entregas").session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("#7")))
+                .andExpect(content().string(containsString("publicar-asignacion-5")));
+    }
+
     @Test void publicarEnviaLaAsignacionDeLaFilaYLaDescripcion() throws Exception {
         when(donaciones.publicacion(eq(5L), eq(true), eq("Fideos del comedor")))
                 .thenReturn(new DonacionesDetalles.Publicacion(5L, true, "Fideos del comedor", List.of("https://fotos.example/5.jpg")));

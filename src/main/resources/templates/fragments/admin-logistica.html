@@ -110,21 +110,34 @@
     <table class="data-table" id="tabla-entregas">
         <thead>
             <tr>
+                <th scope="col" class="cell-nowrap">N°</th>
+                <th scope="col">Destino</th>
+                <th scope="col">Bien</th>
                 <th scope="col">Estado</th>
-                <th scope="col">Camión</th>
+                <th scope="col" class="cell-nowrap">Camión</th>
                 <th scope="col">Justificación</th>
                 <th scope="col">Acciones</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="item : ${entregas}" data-record tabindex="0" th:data-row-url="@{/admin/dashboard/entregas/{id}(id=${item.id})}" aria-label="Abrir detalle de la entrega" th:data-estado="${item.estado}" th:classappend="${item.estado == 'NO_RECIBIDA'} ? 'danger-text'">
-                
-                
+                <td data-label="N°" class="cell-nowrap">
+                    <span th:text="'#' + ${item.id}">
+                    </span>
+                </td>
+                <td data-label="Destino">
+                    <span th:text="${item.destino}">
+                    </span>
+                </td>
+                <td data-label="Bien">
+                    <span th:text="${item.bienes}">
+                    </span>
+                </td>
                 <td data-label="Estado">
                     <span th:replace="~{fragments/admin-ui :: estado(${item.estado})}">
                     </span>
                 </td>
-                <td data-label="Camión">
+                <td data-label="Camión" class="cell-nowrap">
                     <span th:text="${item.camionPatente}">
                     </span>
                 </td>
@@ -190,6 +203,9 @@
     <table class="data-table" id="tabla-rutas">
         <thead>
             <tr>
+                <th scope="col" class="cell-nowrap">N°</th>
+                <th scope="col" class="cell-nowrap">Camión</th>
+                <th scope="col">Entregas</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Chofer</th>
                 <th scope="col">Estado</th>
@@ -199,7 +215,18 @@
         </thead>
         <tbody>
             <tr th:each="item : ${rutas}" data-record th:data-fecha="${item.fecha}" tabindex="0" th:data-row-url="@{/admin/dashboard/rutas/{id}(id=${item.id})}" aria-label="Abrir detalle">
-                
+                <td data-label="N°" class="cell-nowrap">
+                    <span th:text="'#' + ${item.id}">
+                    </span>
+                </td>
+                <td data-label="Camión" class="cell-nowrap">
+                    <span th:text="${item.camionPatente}">
+                    </span>
+                </td>
+                <td data-label="Entregas">
+                    <span th:text="${item.entregasTexto()}">
+                    </span>
+                </td>
                 <td data-label="Fecha">
                     <span th:text="${item.fecha}">
                     </span>

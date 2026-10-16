@@ -126,9 +126,9 @@
             <ul class="panel-list">
                 <li th:each="ruta : ${rutasHoy}">
                     <div>
-                        <a th:href="@{/admin/dashboard/rutas/{id}(id=${ruta.id})}" th:text="${ruta.chofer}">
+                        <a th:href="@{/admin/dashboard/rutas/{id}(id=${ruta.id})}" th:text="'Ruta #' + ${ruta.id}">
                         </a>
-                        <p th:text="${ruta.chofer}">
+                        <p th:text="${ruta.chofer != null and !#strings.isEmpty(ruta.chofer)} ? 'Chofer: ' + ${ruta.chofer} : 'Sin chofer (sin iniciar)'">
                         </p>
                         <span th:replace="~{fragments/admin-ui :: estado(${ruta.estado})}">
                         </span>

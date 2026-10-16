@@ -42,7 +42,8 @@ public final class ApiDtos {
                           Long donanteId, LogisticaDetalles.Direccion direccion, List<BienEntrega> bienes) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Ruta(Long id, String chofer, LocalDate fecha, String estado,
-                       Long camionId, Double totalDistanciaKm, Integer totalDuracionMins) {}
+                       Long camionId, Double totalDistanciaKm, Integer totalDuracionMins,
+                       List<LogisticaDetalles.Parada> paradas) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Ranking(Long idDonante, long misionesResueltas) {}
     @JsonIgnoreProperties(ignoreUnknown = true)
