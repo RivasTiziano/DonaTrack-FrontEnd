@@ -2,15 +2,14 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
     <body>
         <th:block th:fragment="contenido">
-            <section th:if="${section == 'incentivos'}" class="card api-panel">
+            <section th:if="${section == 'incentivos'}" class="categories-section">
                 <h2>Categorías</h2>
                 <div class="category-grid">
-                    <article class="card api-panel" th:each="c : ${categoriasIncentivos}">
+                    <article class="card api-panel category-clickable" th:each="c : ${categoriasIncentivos}" th:data-row-url="@{/admin/dashboard/incentivos/categorias/{id}(id=${c.id})}" tabindex="0" th:aria-label="'Ver categoría ' + ${c.nombre}">
                         <h3>
                             <a th:href="@{/admin/dashboard/incentivos/categorias/{id}(id=${c.id})}" th:text="${c.nombre}">
                             </a>
                         </h3>
-                        <p class="muted" th:each="siguiente : ${categoriasIncentivos}" th:if="${c.categoriaSiguienteId != null and siguiente.id == c.categoriaSiguienteId}" th:text="'Siguiente categoría: ' + ${siguiente.nombre}"></p>
                         <ul class="attention-list">
                             <li th:each="m : ${c.misiones}">
                                 <strong th:text="${m.nombre}">
@@ -66,14 +65,16 @@
 <section th:if="${section == 'misiones' and categoriaIncentivos != null}" class="card api-panel">
     <h2 th:text="${categoriaIncentivos.nombre}">
     </h2>
-    <article th:each="m : ${misiones}">
+    <article class="category-mission-row" th:each="m : ${misiones}">
+        <div class="category-mission-content">
         <h3 th:text="${m.nombre}">
         </h3>
         <p th:text="${m.descripcion}">
         </p>
         <p th:text="'Objetivo: ' + ${m.valorObjetivo} + ' — orden: ' + ${m.orden}">
         </p>
-        <form method="post" th:action="@{/admin/dashboard/incentivos/categorias/{id}/misiones/{misionId}/eliminar(id=${categoriaIncentivos.id},misionId=${m.id})}" onsubmit="return confirm('¿Eliminar esta misión? ');">
+        </div>
+        <form class="category-mission-actions" method="post" th:action="@{/admin/dashboard/incentivos/categorias/{id}/misiones/{misionId}/eliminar(id=${categoriaIncentivos.id},misionId=${m.id})}" onsubmit="return confirm('¿Eliminar esta misión? ');">
             <button class="btn btn-outline action-icon action-delete" type="submit" aria-label="Eliminar misión" title="Eliminar misión"><svg th:replace="~{fragments/ui-icons :: delete}"></svg></button>
         </form>
     </article>
@@ -118,9 +119,10 @@
     </li>
 </ul>
 </section>
-<section th:if="${section == 'donanteIncentivos'}" class="card api-panel">
+<p th:if="${section == 'donanteIncentivos' and donanteSinIncentivos == true}" role="status">Este donante todavía no tiene datos de incentivos registrados. Aún no hay métricas, misiones ni insignias para mostrar.</p>
+<section th:if="${section == 'donanteIncentivos' and metricas != null}" class="card api-panel donor-incentives-detail">
 
-    <th:block th:if="${metricas != null}">
+    <section class="incentive-detail-section" th:if="${metricas != null}">
         <h2>Métricas</h2>
         <div class="kpi-grid">
             <article class="kpi-card">
@@ -142,10 +144,11 @@
         <p th:text="'Categoría actual: ' + ${metricas.categoriaActual}">
         </p>
         <ul>
-            <li th:each="m : ${metricas.desgloseMensual}" th:text="${m.periodo} + ': ' + ${m.totalDonaciones} + ' donaciones; impacto ' + ${m.impacto} + '; entidades ' + ${m.entidadesAyudadas}">
+            <li th:each="m : ${metricas.desgloseMensual}" th:text="${m.periodo != null and m.periodo.length() == 7 ? m.periodo.substring(5,7) + '/' + m.periodo.substring(0,4) : 'Período no disponible'} + ': ' + ${m.totalDonaciones} + ' donaciones; impacto ' + ${m.impacto} + '; entidades ' + ${m.entidadesAyudadas}">
             </li>
         </ul>
-    </th:block>
+    </section>
+    <section class="incentive-detail-section">
     <h2>Misión actual</h2>
     <th:block th:if="${progreso != null}">
         <p th:if="${progreso.mensaje != null}" th:text="${progreso.mensaje}">
@@ -157,32 +160,51 @@
             </p>
             <progress class="need-progress" max="100" th:value="${progreso.porcentajeProgreso}" aria-label="Progreso de la misión">
             </progress>
-            <p th:text="${progreso.valorActual} + ' / ' + ${progreso.valorObjetivo} + ' (' + ${progreso.porcentajeProgreso} + '%)'">
+            <p th:text="${progreso.valorActual} + ' / ' + ${progreso.valorObjetivo} + ' (' + ${progreso.porcentajeProgreso != null ? T(java.lang.Math).round(progreso.porcentajeProgreso) : 0} + '%)'">
             </p>
         </th:block>
     </th:block>
+    </section>
+    <section class="incentive-detail-section">
     <h2>Misiones completadas</h2>
+    <p th:if="${apiError == null and misionesCompletadas != null and misionesCompletadas.isEmpty()}">Todavía no tiene misiones completadas.</p>
     <ul>
-        <li th:each="m : ${misionesCompletadas}" th:text="${m.nombreMision} + ' — ' + ${m.fechaCompletada}">
+        <li th:each="m : ${misionesCompletadas}" th:text="${m.nombreMision} + ' — ' + ${m.fechaCompletada != null ? #temporals.format(m.fechaCompletada, 'dd/MM/yyyy') + ' a las ' + #temporals.format(m.fechaCompletada, 'HH:mm') : 'Fecha no disponible'}">
         </li>
     </ul>
+    </section>
+    <section class="incentive-detail-section">
     <h2>Insignias</h2>
+    <p th:if="${apiError == null and insignias != null and insignias.isEmpty()}">No hay insignias disponibles para mostrar.</p>
     <article th:each="i : ${insignias}">
         <h3 th:text="${i.nombre}">
         </h3>
         <p th:text="${i.descripcion}">
         </p>
     </article>
+    </section>
+    <section class="incentive-detail-section">
     <h2>Historial de categorías</h2>
+    <p th:if="${apiError == null and historialCategorias != null and historialCategorias.isEmpty()}">Todavía no hay cambios de categoría registrados.</p>
     <ul>
-        <li th:each="a : ${historialCategorias}" th:text="${a.fechaCambio} + ': ' + ${a.categoriaAnterior} + ' → ' + ${a.categoriaNueva}">
+        <li th:each="a : ${historialCategorias}">
+            <span th:text="${a.fechaCambio != null ? #temporals.format(a.fechaCambio, 'dd/MM/yyyy') : 'Fecha no disponible'}"></span>
+            <span th:if="${a.categoriaAnterior == null or #strings.isEmpty(a.categoriaAnterior)}" th:text="' — Categoría inicial: ' + ${a.categoriaNueva != null and !#strings.isEmpty(a.categoriaNueva) ? a.categoriaNueva : 'Sin categoría asignada'}"></span>
+            <span th:unless="${a.categoriaAnterior == null or #strings.isEmpty(a.categoriaAnterior)}" th:text="' — Cambio de ' + ${a.categoriaAnterior} + ' a ' + ${a.categoriaNueva != null and !#strings.isEmpty(a.categoriaNueva) ? a.categoriaNueva : 'Sin categoría asignada'}"></span>
         </li>
     </ul>
+    </section>
 </section>
-<section th:if="${section == 'historialRanking'}" class="card api-panel">
+<section th:if="${section == 'historialRanking'}" class="rankings-history-section">
+    <div th:if="${apiError == null and (historialRanking == null or historialRanking.isEmpty())}" role="status">
+        <p>Todavía no hay rankings mensuales guardados.</p>
+        <p>El historial se genera al cerrar cada mes. El ranking del mes actual está disponible en Rankings.</p>
+        <a class="btn btn-outline" th:href="@{/admin/dashboard/rankings}">Ver ranking actual</a>
+    </div>
     <details class="form-panel" th:each="r : ${historialRanking}">
-        <summary th:text="${r.periodo}">
+        <summary th:text="${r.periodo != null ? #temporals.format(r.periodo, 'MM/yyyy') : 'Período no disponible'}">
         </summary>
+        <p th:if="${r.posiciones == null or r.posiciones.isEmpty()}">No hubo donantes con misiones completadas en este período.</p>
         <ul>
             <li th:each="p : ${r.posiciones}" th:text="'Posición ' + ${p.posicion} + ' — ' + ${p.nombre} + ' — Misiones: ' + ${p.misiones}">
             </li>

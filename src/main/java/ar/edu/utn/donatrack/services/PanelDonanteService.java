@@ -126,7 +126,7 @@ public class PanelDonanteService {
         // Escalafón en el orden de la cadena categoriaSiguienteId (Colaborador → Sostenedor → Transformador), no por id.
         var categorias = incentivosMapper.ordenarCategorias(cargar(m, incentivosApi::categorias, List.<IncentivosDtos.Categoria>of()));
 
-        m.put("incentiveCategories", mapper.categorias(categorias, completadas, c.categoriaActual()));
+        m.put("incentiveCategories", mapper.categorias(categorias, completadas, c.categoriaActual(), progreso));
         m.put("missions", mapper.misiones(progreso, c.categoriaActual(), categorias, completadas));
         m.put("badges", mapper.insignias(insignias));
         m.put("categoryAudits", mapper.auditorias(historial));

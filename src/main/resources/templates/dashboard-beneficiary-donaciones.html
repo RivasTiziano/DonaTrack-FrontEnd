@@ -10,7 +10,7 @@
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Donaciones Asignadas a Tu Entidad</h1>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Donaciones asignadas</h1>
             </div>
             <a th:href="@{/entidad/dashboard/confirmar}" class="btn btn-primary">
                 <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
@@ -19,21 +19,6 @@
         </div>
 
         <!-- Onboarding Hint -->
-        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de asignaciones">
-            <div class="onboarding-hint-icon">
-                <i data-lucide="package-check" style="width: 20px; height: 20px; color: #4338ca;"></i>
-            </div>
-            <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Proceso de Asignación y Traslado</div>
-                <p class="onboarding-hint-text">
-                    Cuando una donación coincide con tus necesidades publicadas, el sistema la reserva y programa la ruta del camión. Una vez que el camión arriba a tu sede, puedes confirmar la recepción directamente subiendo fotografías.
-                </p>
-            </div>
-            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
-                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-            </button>
-        </div>
-
         <!-- Filter Tabs -->
         <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
             <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterAssignedDonations('todas', this)">Todas (<span th:text="${assignedDonations.size()}">2</span>)</button>
@@ -55,11 +40,12 @@
         </div>
 
         <!-- Assigned Donations Grid -->
+        <p th:if="${assignedDonations.isEmpty() and apiError == null}" role="status">Todavía no tenés donaciones asignadas.</p>
         <div class="dt-cards-grid-3" id="assigned-grid">
-            <article class="donation-card donation-assigned-card" th:each="don : ${assignedDonations}" th:attr="data-status=${don.status}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem;  display: flex; flex-direction: column; gap: 1rem;">
+            <article class="donation-card donation-assigned-card beneficiary-detail-row" tabindex="0" role="button" aria-label="Ver donación asignada" th:each="don : ${assignedDonations}" th:attr="data-status=${don.status}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.5rem;  display: flex; flex-direction: column; gap: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Donación Asignada</span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-ink); text-transform: uppercase;">Donación Asignada</span>
                         <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${don.title}">Título</h3>
                     </div>
                     <span class="status-badge" th:classappend="${don.status_badge}" th:text="${don.status_label}">Estado</span>
@@ -68,7 +54,7 @@
                 <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 0.875rem; font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.35rem;">
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: var(--color-muted);">Unidades:</span>
-                        <strong th:text="${don.items_count != null ? don.items_count + ' ' + don.unit : '—'}">50 unidades</strong>
+                        <strong th:text="${@unidades.formatear(don.items_count, don.unit)}">50 unidades</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: var(--color-muted);">Entrega:</span>

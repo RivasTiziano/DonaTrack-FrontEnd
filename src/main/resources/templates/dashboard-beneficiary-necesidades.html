@@ -10,7 +10,7 @@
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Gestión de Necesidades Materiales</h1>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Necesidades</h1>
             </div>
             <button type="button" class="btn btn-primary" onclick="openModal('modal-new-need')">
                 <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
@@ -19,22 +19,6 @@
         </div>
 
         <!-- Onboarding Hint -->
-        <div class="onboarding-hint hint-amber" role="region" aria-label="Guía de tipos de necesidades">
-            <div class="onboarding-hint-icon">
-                <i data-lucide="help-circle" style="width: 20px; height: 20px; color: #d97706;"></i>
-            </div>
-            <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">¿Necesidad Recurrente o Extraordinaria?</div>
-                <p class="onboarding-hint-text">
-                    • <strong>Recurrente:</strong> consumo periódico (por ejemplo, fideos todas las semanas para el comedor).<br/>
-                    • <strong>Extraordinaria:</strong> bienes puntuales por una emergencia o una mudanza. Se cubre acumulando donaciones parciales.
-                </p>
-            </div>
-            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
-                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-            </button>
-        </div>
-
         <!-- Filtros -->
         <div class="filter-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline btn-sm filter-tab active" onclick="filterNeeds('todas', this)">Todas (<span th:text="${needs.size()}">0</span>)</button>
@@ -58,11 +42,11 @@
 
         <!-- Lista de necesidades -->
         <div id="needs-grid" class="dt-cards-grid-3">
-            <article class="need-card" th:each="need : ${needs}" th:data-type="${need.type}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;  display: flex; flex-direction: column;">
+            <article class="need-card beneficiary-detail-row" tabindex="0" role="button" aria-label="Ver necesidad" th:each="need : ${needs}" th:data-type="${need.type}" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden;  display: flex; flex-direction: column;">
                 <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
                         <div>
-                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;" th:text="${need.category ?: '—'} + ' • ' + ${need.subcategory ?: '—'}">Categoría</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-ink); text-transform: uppercase;" th:text="${need.category ?: '—'} + ' • ' + ${need.subcategory ?: '—'}">Categoría</span>
                             <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-ink); margin-top: 2px;" th:text="${need.title ?: '—'}">Título</h3>
                         </div>
                         <span class="status-badge" th:classappend="${need.type == 'EXTRAORDINARIA' ? 'badge-vencida' : 'badge-asignada'}" th:text="${need.type == 'EXTRAORDINARIA' ? 'Extraordinaria' : 'Recurrente'}">Tipo</span>
@@ -73,7 +57,7 @@
                     <div style="background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.35rem;">
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: var(--color-muted);">Cantidad requerida:</span>
-                            <strong style="color: var(--color-ink);" th:text="${need.quantity != null ? need.quantity + ' ' + need.unit : '—'}">—</strong>
+                            <strong style="color: var(--color-ink);" th:text="${@unidades.formatear(need.quantity, need.unit)}">—</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: var(--color-muted);">Estado:</span>
@@ -91,9 +75,7 @@
                             <span>Progreso cubierto</span>
                             <span style="color: var(--color-primary);" th:text="${need.progress} + '%'">0%</span>
                         </div>
-                        <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
-                            <div style="height: 100%; background: #2563eb; border-radius: 999px;" th:style="'width: ' + ${need.progress} + '%;'"></div>
-                        </div>
+                        <progress class="incentive-progress" max="100" th:value="${need.progress}" aria-label="Progreso de la necesidad"></progress>
                     </div>
 
                     <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
@@ -133,8 +115,8 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Período (ISO 8601, opcional)</label>
-                                <input type="text" name="periodo" class="form-control" placeholder="P1M" />
+                                <label class="form-label">Repetir cada (solo recurrentes)</label>
+                                <select name="periodo" class="form-control"><option value="">Sin período</option><option value="P1W">Semana</option><option value="P1M">Mes</option><option value="P3M">Tres meses</option></select>
                             </div>
                         </div>
 

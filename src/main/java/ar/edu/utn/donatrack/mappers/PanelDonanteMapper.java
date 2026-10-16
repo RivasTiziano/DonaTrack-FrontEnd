@@ -205,7 +205,7 @@ public class PanelDonanteMapper {
             cats.add(mapa("id", c.id(), "nombre", c.nombre()));
             if (c.subCategorias() == null) continue;
             for (var s : c.subCategorias())
-                if (s.activo()) subcategorias.add(mapa("id", s.id(), "nombre", s.nombre(), "categoria", c.nombre()));
+                if (s.activo()) subcategorias.add(mapa("id", s.id(), "nombre", s.nombre(), "categoria", c.nombre(), "categoriaId", c.id()));
         }
         return mapa("categoriasFiltro", cats, "subcategoriasFiltro", subcategorias);
     }
@@ -228,7 +228,11 @@ public class PanelDonanteMapper {
         List<Map<String, Object>> activeNeeds = new ArrayList<>();
         for (var n : necesidades) {
             if ("SATISFECHA".equals(n.estado())) continue;
-            activeNeeds.add(mapa("title", n.descripcion(),
+            String unidad = n.bien() == null ? null : n.bien().unidadMedida();
+            String nombreBien = n.bien() != null && notBlank(n.bien().descripcion()) ? n.bien().descripcion() : subcategoria(n.bien());
+            activeNeeds.add(mapa("title", notBlank(nombreBien) ? nombreBien : (notBlank(n.descripcion()) ? n.descripcion() : "Bien no especificado"),
+                    "cantidadSolicitadaLabel", cantidadConUnidad(n.bien() == null ? null : n.bien().cantidad(), unidad),
+                    "cantidadRestanteLabel", cantidadConUnidad(n.cantidadRestante(), unidad),
                     "subcategory", subcategoria(n.bien()),
                     "cantidadRestante", numero(n.cantidadRestante()),
                     "unit", n.bien() == null ? null : minusculas(n.bien().unidadMedida())));
@@ -277,6 +281,12 @@ public class PanelDonanteMapper {
     public List<Map<String, Object>> categorias(List<IncentivosDtos.Categoria> categorias,
                                                 List<IncentivosDtos.MisionCompletada> completadas,
                                                 String categoriaActual) {
+        return categorias(categorias, completadas, categoriaActual, null);
+    }
+
+    public List<Map<String, Object>> categorias(List<IncentivosDtos.Categoria> categorias,
+                                                List<IncentivosDtos.MisionCompletada> completadas,
+                                                String categoriaActual, IncentivosDtos.Progreso progreso) {
         Set<Long> cumplidas = new HashSet<>();
         for (var c : completadas) cumplidas.add(c.idMision());
 
@@ -290,12 +300,19 @@ public class PanelDonanteMapper {
             var cat = categorias.get(i);
             List<IncentivosDtos.Mision> misiones = misiones(cat);
             long cumplidasCategoria = misiones.stream().filter(m -> cumplidas.contains(m.id())).count();
+            double avanceParcial = progreso != null && progreso.idMision() != null
+                    && !cumplidas.contains(progreso.idMision())
+                    && misiones.stream().anyMatch(m -> Objects.equals(m.id(), progreso.idMision()))
+                    && progreso.porcentajeProgreso() != null
+                    ? Math.max(0, Math.min(100, progreso.porcentajeProgreso())) / 100d : 0;
+            long porcentaje = misiones.isEmpty() ? 0 : Math.round(100d * (cumplidasCategoria + avanceParcial) / misiones.size());
             String status = i == actual ? "Actual"
                     : (actual >= 0 && i < actual) ? "Completada"
                     : i == siguiente ? "Siguiente Nivel"
                     : "Bloqueada";
             out.add(mapa("id", cat.id(), "nombre", cat.nombre(), "nivel", i + 1, "status", status,
-                    "misionesTotal", misiones.size(), "misionesCumplidas", cumplidasCategoria, "descripcion", null));
+                    "misionesTotal", misiones.size(), "misionesCumplidas", cumplidasCategoria,
+                    "progresoPorcentaje", porcentaje, "descripcion", null));
         }
         return out;
     }
@@ -372,6 +389,20 @@ public class PanelDonanteMapper {
                     "categoriaAnterior", a.categoriaAnterior(),
                     "categoriaNueva", a.categoriaNueva()));
         return out;
+    }
+
+    private static String cantidadConUnidad(Float cantidad, String unidad) {
+        if (cantidad == null) return "No informada";
+        String nombreUnidad = unidad == null ? "" : unidad.toLowerCase(Locale.ROOT);
+        if (cantidad != 1f) nombreUnidad = switch (nombreUnidad) {
+            case "kilogramo" -> "kilogramos";
+            case "gramo" -> "gramos";
+            case "litro" -> "litros";
+            case "unidad" -> "unidades";
+            default -> nombreUnidad;
+        };
+        String valor = new java.math.BigDecimal(Float.toString(cantidad)).stripTrailingZeros().toPlainString().replace('.', ',');
+        return nombreUnidad.isBlank() ? valor : valor + " " + nombreUnidad;
     }
 
     // ---------- Entregas ----------

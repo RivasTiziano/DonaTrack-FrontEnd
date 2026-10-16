@@ -23,15 +23,18 @@ public class LogisticaController {
     private final PanelDonanteService panelDonante;
     private final PanelEntidadService panelEntidad;
     private final FotosRecepcion fotosRecepcion;
+    private final ar.edu.utn.donatrack.services.ImagenesRecepcion imagenesRecepcion;
 
     public LogisticaController(LogisticaService service, ApiViewSupport views, ApiErrorMessages errors,
-                               PanelDonanteService panelDonante, PanelEntidadService panelEntidad, FotosRecepcion fotosRecepcion) {
+                               PanelDonanteService panelDonante, PanelEntidadService panelEntidad, FotosRecepcion fotosRecepcion,
+                               ar.edu.utn.donatrack.services.ImagenesRecepcion imagenesRecepcion) {
         this.service = service;
         this.views = views;
         this.errors = errors;
         this.panelDonante = panelDonante;
         this.panelEntidad = panelEntidad;
         this.fotosRecepcion = fotosRecepcion;
+        this.imagenesRecepcion = imagenesRecepcion;
     }
 
     // Operaciones y listados
@@ -183,8 +186,32 @@ public class LogisticaController {
                                      @RequestParam(required = false) String resultado,
                                      @RequestParam(required = false) String fotos,
                                      @RequestParam(required = false) String justificacion,
+                                     @RequestParam(required = false) org.springframework.web.multipart.MultipartFile imagen,
                                      RedirectAttributes flash) {
         return views.write(flash, "/entidad/dashboard/confirmar",
-                () -> panelEntidad.confirmarRecepcion(asignacionId, resultado, fotosRecepcion.resolver(fotos), justificacion));
+                () -> {
+                    String guardada = null;
+                    try {
+                        var urls = new java.util.ArrayList<>(fotosRecepcion.resolver(fotos));
+                        if ("RECIBIDA".equals(resultado) && imagen != null && !imagen.isEmpty()) {
+                            guardada = imagenesRecepcion.guardar(imagen);
+                            urls.add(org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath()
+                                    .path("/entidad/dashboard/recepciones/fotos/").path(guardada).toUriString());
+                        }
+                        panelEntidad.confirmarRecepcion(asignacionId, resultado, urls, justificacion);
+                    } catch (RuntimeException exception) {
+                        if (guardada != null) imagenesRecepcion.descartar(guardada);
+                        throw exception;
+                    }
+                });
+    }
+
+    @GetMapping("/entidad/dashboard/recepciones/fotos/{nombre}")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.Resource> fotoRecepcion(@PathVariable String nombre) {
+        var archivo = imagenesRecepcion.buscar(nombre);
+        return org.springframework.http.ResponseEntity.ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .contentType(nombre.endsWith(".png") ? org.springframework.http.MediaType.IMAGE_PNG : org.springframework.http.MediaType.IMAGE_JPEG)
+                .body(new org.springframework.core.io.FileSystemResource(archivo));
     }
 }

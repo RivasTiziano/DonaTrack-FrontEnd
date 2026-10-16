@@ -19,6 +19,17 @@ select { appearance:none; padding-right:2.7rem!important; background-image:url("
 .sidebar-link { min-height:40px; padding:.45rem .65rem; font-size:.85rem; }
 .sidebar-section-title { margin:.65rem 0 .25rem; }
 .sidebar-footer:empty { display:none; }
+.admin-shell .dashboard-sidebar > .sidebar-nav.admin-nav { flex: 1; min-height: 0; overflow-y: auto; }
+.admin-shell .dashboard-sidebar > .sidebar-footer { margin-top: auto; flex-shrink: 0; border-top: 0; }
+.admin-shell .sidebar-footer form { margin: 0; }
+.admin-shell .sidebar-logout { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; border: 0!important; background: transparent!important; color: var(--color-muted)!important; }
+.admin-shell .sidebar-logout .logout-hover { display: none; }
+.admin-shell .sidebar-logout:hover, .admin-shell .sidebar-logout:focus-visible { background: #fff1f2!important; color: #be123c!important; }
+.admin-shell .sidebar-logout:hover .logout-default, .admin-shell .sidebar-logout:focus-visible .logout-default { display: none; }
+.admin-shell .sidebar-logout:hover .logout-hover, .admin-shell .sidebar-logout:focus-visible .logout-hover { display: inline; }
+@media (min-width: 901px) {
+  .admin-shell.admin-sidebar-collapsed .dashboard-sidebar .sidebar-logout span { display: none; }
+}
 .panel-columns,.api-grid,.feature-grid { align-items:start; }
 .api-panel,.kpi-card { height:auto; min-height:0; }
 .kpi-card { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:.5rem; }
@@ -409,3 +420,249 @@ html.drawer-open:has(.dashboard-mobile-drawer.open),body.drawer-open:has(.dashbo
 .truck-edit-dialog .animated-select-options { position: static; width: 100%; min-width: 0; max-height: 0; padding: 0; border-width: 0; transition: max-height 240ms ease,opacity 240ms ease; }
 .truck-edit-dialog .animated-select.is-open .animated-select-options { max-height: 150px; padding: 4px; margin-top: 6px; border-width: 1px; }
 .truck-edit-dialog .form-actions { margin: 20px 0 0; justify-content: flex-end; }
+
+.admin-shell #tabla-rutas .row-actions { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 8px; }
+
+.admin-shell .gps-layout.gps-map-only { grid-template-columns: minmax(0,1fr); }
+.truck-details-popup { padding: 4px; font-size: 13px; line-height: 1.5; }
+.truck-details-popup h3 { margin: 0 0 12px; font-size: 17px; font-weight: 700; color: #111; }
+.truck-details-popup p { margin: 8px 0; color: #292929; overflow-wrap: anywhere; }
+
+.gps-refresh-link { font-weight: 400; }
+.gps-refresh-link:hover { font-weight: 700; }
+
+.admin-shell .catalog-create-actions { position: relative; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 12px; }
+.admin-shell .catalog-create-actions > .form-panel { margin: 0; padding: 0; border: 0; background: transparent; }
+.admin-shell .catalog-create-actions > .form-panel > summary { width: auto; }
+.admin-shell .catalog-create-actions form { position: absolute; top: calc(100% + 8px); right: 0; z-index: 400; width: min(320px, calc(100vw - 40px)); margin: 0; padding: 20px; display: grid; gap: 16px; background: #fff; border: 1px solid var(--color-border); border-radius: 12px; }
+.admin-shell .catalog-create-actions form label { display: grid; gap: 6px; margin: 0; font-size: 14px; }
+.admin-shell .catalog-create-actions form .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 0; padding: 0; border: 0; }
+.admin-shell .catalog-create-actions form .form-actions .btn { flex: 0 0 auto; width: auto; min-height: 40px; padding: 8px 16px; }
+.admin-shell .donor-incentives-detail { display: block; padding: 24px; }
+.admin-shell .donor-incentives-detail .incentive-detail-section + .incentive-detail-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-border); }
+.admin-shell .donor-incentives-detail h2 { margin: 0 0 16px; }
+.admin-shell .donor-incentives-detail h3 { margin: 0 0 8px; }
+.admin-shell .donor-incentives-detail p { margin: 8px 0; line-height: 1.5; }
+.admin-shell .donor-incentives-detail ul { margin: 12px 0 0; padding-left: 20px; }
+.admin-shell .donor-incentives-detail ul:empty { display: none; }
+.admin-shell .donor-incentives-detail li + li { margin-top: 8px; }
+.admin-shell .donor-incentives-detail .kpi-grid { gap: 16px; margin: 0 0 16px; }
+.admin-shell .donor-incentives-detail .kpi-card { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.admin-shell .donor-incentives-detail .kpi-card h3 { margin: 0; }
+.admin-shell .donor-incentives-detail .need-progress { display: block; margin: 12px 0 8px; }
+.admin-shell .donor-incentives-detail article + article { margin-top: 16px; }
+.admin-shell .donor-incentives-detail .kpi-card + .kpi-card { margin-top: 0; }
+.admin-shell .category-grid > .category-clickable { cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease; }
+.admin-shell .category-grid > .category-clickable:hover { background-color: #e9edf2; border-color: #aab4c2; }
+.admin-shell .category-grid > .category-clickable:focus-visible { background-color: #e9edf2; outline: 2px solid #64748b; outline-offset: 3px; }
+.admin-shell .category-mission-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.admin-shell .category-mission-content { min-width: 0; flex: 1; }
+.admin-shell .category-mission-actions { flex: 0 0 auto; margin: 0; }
+.truck-gps-details { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.truck-gps-details > div { display: grid; grid-column: 1 / -1; gap: 2px; }
+.truck-gps-details > .gps-coordinate { grid-column: auto; }
+.truck-gps-details dt { color: #525252; font-size: 12px; }
+.truck-gps-details dd { margin: 0; color: #111; font-size: 14px; overflow-wrap: anywhere; }
+/* Panel de persona donante: mismos criterios de navegación y densidad que administración. */
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content { padding-right: 24px; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content > main { min-width: 0; display: block; }
+:is(.donor-shell, .beneficiary-shell) .dt-page-header { margin-bottom: 20px; gap: 16px; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content h1 { font-size: clamp(24px, 3vw, 32px)!important; margin: 0 0 20px; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content h2 { font-size: 19px!important; margin: 0 0 14px; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content h3 { font-size: 15px!important; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content p { line-height: 1.5; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content > main > .card,
+:is(.donor-shell, .beneficiary-shell) .dashboard-main-content > main > section.card { display: block; padding: 0!important; border: 0!important; border-radius: 0!important; background: transparent!important; margin-bottom: 24px!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; padding: 0 0 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border); }
+:is(.donor-shell, .beneficiary-shell) .donor-metrics span { display: block; color: var(--color-muted); font-size: 13px; margin-bottom: 6px; }
+:is(.donor-shell, .beneficiary-shell) .donor-metrics strong { font-size: 26px; font-weight: 750; }
+:is(.donor-shell, .beneficiary-shell) .donor-section + .donor-section { margin-top: 28px; }
+:is(.donor-shell, .beneficiary-shell) .donor-recent-row { display: flex; align-items: center; gap: 16px; padding: 14px 10px; border-bottom: 1px solid var(--color-border); border-radius: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-recent-row > div { flex: 1; min-width: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-recent-row h3, :is(.donor-shell, .beneficiary-shell) .donor-recent-row p { margin: 0 0 4px; }
+:is(.donor-shell, .beneficiary-shell) .donor-recent-row img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+:is(.donor-shell, .beneficiary-shell) [data-row-url], :is(.donor-shell, .beneficiary-shell) .donor-clickable { cursor: pointer; transition: background-color 180ms ease; }
+:is(.donor-shell, .beneficiary-shell) [data-row-url]:hover, :is(.donor-shell, .beneficiary-shell) .donor-clickable:hover { background: #e9edf2!important; }
+:is(.donor-shell, .beneficiary-shell) [data-row-url]:focus-visible, :is(.donor-shell, .beneficiary-shell) .donor-clickable:focus-visible { outline: 2px solid #64748b; outline-offset: 2px; }
+:is(.donor-shell, .beneficiary-shell) #donations-grid, :is(.donor-shell, .beneficiary-shell) #entities-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box { display: grid!important; grid-template-columns: 100px minmax(0,1fr); padding: 16px 10px; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; background: transparent!important; overflow: visible!important; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:first-child { height: 100px!important; border-radius: 6px; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:first-child > .status-badge { position: static!important; display: block; margin-top: 8px; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:first-child > img { height: 64px!important; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:first-child > i { width: 36px!important; height: 36px!important; position: static!important; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:first-child > span:last-child { display: none; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:last-child { padding: 0 0 0 20px!important; gap: 8px!important; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:last-child > div:last-child:empty { display: none!important; }
+:is(.donor-shell, .beneficiary-shell) .donation-card-box > div:last-child > div:last-child { margin: 0!important; padding: 0!important; border: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .entity-card { display: grid!important; grid-template-columns: minmax(180px,1fr) minmax(180px,1fr) minmax(140px,.8fr); align-items: center; padding: 16px 10px!important; gap: 16px!important; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .entity-card > div:first-child > svg { width: 32px!important; height: 32px!important; }
+:is(.donor-shell, .beneficiary-shell) .entity-card > div:nth-child(2) { padding: 0!important; border: 0!important; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .entity-card > div:last-child { display: none!important; }
+:is(.donor-shell, .beneficiary-shell) .dt-cards-grid-4 { display: flex; gap: 32px; margin-bottom: 24px!important; }
+:is(.donor-shell, .beneficiary-shell) .metric-card { padding: 0!important; background: transparent!important; border: 0!important; border-radius: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .metric-card small { display: none; }
+:is(.donor-shell, .beneficiary-shell) .mission-card { padding: 16px 0!important; background: transparent!important; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; gap: 12px!important; }
+:is(.donor-shell, .beneficiary-shell) #missions-container { grid-template-columns: 1fr; gap: 0; }
+:is(.donor-shell, .beneficiary-shell) .mission-card > div { background: transparent!important; border: 0!important; padding: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .mission-card > div:first-child > span { background: transparent!important; padding: 0!important; font-size: 14px!important; }
+:is(.donor-shell, .beneficiary-shell) .badge-card { padding: 12px 0!important; background: transparent!important; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .badge-card > div:first-child { background: transparent!important; color: var(--color-muted)!important; }
+:is(.donor-shell, .beneficiary-shell) .filter-tabs { flex-wrap: wrap; }
+:is(.donor-shell, .beneficiary-shell) .status-timeline { gap: 14px!important; }
+:is(.donor-shell, .beneficiary-shell) #telematics-panel, :is(.donor-shell, .beneficiary-shell) #telematics-panel > div { border: 0!important; background: transparent!important; padding: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .delivery-select-item { border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .delivery-select-item:hover { background: #e9edf2; }
+:is(.donor-shell, .beneficiary-shell) .dt-modal-content { max-height: calc(100dvh - 40px); overflow-y: auto; }
+:is(.donor-shell, .beneficiary-shell) .api-inline { gap: 12px; flex-wrap: wrap; }
+@media (max-width: 900px) {
+  :is(.donor-shell, .beneficiary-shell) .dashboard-main-content { padding-right: 16px; }
+  :is(.donor-shell, .beneficiary-shell) .entity-card { grid-template-columns: 1fr; gap: 10px!important; }
+  :is(.donor-shell, .beneficiary-shell) .donor-recent-row { flex-wrap: wrap; }
+}
+@media (max-width: 560px) {
+  :is(.donor-shell, .beneficiary-shell) .donor-metrics { grid-template-columns: 1fr; gap: 16px; }
+  :is(.donor-shell, .beneficiary-shell) .donor-metrics > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  :is(.donor-shell, .beneficiary-shell) .dt-cards-grid-4 { flex-wrap: wrap; }
+  :is(.donor-shell, .beneficiary-shell) .donation-card-box { grid-template-columns: 1fr; }
+  :is(.donor-shell, .beneficiary-shell) .donation-card-box > div:first-child { display: none; }
+  :is(.donor-shell, .beneficiary-shell) .donation-card-box > div:last-child { padding: 0!important; }
+}
+:is(.donor-shell, .beneficiary-shell) .api-view > .api-panel { padding: 0; border: 0; background: transparent; }
+:is(.donor-shell, .beneficiary-shell) .notif-item { border: 0; border-bottom: 1px solid var(--color-border); border-radius: 0; background: transparent; }
+:is(.donor-shell, .beneficiary-shell) .dt-grid-1-8-1 > .card { min-height: 320px!important; border: 0!important; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .dt-grid-1-8-1 > div > .card { border: 0!important; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice { cursor: pointer; transition: background-color 180ms ease, border-color 180ms ease; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice:hover { background: #e9edf2!important; border-color: #aab4c2!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice:focus-visible { outline: 2px solid #64748b; outline-offset: 3px; }
+:is(.donor-shell, .beneficiary-shell) .gps-refresh-link:hover { font-weight: 700; }
+:is(.donor-shell, .beneficiary-shell) .donor-entity-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end; }
+:is(.donor-shell, .beneficiary-shell) .donor-entity-filters > div { min-width: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-entity-search { grid-column: 1 / -1; }
+:is(.donor-shell, .beneficiary-shell) .donor-entity-filters .animated-select { width: 100%; }
+@media (max-width: 1000px) { :is(.donor-shell, .beneficiary-shell) .donor-entity-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { :is(.donor-shell, .beneficiary-shell) .donor-entity-filters { grid-template-columns: minmax(0, 1fr); } }
+:is(.donor-shell, .beneficiary-shell) .donor-entity-need { display: grid; gap: 3px; font-size: 13px; margin-bottom: 8px; }
+:is(.donor-shell, .beneficiary-shell) .donor-need-amounts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; color: var(--color-muted); }
+:is(.donor-shell, .beneficiary-shell) .donor-need-amounts strong { color: var(--color-primary); font-weight: 600; }
+/* Pestañas del detalle de entidades: bordes suaves y selección visible. */
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 9px 16px!important; border: 1px solid #e2e8f0!important; border-radius: 12px; background: #fff!important; color: var(--color-muted)!important; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn:hover { border-color: #fda4af!important; background: #fff1f2!important; color: #be123c!important; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn.active { border-color: #fecdd3!important; background: #fff1f2!important; color: #be123c!important; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn:focus-visible { outline: 2px solid #be123c; outline-offset: 3px; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-content { width: min(700px, calc(100vw - 32px)); height: auto; min-height: 0; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-header { padding: 20px; gap: 16px; align-items: center; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-header > div { min-width: 0; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-close { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; min-width: 36px; min-height: 36px; padding: 0; border: 0!important; border-radius: 50%; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-close:hover { background: #fff1f2!important; color: #be123c!important; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-close svg { width: 20px; height: 20px; flex-shrink: 0; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-body { padding: 20px!important; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .entity-modal-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile #tab-info:not([style*="display: none"]) { display: grid!important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile #tab-info > div { margin-bottom: 0!important; min-width: 0; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile #tab-info > div:first-child { grid-column: 1 / -1; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-footer { padding: 12px 20px; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .dt-modal-footer .btn { min-height: 40px; padding: 8px 16px; }
+@media (max-width: 560px) { :is(.donor-shell, .beneficiary-shell) #modal-entity-profile #tab-info:not([style*="display: none"]) { grid-template-columns: 1fr; gap: 18px; } }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn { background: #fff!important; border-color: #171717!important; }
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn:hover,
+:is(.donor-shell, .beneficiary-shell) #modal-entity-profile .modal-tab-btn.active { background: #fff!important; border-color: #171717!important; color: #be123c!important; }
+:is(.donor-shell, .beneficiary-shell) .gps-refresh-link { display: inline-flex; flex-direction: row; align-items: center; gap: 8px; white-space: nowrap; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice { border-color: transparent!important; background: #fff; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice:hover { border-color: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice.is-current, :is(.donor-shell, .beneficiary-shell) .donor-category-choice.is-current:hover { border-color: #171717!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-category-choice .category-status { color: #171717; font-size: 12px; font-weight: 800; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress { appearance: none; -webkit-appearance: none; display: block; width: 100%; height: 10px; min-height: 10px; margin: 10px 0 0; border: 0; border-radius: 999px; overflow: hidden; background: #e2e8f0; color: #be123c; accent-color: #be123c; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress::-webkit-progress-bar { background: #e2e8f0; border-radius: 999px; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress::-webkit-progress-value { background: #be123c; border-radius: 999px; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress::-moz-progress-bar { background: #be123c; border-radius: 999px; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress { height: 8px; min-height: 8px; background: #edf2ef; color: #4e9c73; accent-color: #4e9c73; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress::-webkit-progress-bar { background: #edf2ef; }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress::-webkit-progress-value { background: linear-gradient(90deg, #8fc5a6, #4e9c73); }
+:is(.donor-shell, .beneficiary-shell) progress.incentive-progress::-moz-progress-bar { background: linear-gradient(90deg, #8fc5a6, #4e9c73); }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-details { display: grid!important; gap: 14px!important; padding: 16px 0!important; background: transparent!important; cursor: default!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-details > div { padding: 0!important; border: 0!important; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-details:hover { background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view .dt-page-header { margin-bottom: 16px; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view .dt-page-header h1 { margin-bottom: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view > .donor-delivery-filters { display: block; height: auto!important; min-height: 0!important; gap: 0; margin: 0 0 16px!important; padding: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-filters > div:first-child { display: block!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-filters > div:last-child { margin-top: 12px!important; padding-top: 12px!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-filters .filter-tabs { margin: 0; padding: 0; background: transparent; border: 0; border-radius: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-filters .delivery-tab { min-height: 38px; padding: 8px 14px; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view .dt-grid-1-8-1 { align-items: start; gap: 24px; margin-top: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view .dt-grid-1-8-1 > .card { padding: 0!important; gap: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view .dt-grid-1-8-1 > .card > div:first-child { padding: 0 0 12px!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view #donor-tracking-map { min-height: 340px!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-deliveries-view .donor-delivery-details:first-child { padding-top: 0!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-delivery-details[hidden], :is(.donor-shell, .beneficiary-shell) #delivery-results[hidden], :is(.donor-shell, .beneficiary-shell) #delivery-filter-empty[hidden] { display: none!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-donation-filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 16px; }
+:is(.donor-shell, .beneficiary-shell) .donor-donation-filter-grid .form-group { margin: 0; min-width: 0; }
+:is(.donor-shell, .beneficiary-shell) .donor-filter-reset { display: flex; align-items: center; padding-bottom: 2px; }
+:is(.donor-shell, .beneficiary-shell) .donor-filter-reset .btn { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; min-height: 44px; padding: 10px 14px; border-radius: 12px; }
+@media (max-width: 1000px) { :is(.donor-shell, .beneficiary-shell) .donor-donation-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { :is(.donor-shell, .beneficiary-shell) .donor-donation-filter-grid { grid-template-columns: minmax(0, 1fr); } :is(.donor-shell, .beneficiary-shell) .donor-filter-reset { justify-content: flex-end; } }
+:is(.donor-shell, .beneficiary-shell) .donor-donations-view .status-badge { color: #171717!important; font-weight: 800!important; background: transparent!important; }
+:is(.donor-shell, .beneficiary-shell) .donor-donations-view .status-badge::before { display: none!important; }
+:is(.donor-shell, .beneficiary-shell) .dashboard-sidebar .sidebar-link svg,
+:is(.donor-shell, .beneficiary-shell) .dashboard-mobile-drawer .sidebar-link svg { width: 25px!important; height: 25px!important; flex-shrink: 0; }
+/* Entidad beneficiaria: navegación compartida y contenido compacto. */
+.beneficiary-shell .dashboard-main-content { padding-right: 24px; }
+.beneficiary-shell .dashboard-main-content > main { display: block; min-width: 0; }
+.beneficiary-shell .dt-page-header { margin-bottom: 20px; gap: 16px; }
+.beneficiary-shell .dashboard-main-content h1 { margin: 0 0 20px; font-size: clamp(24px,3vw,32px)!important; }
+.beneficiary-shell .dashboard-main-content h2 { margin: 0 0 14px; font-size: 19px!important; }
+.beneficiary-shell .dashboard-main-content h3 { font-size: 16px!important; }
+.beneficiary-shell .dashboard-main-content p { line-height: 1.5; }
+.beneficiary-shell .dashboard-main-content > main > .card,
+.beneficiary-shell .dt-grid-2-1 > .card { display: block; padding: 0!important; margin-bottom: 20px!important; border: 0!important; background: transparent!important; border-radius: 0!important; gap: 14px!important; min-height: 0!important; }
+.beneficiary-shell .dt-stats-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border); }
+.beneficiary-shell .stat-card { background: transparent!important; border: 0!important; padding: 0!important; border-radius: 0!important; }
+.beneficiary-shell .stat-icon { display: none!important; }
+.beneficiary-shell .stat-content > span { text-transform: none!important; }
+.beneficiary-shell .stat-value { margin: 6px 0 0!important; font-size: 28px!important; }
+.beneficiary-shell .dt-grid-2-1 { align-items: start; gap: 28px; }
+.beneficiary-shell #needs-grid, .beneficiary-shell #assigned-grid, .beneficiary-shell #incoming-grid { grid-template-columns: minmax(0,1fr); gap: 0; }
+.beneficiary-shell .need-card, .beneficiary-shell .donation-assigned-card, .beneficiary-shell .incoming-card { background: transparent!important; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; padding: 16px 0!important; gap: 12px!important; }
+.beneficiary-shell .need-card > div { padding: 0!important; gap: 12px!important; }
+.beneficiary-shell .need-card > div > div { background: transparent!important; padding: 0!important; border: 0!important; }
+.beneficiary-shell .donation-assigned-card > div { background: transparent!important; padding: 0!important; }
+.beneficiary-shell .need-card > div > div:last-child { margin: 0!important; }
+.beneficiary-shell .need-card form { margin: 0; display: flex; justify-content: flex-end; }
+.beneficiary-shell .beneficiary-detail-row { cursor: pointer; transition: background-color 180ms ease; }
+.beneficiary-shell .beneficiary-detail-row:hover { background: #e9edf2!important; }
+.beneficiary-shell .beneficiary-detail-row:focus-visible { outline: 2px solid #64748b; outline-offset: 3px; }
+.beneficiary-shell .filter-tabs { flex-wrap: wrap; padding: 0!important; margin-bottom: 16px!important; border: 0!important; background: transparent!important; border-radius: 0!important; }
+.beneficiary-shell .filter-tab { min-height: 40px; padding: 8px 14px; }
+.beneficiary-shell .status-badge { font-size: 14px!important; font-weight: 800!important; color: #171717!important; background: transparent!important; }
+.beneficiary-shell .status-badge::before { display: none!important; }
+.beneficiary-shell .need-card span[style*="color: var(--color-primary)"] { color: #171717!important; font-weight: 700; }
+.beneficiary-shell .dt-empty-state { min-height: 0; padding: 20px 0; background: transparent; border: 0; }
+.beneficiary-shell .dt-empty-state-icon { display: none; }
+.beneficiary-shell .dt-modal-content { width: min(760px,calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.beneficiary-shell .dt-modal-header { padding: 20px; gap: 16px; }
+.beneficiary-shell .dt-modal-body { padding: 20px; }
+.beneficiary-shell .dt-modal-footer { padding: 12px 20px; }
+.beneficiary-shell .dt-modal-close, .beneficiary-shell .beneficiary-detail-close { display: inline-flex; flex: 0 0 36px; align-items: center; justify-content: center; width: 36px; height: 36px; min-height: 36px; min-width: 36px; padding: 0; border: 0!important; border-radius: 50%; }
+.beneficiary-shell .beneficiary-detail-close { font-size: 26px; }
+.beneficiary-shell .beneficiary-details-dialog { position: fixed; inset: 0; margin: auto; width: min(640px,calc(100vw - 32px)); max-height: calc(100dvh - 40px); padding: 20px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 16px; }
+.beneficiary-shell .beneficiary-details-dialog::backdrop { background: rgb(15 23 42 / 40%); }
+.beneficiary-shell .beneficiary-detail-content .need-card, .beneficiary-shell .beneficiary-detail-content .donation-assigned-card { border: 0!important; }
+.beneficiary-shell .incoming-card[hidden], .beneficiary-shell #incoming-map-panel[hidden], .beneficiary-shell #incoming-filter-empty[hidden] { display: none!important; }
+.beneficiary-shell .api-view > .api-panel { padding: 0; border: 0; background: transparent; }
+@media (max-width: 900px) { .beneficiary-shell .dashboard-main-content { padding-right: 16px; } }
+@media (max-width: 600px) { .beneficiary-shell .dt-stats-grid { grid-template-columns: 1fr; gap: 16px; } .beneficiary-shell .stat-content { display: flex; align-items: center; gap: 16px; } .beneficiary-shell .dt-grid-2-1 { grid-template-columns: 1fr; } .beneficiary-shell .dt-modal-body > div[style*="grid"] { grid-template-columns: 1fr!important; } }
+.beneficiary-shell .beneficiary-summary-row { padding: 12px 0!important; background: transparent!important; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; }
+.beneficiary-shell .confirm-item-card { padding: 16px 0!important; background: transparent!important; border: 0!important; border-bottom: 1px solid var(--color-border)!important; border-radius: 0!important; }
+.beneficiary-shell .confirm-item-card form { margin: 0; }
+.beneficiary-shell .beneficiary-record-detail > div, .beneficiary-shell .beneficiary-record-detail > div > div { background: transparent!important; border: 0!important; padding: 0!important; }
+.beneficiary-shell .beneficiary-record-detail { display: grid; gap: 16px; }
+.beneficiary-shell .receipt-photo-form { display: grid; gap: 10px; max-width: 560px; margin: 16px 0 0; }
+.beneficiary-shell .receipt-photo-form .form-hint { margin: 0; }
+.beneficiary-shell .receipt-photo-form > div { margin-top: 4px; }
+.beneficiary-shell .receipt-image-preview { max-width: 100%; width: 220px; max-height: 180px; object-fit: contain; object-position: left; border-radius: 8px; }
+.beneficiary-shell .receipt-image-preview[hidden] { display: none; }
+.beneficiary-shell .receipt-not-received { margin-top: 24px; max-width: 560px; }
+.beneficiary-shell .receipt-not-received > summary { display: inline-flex; align-items: center; cursor: pointer; min-height: 40px; font-size: 14px; font-weight: 600; padding: 0; color: var(--color-muted); list-style: none; }
+.beneficiary-shell .receipt-not-received > summary::-webkit-details-marker { display: none; }
+.beneficiary-shell .receipt-not-received > summary:hover { color: #be123c; text-decoration: underline; }
+.beneficiary-shell .receipt-not-received form { display: grid; gap: 10px; margin-top: 12px; }

@@ -1,6 +1,19 @@
 
 /* Interacciones de presentación: nunca simula una escritura ni inventa resultados. */
 document.addEventListener('DOMContentLoaded', () => {
+  const catalogPanels = document.querySelectorAll('.catalog-create-actions > details');
+  catalogPanels.forEach(panel => {
+    panel.addEventListener('toggle', () => {
+      if (panel.open) catalogPanels.forEach(other => { if (other !== panel) other.open = false; });
+    });
+    panel.querySelector('[data-close-catalog]')?.addEventListener('click', () => {
+      panel.open = false;
+      panel.querySelector('summary').focus();
+    });
+    panel.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { panel.open = false; panel.querySelector('summary').focus(); }
+    });
+  });
   const shell=document.querySelector('.admin-shell');
   const sidebar=shell?.querySelector('.dashboard-sidebar');
   const collapse=sidebar?.querySelector('.admin-sidebar-collapse');
@@ -10,15 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
       link.setAttribute('aria-label',label);
       link.title=label;
     });
+    const sidebarStorageKey=shell.classList.contains('donor-shell')?'donatrack-donor-sidebar-collapsed':shell.classList.contains('beneficiary-shell')?'donatrack-beneficiary-sidebar-collapsed':'donatrack-admin-sidebar-collapsed';
     const setCollapsed=value => {
       shell.classList.toggle('admin-sidebar-collapsed',value);
       collapse.setAttribute('aria-expanded',String(!value));
       collapse.setAttribute('aria-label',value?'Abrir menú lateral':'Cerrar menú lateral');
-      try { localStorage.setItem('donatrack-admin-sidebar-collapsed',String(value)); } catch {}
+      try { localStorage.setItem(sidebarStorageKey,String(value)); } catch {}
       window.dispatchEvent(new Event('resize'));
     };
     let saved=false;
-    try { saved=localStorage.getItem('donatrack-admin-sidebar-collapsed')==='true'; } catch {}
+    try { saved=localStorage.getItem(sidebarStorageKey)==='true'; } catch {}
     setCollapsed(saved);
     collapse.addEventListener('click',() => setCollapsed(!shell.classList.contains('admin-sidebar-collapsed')));
   }
@@ -86,8 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     markers.forEach(m => {
       const point=[Number(m.dataset.lat),Number(m.dataset.lng)];
-      const popup=document.createElement('div');popup.textContent=m.textContent.trim();
-      L.marker(point,{icon:truckIcon,title:"Ver ubicación del camión"}).addTo(map).bindPopup(popup);bounds.push(point);
+      const popup=m.cloneNode(true);
+      popup.removeAttribute('id');
+      popup.removeAttribute('hidden');
+      popup.className='truck-details-popup';
+      L.marker(point,{icon:truckIcon,title:"Ver ubicación del camión",autoPanOnFocus:false}).addTo(map).bindPopup(popup,{maxWidth:340,minWidth:240,autoPan:false});bounds.push(point);
     });
     map.fitBounds(bounds,{padding:[30,30],maxZoom:14});
   });
@@ -96,6 +113,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.dashboard-main-content table tbody tr').forEach(row => {
+    const detail = [...row.querySelectorAll('a')].find(link => /^Detalle(?:\s*\/\s*revisar)?$/i.test(link.textContent.trim()));
+    if (!detail) return;
+    row.dataset.rowUrl = detail.getAttribute('href');
+    row.tabIndex = 0;
+    row.setAttribute('aria-label', 'Abrir detalle');
+    detail.remove();
+  });
   document.querySelectorAll('[data-donation-url], [data-row-url]').forEach(row => {
     row.addEventListener('click', event => {
       if (event.target.closest('a,button,input,select,textarea,form,summary')) return;

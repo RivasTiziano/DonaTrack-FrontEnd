@@ -60,7 +60,7 @@
                 </table>
             </div>
         </section>
-        <div th:if="${section == 'necesidades'}" class="panel-create-actions"><a class="btn btn-primary" href="#alta-necesidades">Nuevo registro</a></div>
+        <div th:if="${section == 'necesidades'}" class="panel-create-actions"><button class="btn btn-primary" type="button" data-dialog-open="alta-necesidades">Crear necesidad</button></div>
 <section th:if="${section == 'necesidades'}" class="card api-panel">
             <div class="toolbar">
                 <label>Buscar<input type="search" class="form-control" data-filter-table="tabla-necesidades"/>
@@ -88,8 +88,7 @@
 </label>
 </div>
 <th:block th:if="${necesidades.isEmpty() and apiError == null}">
-    <div th:replace="~{fragments/admin-ui :: vacio('No hay necesidades registradas.', '#alta-necesidades', 'Crear nuevo registro')}">
-    </div>
+    <p>No hay necesidades registradas.</p>
 </th:block>
 <div class="api-table">
     <table class="data-table" id="tabla-necesidades">
@@ -175,8 +174,8 @@
 </form>
 </dialog>
 </th:block>
-<details class="form-panel" id="alta-necesidades">
-    <summary>Crear necesidad</summary>
+<dialog class="dialog" id="alta-necesidades" aria-labelledby="alta-necesidades-title">
+    <div class="dialog-header"><h2 id="alta-necesidades-title">Crear necesidad</h2><button type="button" class="btn btn-outline" data-dialog-close>Cerrar</button></div>
     <form method="post" th:action="@{/admin/dashboard/necesidades}">
         <label>Entidad beneficiaria<select class="form-control" name="entidadBeneficiariaId" required>
             <option value="">Seleccionar</option>
@@ -199,7 +198,7 @@
     <button class="btn btn-primary" type="submit">Crear</button>
 </div>
 </form>
-</details>
+</dialog>
 </section>
 </th:block>
 </body>

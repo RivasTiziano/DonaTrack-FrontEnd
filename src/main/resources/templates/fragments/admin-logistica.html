@@ -117,7 +117,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="item : ${entregas}" data-record th:data-estado="${item.estado}" th:classappend="${item.estado == 'NO_RECIBIDA'} ? 'danger-text'">
+            <tr th:each="item : ${entregas}" data-record tabindex="0" th:data-row-url="@{/admin/dashboard/entregas/{id}(id=${item.id})}" aria-label="Abrir detalle de la entrega" th:data-estado="${item.estado}" th:classappend="${item.estado == 'NO_RECIBIDA'} ? 'danger-text'">
                 
                 
                 <td data-label="Estado">
@@ -134,7 +134,7 @@
                 </td>
                 <td data-label="Acciones">
                     <div class="row-actions">
-                        <a class="btn btn-outline" th:href="@{/admin/dashboard/entregas/{id}(id=${item.id})}">Detalle / revisar</a>
+                        
                         <button type="button" class="btn btn-outline" th:if="${item.estado == 'ENTREGADA' and item.asignacionId != null}"
                                 th:data-dialog-open="'publicar-asignacion-' + ${item.asignacionId}">Publicar en la landing</button>
                     </div>
@@ -163,7 +163,7 @@
         </form>
     </dialog>
 </th:block>
-<p>La confirmación de recepción y las fotografías se realizan desde el panel de la entidad. No se crean ni eliminan entregas manualmente aquí.</p>
+
 </section>
 <section th:if="${section == 'rutas'}" class="card api-panel">
     <details class="form-panel" id="planificar">
@@ -184,7 +184,6 @@
 <div class="toolbar">
     <label>Fecha<input class="form-control" type="date" data-filter-table="tabla-rutas" data-field="fecha"/>
 </label>
-<a class="btn btn-outline" th:href="@{/admin/dashboard/paradas}">Consultar todas las paradas</a>
 </div>
 <p th:if="${rutas.isEmpty() and apiError == null}">No hay rutas.</p>
 <div class="api-table">
@@ -221,12 +220,9 @@
                 <td data-label="Acciones">
                     <div class="row-actions">
                         
-                        <details class="row-menu">
-                            <summary aria-label="Más acciones" title="Más acciones">⋯</summary>
-                            <div class="menu-content">
-                                <button type="button" class="btn btn-outline" th:data-dialog-open="'acciones-ruta-' + ${item.id}">Acciones de ruta</button>
-                            </div>
-                        </details>
+                        <form th:if="${item.estado == 'EN_CURSO'}" method="post" th:action="@{/admin/dashboard/rutas/{id}/finalizar(id=${item.id})}" onsubmit="return confirm('¿Finalizar esta ruta?');"><button class="btn btn-outline" type="submit">Finalizar</button></form>
+<button th:if="${item.estado == 'PLANIFICADA'}" type="button" class="btn btn-outline" th:data-dialog-open="'iniciar-ruta-' + ${item.id}">Iniciar</button>
+<form th:if="${item.estado == 'PLANIFICADA' or item.estado == 'EN_CURSO'}" method="post" th:action="@{/admin/dashboard/rutas/{id}/cancelar(id=${item.id})}" onsubmit="return confirm('¿Cancelar esta ruta?');"><button class="btn btn-outline" type="submit">Cancelar</button></form>
                     </div>
                 </td>
             </tr>
@@ -234,9 +230,9 @@
     </table>
 </div>
 <th:block th:each="item : ${rutas}">
-    <dialog class="dialog" th:id="'acciones-ruta-' + ${item.id}" th:attr="aria-labelledby='acciones-ruta-title-' + ${item.id}">
+    <dialog class="dialog" th:id="'iniciar-ruta-' + ${item.id}" th:attr="aria-labelledby='iniciar-ruta-title-' + ${item.id}">
         <div class="dialog-header">
-            <h2 th:id="'acciones-ruta-title-' + ${item.id}">Gestionar ruta</h2>
+            <h2 th:id="'iniciar-ruta-title-' + ${item.id}">Iniciar ruta</h2>
             <button type="button" class="btn btn-outline" data-dialog-close aria-label="Cerrar diálogo">Cerrar</button>
         </div>
         <div th:if="${item.estado == 'PLANIFICADA'}">
@@ -245,20 +241,6 @@
             </label>
             <div class="form-actions">
                 <button class="btn btn-outline" type="submit">Iniciar</button>
-            </div>
-        </form>
-    </div>
-    <div th:if="${item.estado == 'EN_CURSO'}">
-        <form method="post" th:action="@{/admin/dashboard/rutas/{id}/finalizar(id=${item.id})}">
-            <div class="form-actions">
-                <button class="btn btn-outline" type="submit">Finalizar</button>
-            </div>
-        </form>
-    </div>
-    <div th:if="${item.estado == 'PLANIFICADA' or item.estado == 'EN_CURSO'}">
-        <form method="post" th:action="@{/admin/dashboard/rutas/{id}/cancelar(id=${item.id})}" onsubmit="return confirm('¿Cancelar esta ruta?');">
-            <div class="form-actions">
-                <button class="btn btn-outline" type="submit">Cancelar</button>
             </div>
         </form>
     </div>

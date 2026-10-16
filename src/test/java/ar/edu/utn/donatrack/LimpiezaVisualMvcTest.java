@@ -21,12 +21,12 @@ class LimpiezaVisualMvcTest {
  @MockBean IncentivosApiService incentivos;
  @MockBean LogisticaApiService logistica;
  @MockBean NotificacionesApiService notificaciones;
- @Test void formularioDedicadoYAvatarConLogoutPost() throws Exception {
+ @Test void formularioDedicadoYSidebarConLogoutPost() throws Exception {
   when(donaciones.categorias()).thenReturn(List.of());
   mvc.perform(get("/admin/dashboard/donaciones/nueva").session(TestSesiones.admin()))
     .andExpect(status().isOk()).andExpect(view().name("admin-donacion-nueva"))
     .andExpect(content().string(containsString("name=\"donanteId\"")))
-    .andExpect(content().string(containsString("account-avatar")))
+    .andExpect(content().string(containsString("sidebar-logout")))
     .andExpect(content().string(containsString("action=\"/logout\" method=\"post\"")));
  }
  @Test void errorConservaValoresYBienesAdicionales() throws Exception {

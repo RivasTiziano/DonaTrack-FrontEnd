@@ -152,7 +152,7 @@
     </table>
 </div>
 </section>
-<div th:if="${section == 'bienes'}" class="panel-create-actions"><a class="btn btn-primary" href="#alta-bienes">Nuevo registro</a></div>
+<div th:if="${section == 'bienes'}" class="panel-create-actions"><button class="btn btn-primary" type="button" data-dialog-open="alta-bienes">Crear bien</button></div>
 <section th:if="${section == 'bienes'}" class="card api-panel">
     <div class="toolbar">
         <label>Buscar<input type="search" class="form-control" data-filter-table="tabla-bienes"/>
@@ -160,8 +160,7 @@
     
 </div>
 <th:block th:if="${bienes.isEmpty() and apiError == null}">
-    <div th:replace="~{fragments/admin-ui :: vacio('No hay bienes registrados.', '#alta-bienes', 'Crear nuevo registro')}">
-    </div>
+    <p>No hay bienes registrados.</p>
 </th:block>
 <div class="api-table">
     <table class="data-table" id="tabla-bienes">
@@ -228,8 +227,8 @@
         </form>
     </dialog>
 </th:block>
-<details class="form-panel" id="alta-bienes">
-    <summary>Crear bien</summary>
+<dialog class="dialog" id="alta-bienes" aria-labelledby="alta-bienes-title">
+    <div class="dialog-header"><h2 id="alta-bienes-title">Crear bien</h2><button type="button" class="btn btn-outline" data-dialog-close>Cerrar</button></div>
     <form method="post" th:action="@{/admin/dashboard/bienes}">
         <fieldset th:replace="~{fragments/api-bien-form :: campos}">
         </fieldset>
@@ -237,7 +236,7 @@
             <button class="btn btn-primary" type="submit">Crear</button>
         </div>
     </form>
-</details>
+</dialog>
 </section>
 <section th:if="${section == 'importar'}" class="csv-import-section">
     <h2>Importar personas desde CSV</h2>

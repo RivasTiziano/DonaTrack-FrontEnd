@@ -42,6 +42,18 @@ class PanelEntidadMvcTest {
         return new ApiDtos.Asignacion(id, 40L, 50L, 3L, 10f, "EN_TRASLADO", null, "Donación de prueba", null, null, null, null);
     }
 
+    @Test void todasLasPantallasCompartenSidebarSinHeaderYConCierreDeSesion() throws Exception {
+        for (String path : List.of("", "/necesidades", "/donaciones", "/entregas", "/confirmar")) {
+            mvc.perform(get("/entidad/dashboard" + path).session(TestSesiones.entidad(3L)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("beneficiary-shell")))
+                    .andExpect(content().string(containsString("admin-sidebar-collapse")))
+                    .andExpect(content().string(containsString("sidebar-logout")))
+                    .andExpect(content().string(not(containsString("<header class=\"dashboard-header\""))))
+                    .andExpect(content().string(not(containsString("class=\"onboarding-hint "))));
+        }
+    }
+
     @Test void altaDeNecesidadUsaLaEntidadDeLaSesionAunqueElFormularioMandeOtra() throws Exception {
         mvc.perform(post("/entidad/dashboard/necesidades").session(TestSesiones.entidad(3L))
                         .param("entidadBeneficiariaId", "99")

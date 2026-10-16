@@ -54,7 +54,7 @@
                 </form>
                 <details class="form-panel" th:open="${apiError != null}">
                     <summary>Envío manual</summary>
-                    <p th:unless="${manualEnabled}">Deshabilitado por seguridad hasta incorporar permisos. Para probar en desarrollo local, configurar NOTIFICACIONES_ENVIO_MANUAL_HABILITADO=true. No exponer este entorno públicamente.</p>
+                    <p th:unless="${manualEnabled}">Deshabilitado por seguridad hasta incorporar permisos.</p>
                     <form th:if="${manualEnabled}" method="post" th:action="@{/admin/dashboard/notificaciones/enviar}" th:object="${form}"
                         onsubmit="if (!confirm('Este envío puede generar un correo, SMS o WhatsApp real y consumir crédito. ¿Confirmar?')) return false; this.querySelector('button[type=submit]').disabled=true;">
                         <input type="hidden" name="sendToken" th:value="${sendToken}" />

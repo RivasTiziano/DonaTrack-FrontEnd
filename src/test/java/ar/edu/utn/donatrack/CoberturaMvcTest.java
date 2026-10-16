@@ -157,11 +157,32 @@ class CoberturaMvcTest {
                 .andExpect(content().string(not(containsString("null / null"))));
     }
 
+    @Test void donorWithoutIncentivesShowsNameAndEmptyState() throws Exception {
+        when(donaciones.listarHumanos()).thenReturn(List.of(new ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse(
+                2L,"Carlos","Gómez","DNI","12345678",List.of(),"COMPLETO")));
+        when(incentivos.metricas(2L)).thenThrow(org.springframework.web.client.HttpClientErrorException.create(
+                org.springframework.http.HttpStatus.NOT_FOUND,"Not Found",org.springframework.http.HttpHeaders.EMPTY,
+                "{\"message\":\"2\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8),java.nio.charset.StandardCharsets.UTF_8));
+        mvc.perform(get("/admin/dashboard/incentivos/donantes/2").session(TestSesiones.admin()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Incentivos de Carlos Gómez")))
+                .andExpect(content().string(containsString("Este donante todavía no tiene datos de incentivos registrados.")))
+                .andExpect(content().string(not(containsString("donor-incentives-detail"))));
+        verify(incentivos,never()).misionesCompletadas(2L);
+    }
+
     @Test void currentMissionUsesActualProgressValues() throws Exception {
         when(incentivos.progreso(1L)).thenReturn(new IncentivosDtos.Progreso(2L,"Misión actual","Descripción",
                 2,4,50.0,false,1,null));
         mvc.perform(get("/admin/dashboard/incentivos/donantes/1").session(TestSesiones.admin())).andExpect(status().isOk())
-                .andExpect(content().string(containsString("2 / 4 (50.0%)")));
+                .andExpect(content().string(containsString("2 / 4 (50%)")));
+        for (double porcentaje : new double[]{33.33333333333333, 66.66666666666667}) {
+            when(incentivos.progreso(1L)).thenReturn(new IncentivosDtos.Progreso(2L,"Misión actual","Descripción",
+                    2,6,porcentaje,false,1,null));
+            mvc.perform(get("/admin/dashboard/incentivos/donantes/1").session(TestSesiones.admin()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("2 / 6 (" + Math.round(porcentaje) + "%)")));
+        }
     }
 
     @Test void incompleteBeneficiaryRepresentativeDoesNotWrite() throws Exception {

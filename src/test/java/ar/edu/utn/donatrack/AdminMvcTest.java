@@ -50,7 +50,8 @@ class AdminMvcTest {
             var result = mvc.perform(get("/admin/dashboard" + path).session(TestSesiones.admin()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("admin-sidebar-brand")))
-                .andExpect(content().string(containsString("admin-account-position")))
+                .andExpect(content().string(containsString("sidebar-logout")))
+                .andExpect(content().string(not(containsString("admin-account-position"))))
                 .andExpect(content().string(not(containsString("dashboard-header-left"))))
                 .andReturn();
         }

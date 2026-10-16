@@ -79,6 +79,31 @@ class PanelDonanteMvcTest {
         verify(donaciones).humano(7L);
     }
 
+    @Test void pantallasCompartenSidebarSinHeaderYConCierreDeSesion() throws Exception {
+        when(donaciones.humano(7L)).thenReturn(ana());
+        for (String path : List.of("", "/donaciones", "/entidades", "/incentivos", "/entregas")) {
+            mvc.perform(get("/donante/dashboard" + path).session(TestSesiones.donante(7L)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("admin-sidebar-collapse")))
+                    .andExpect(content().string(containsString("sidebar-logout")))
+                    .andExpect(content().string(containsString("Cerrar sesión")))
+                    .andExpect(content().string(not(containsString("<header class=\"dashboard-header\""))))
+                    .andExpect(content().string(not(containsString("class=\"onboarding-hint "))));
+        }
+    }
+
+    @Test void incentivosVaciosExplicanLasSeccionesSinActividad() throws Exception {
+        when(donaciones.humano(7L)).thenReturn(ana());
+        when(incentivos.historialCategorias(7L)).thenReturn(List.of(
+                new IncentivosDtos.Auditoria(1L,null,"COLABORADOR",LocalDateTime.of(2026,10,16,10,30))));
+        mvc.perform(get("/donante/dashboard/incentivos").session(TestSesiones.donante(7L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Todavía no tenés misiones completadas.")))
+                .andExpect(content().string(containsString("Todavía no tenés insignias visibles.")))
+                .andExpect(content().string(containsString("Categoría inicial:")))
+                .andExpect(content().string(containsString("16/10/2026")));
+    }
+
     @Test void resumenNoMuestraDatosDeMaqueta() throws Exception {
         when(donaciones.humano(7L)).thenReturn(ana());
         mvc.perform(get("/donante/dashboard").session(TestSesiones.donante(7L)))
@@ -111,6 +136,18 @@ class PanelDonanteMvcTest {
                 .andExpect(content().string(containsString("Fideos del comedor")));
         verify(donaciones, times(1)).necesidades();
         verify(donaciones, never()).necesidades(anyLong(), any());
+    }
+
+    @Test void necesidadesMuestranElBienLaCantidadSolicitadaYElFaltanteConPlural() throws Exception {
+        when(donaciones.beneficiarios()).thenReturn(List.of(fundacionVida()));
+        var bien = new ApiDtos.Bien(1L,"Arroz",null,30f,30f,null,"KILOGRAMO","DURABLE",null,false);
+        when(donaciones.necesidades()).thenReturn(List.of(new ApiDtos.Necesidad(5L,3L,bien,"Prueba visual",
+                "RECURRENTE","P1M",10f,20f,"PENDIENTE")));
+        mvc.perform(get("/donante/dashboard/entidades").session(TestSesiones.donante(7L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(">Arroz</span>")))
+                .andExpect(content().string(containsString("Cantidad solicitada: 30 kilogramos")))
+                .andExpect(content().string(containsString("Faltan 20 kilogramos")));
     }
 
     @Test void categoriaYSubcategoriaSeFiltranEnElBackendConElDonanteDeLaSesion() throws Exception {
@@ -212,9 +249,9 @@ class PanelDonanteMvcTest {
     @Test void desgloseConCantidadesYSinAsignar() throws Exception {
         prepararDonacionConDesglose();
         String sinFiltro = consultar(null);
-        assertTrue(sinFiltro.contains("120 kilogramo"));
-        assertTrue(sinFiltro.contains("Sin asignar:") && sinFiltro.contains("50 kilogramo"));
-        assertTrue(sinFiltro.contains("30 kilogramo"));
+        assertTrue(sinFiltro.contains("120 kilogramos"));
+        assertTrue(sinFiltro.contains("Sin asignar:") && sinFiltro.contains("50 kilogramos"));
+        assertTrue(sinFiltro.contains("30 kilogramos"));
         assertTrue(sinFiltro.contains("Fundación Vida"));
         assertTrue(sinFiltro.contains("Asignaciones (3)"));
         assertEquals(3, sinFiltro.split("class=\"asignacion-fila\"", -1).length - 1);
@@ -254,12 +291,12 @@ class PanelDonanteMvcTest {
         String m = modal(null);
         assertEquals(1, contar(m, "class=\"traza-donacion\""));
         assertEquals(3, contar(m, "class=\"traza-asignacion\""));
-        assertTrue(m.contains("30 kilogramo → Fundación Vida"));
-        assertTrue(m.contains("20 kilogramo → Fundación Vida"));
+        assertTrue(m.contains("30 kilogramos → Fundación Vida"));
+        assertTrue(m.contains("20 kilogramos → Fundación Vida"));
         assertTrue(m.contains(">Entregada</span>"));
         assertTrue(m.contains(">En traslado</span>"));
         assertTrue(m.contains(">Asignación realizada</span>"));
-        assertTrue(m.contains("Recibida en depósito:") && m.contains("Sin asignar:") && m.contains("50 kilogramo"));
+        assertTrue(m.contains("Recibida en depósito:") && m.contains("Sin asignar:") && m.contains("50 kilogramos"));
         assertTrue(m.contains("05/02/2026"), "Debe mostrarse la fecha de entrega");
         assertTrue(m.contains("01/02/2026"), "Debe mostrarse la fecha de asignación");
         assertEquals(3, contar(m, "class=\"dt-stepper\""));
@@ -295,8 +332,8 @@ class PanelDonanteMvcTest {
         prepararDonacionConDesglose();
         String m = modal("ENTREGADA");
         assertEquals(1, contar(m, "class=\"traza-asignacion\""));
-        assertTrue(m.contains("30 kilogramo → Fundación Vida"));
-        assertTrue(!m.contains("20 kilogramo → Fundación Vida"));
+        assertTrue(m.contains("30 kilogramos → Fundación Vida"));
+        assertTrue(!m.contains("20 kilogramos → Fundación Vida"));
         String m2 = modal("EN_DEPOSITO");
         assertEquals(3, contar(m2, "class=\"traza-asignacion\""));
     }
@@ -365,7 +402,7 @@ class PanelDonanteMvcTest {
                 .andExpect(status().isOk())
                 .andReturn();
         String body = resultado.getResponse().getContentAsString();
-        int inicio = body.indexOf("Camino de Categor");
+        int inicio = body.indexOf("donor-category-path");
         int colaborador = body.indexOf(">Colaborador</h3>", inicio);
         int sostenedor = body.indexOf(">Sostenedor</h3>", inicio);
         int transformador = body.indexOf(">Transformador</h3>", inicio);

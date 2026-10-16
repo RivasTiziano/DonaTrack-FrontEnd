@@ -2,8 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
     <body>
         <th:block th:fragment="contenido">
-            <section th:if="${section == 'rankings'}" class="card api-panel">
-                <p>Ordenado por misiones resueltas, no por kilos ni cantidad de donaciones.</p>
+            <section th:if="${section == 'rankings'}" class="rankings-section">
                 <div class="podium" th:if="${ranking != null and !ranking.isEmpty() and ranking.?[misiones > 0].size() > 0}">
                     <article th:each="item,iter : ${ranking}" th:if="${iter.index < 3}">
                         <strong class="place" th:text="${item.posicion}">

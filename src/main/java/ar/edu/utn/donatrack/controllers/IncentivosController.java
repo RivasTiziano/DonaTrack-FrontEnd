@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Controller
 public class IncentivosController {
@@ -71,12 +72,22 @@ public class IncentivosController {
     @GetMapping("/admin/dashboard/incentivos/donantes/{id}")
     public String donante(@PathVariable Long id, Model model) {
         model.addAttribute("donanteId", id);
-        views.load(model, "metricas", () -> service.metricas(id));
+        views.load(model, () -> {
+            try {
+                model.addAttribute("metricas", service.metricas(id));
+            } catch (HttpClientErrorException.NotFound exception) {
+                model.addAttribute("donanteSinIncentivos", true);
+            }
+        });
+        String nombre = donaciones.nombresDonantes().get(id);
+        String titulo = nombre != null && !nombre.isBlank() ? "Incentivos de " + nombre : "Incentivos del donante";
+        if (Boolean.TRUE.equals(model.getAttribute("donanteSinIncentivos")) || model.getAttribute("metricas") == null)
+            return views.page(model, titulo, "donanteIncentivos");
         views.load(model, "misionesCompletadas", () -> service.misionesCompletadas(id));
         views.load(model, "insignias", () -> service.insignias(id));
         views.load(model, "historialCategorias", () -> service.historialCategorias(id));
         views.load(model, "progreso", () -> service.progreso(id));
-        return views.page(model, "Incentivos del donante " + id, "donanteIncentivos");
+        return views.page(model, titulo, "donanteIncentivos");
     }
 
     @GetMapping("/admin/dashboard/incentivos/historial")

@@ -25,19 +25,18 @@
                     <li th:each="foto : ${entrega.fotos}" th:text="${foto}">
                     </li>
                 </ul>
-                <p>No se crean ni eliminan entregas desde esta pantalla.</p>
+                
             </section>
             <section th:if="${section == 'ruta' and ruta != null}" class="card api-panel">
                 <span th:replace="~{fragments/admin-ui :: estado(${ruta.estado})}">
                 </span>
                 <p th:text="'Fecha: ' + ${ruta.fecha}">
                 </p>
-                <a class="btn btn-outline" th:href="@{/admin/dashboard/paradas}">Todas las paradas</a>
                 <p th:text="'Chofer: ' + ${ruta.chofer}">
                 </p>
                 <p th:text="'Distancia: ' + ${ruta.totalDistanciaKm} + ' km; duración: ' + ${ruta.totalDuracionMins} + ' minutos'">
                 </p>
-                <h2>Paradas</h2>
+                <h2>Paradas</h2><p th:if="${ruta.paradas == null or ruta.paradas.isEmpty()}">Esta ruta todavía no tiene paradas.</p>
                 <article th:each="p : ${ruta.paradas}">
                     <a th:href="@{/admin/dashboard/paradas/{id}(id=${p.id})}" th:text="'Parada ' + ${p.orden}">
                     </a>
@@ -67,24 +66,23 @@
                 </ul>
             </section>
             <section th:if="${section == 'seguimiento'}" class="card api-panel">
-                <p>Últimos datos conocidos del GPS. No representan una posición nueva hasta que el dispositivo publique otra actualización.</p>
-                <a th:href="@{/admin/dashboard/seguimiento}">Actualizar consulta</a>
+                
+                <a class="gps-refresh-link" th:href="@{/admin/dashboard/seguimiento}">Actualizar</a>
                 <p th:if="${ubicaciones != null and ubicaciones.isEmpty() and apiError == null}">No hay ubicaciones registradas.</p>
-                <div class="gps-layout">
+                <div class="gps-layout gps-map-only">
                     <div class="admin-map" data-markers="gps-markers" role="region" aria-label="Mapa de últimas ubicaciones de camiones">
                     </div>
-                    <div id="gps-markers">
+                    <div id="gps-markers" hidden>
                         <article class="attention-item" th:each="u : ${ubicaciones}" th:data-lat="${u.latitud}" th:data-lng="${u.longitud}">
-                            <a th:href="@{/admin/dashboard/seguimiento/{patente}(patente=${u.patente})}" th:text="${u.patente}">
-                            </a>
-                            <p th:text="'Latitud: ' + ${u.latitud} + '; longitud: ' + ${u.longitud}">
-                            </p>
-                            <p th:text="'Actualizado: ' + ${u.ultimaActualizacion}">
-                            </p>
-                            <p th:text="'Avance: ' + ${u.porcentajeAvance} + '% — Entregas pendientes: ' + ${u.entregasPendientes}">
-                            </p>
-                            <p th:text="'Próxima parada: ' + ${u.proximaParadaDireccion}">
-                            </p>
+                            <h3 th:text="${u.patente}">
+                            </h3>
+                            <dl class="truck-gps-details">
+                                <div><dt>Avance</dt><dd th:text="${#numbers.formatDecimal(u.porcentajeAvance, 1, 1)} + '%'"></dd></div>
+                                <div><dt>Próxima parada</dt><dd th:text="${u.proximaParadaDireccion != null ? u.proximaParadaDireccion : 'Sin próxima parada'}"></dd></div>
+                                <div><dt>Actualizado</dt><dd th:text="${u.ultimaActualizacion != null ? #temporals.format(u.ultimaActualizacion, 'HH:mm · dd/MM/yyyy') : 'Sin actualización'}"></dd></div>
+                                <div class="gps-coordinate"><dt>Latitud</dt><dd th:text="${u.latitud}"></dd></div>
+                                <div class="gps-coordinate"><dt>Longitud</dt><dd th:text="${u.longitud}"></dd></div>
+                            </dl>
                         </article>
                     </div>
                 </div>

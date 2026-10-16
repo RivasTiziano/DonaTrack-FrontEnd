@@ -10,7 +10,7 @@
         <!-- Header -->
         <div class="dt-page-header">
             <div>
-                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Envíos en Camino hacia tu Sede</h1>
+                <h1 style="font-size: clamp(1.2rem, 4.5vw, 1.5rem); font-weight: 800; color: var(--color-ink); word-break: break-word; line-height: 1.25;">Seguimiento de entregas</h1>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <a th:href="@{/entidad/dashboard/entregas}" class="btn btn-outline btn-sm">
@@ -25,21 +25,6 @@
         </div>
 
         <!-- Onboarding Hint -->
-        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de recepción">
-            <div class="onboarding-hint-icon">
-                <i data-lucide="truck" style="width: 20px; height: 20px; color: #4338ca;"></i>
-            </div>
-            <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Recepción de las entregas</div>
-                <p class="onboarding-hint-text">
-                    Cuando una entrega llega a tu sede, confirmá la recepción desde la sección de confirmación. Acá ves qué bienes vienen en cada envío y dónde está su camión.
-                </p>
-            </div>
-            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
-                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-            </button>
-        </div>
-
         <!-- Filtros -->
         <section class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; " aria-label="Filtros de envíos">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
@@ -69,7 +54,7 @@
         <p th:if="${incomingDeliveries.isEmpty()}" class="card" style="padding: 1.5rem; background: #ffffff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); color: var(--color-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">No hay envíos en camino a tu sede.</p>
 
         <!-- Mapa: los camiones en camino y la sede -->
-        <section th:unless="${incomingDeliveries.isEmpty()}" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.5rem;" aria-label="Mapa de envíos">
+        <section th:unless="${incomingDeliveries.isEmpty()}" class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.5rem;" id="incoming-map-panel" aria-label="Mapa de envíos">
             <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border);">
                 <strong style="font-size: 0.9375rem; color: var(--color-ink);">Camiones en camino</strong>
             </div>
@@ -78,8 +63,8 @@
 
         <!-- Lista de envíos -->
         <div class="dt-cards-grid-3" id="incoming-grid">
-            <article class="incoming-card" th:each="inc : ${incomingDeliveries}"
-                     th:attr="data-status=${inc.status}"
+            <article class="incoming-card" th:each="inc, iter : ${incomingDeliveries}"
+                     th:attr="data-status=${inc.status},data-index=${iter.index}"
                      style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 1.25rem;  display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
                     <strong style="font-size: 0.95rem; color: var(--color-ink);" th:text="${inc.title ?: 'Donación'}">Donación</strong>
@@ -104,6 +89,7 @@
             </article>
         </div>
 
+        <p id="incoming-filter-empty" hidden role="status">No hay envíos que coincidan con los filtros seleccionados.</p>
         <script th:inline="javascript">
             // Envíos en camino (API). Todos llegan a la sede de la entidad: el marcador de destino se dibuja una vez.
             const envios = /*[[${incomingDeliveries}]]*/ [];
@@ -123,12 +109,14 @@
                 return div;
             }
 
+            let mapaEnvios = null;
+            const camionesEnvios = [];
             function iniciarMapaEnvios() {
                 const contenedor = document.getElementById('entity-tracking-map');
                 if (!contenedor || typeof L === 'undefined') return;
                 const sede = envios.find(e => tieneCoords(e.destinationCoords));
                 const centro = sede ? [sede.destinationCoords.lat, sede.destinationCoords.lng] : CENTRO_PREDETERMINADO;
-                const mapa = L.map(contenedor).setView(centro, sede ? 13 : 5);
+                const mapa = mapaEnvios = L.map(contenedor).setView(centro, sede ? 13 : 5);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(mapa);
@@ -139,13 +127,14 @@
                         .bindPopup(crearPopup(['Tu sede', sede.destinationAddress || '']));
                     puntos.push(centro);
                 }
-                envios.forEach(e => {
+                envios.forEach((e, index) => {
                     if (!e.truck || !tieneCoords(e.truck)) return;
                     const pos = [e.truck.lat, e.truck.lng];
-                    L.circleMarker(pos, { radius: 9, color: '#1d4ed8', fillColor: '#3b82f6', fillOpacity: 0.9 })
+                    const layer = L.marker(pos, {autoPanOnFocus:false,icon:L.icon({iconUrl:'/img/camion-mapa.webp?v=4',iconSize:[40,40],iconAnchor:[20,20],popupAnchor:[0,-20],className:'truck-map-marker'})})
                         .addTo(mapa)
                         .bindPopup(crearPopup(['Camión ' + (e.truck.plate || '—'),
-                            e.truck.lastUpdate ? 'Última actualización: ' + e.truck.lastUpdate : 'Sin fecha de actualización']));
+                            e.truck.lastUpdate ? 'Última actualización: ' + e.truck.lastUpdate : 'Sin fecha de actualización', 'Latitud: ' + e.truck.lat + ' · Longitud: ' + e.truck.lng]), {autoPan:false});
+                    camionesEnvios[index] = layer;
                     puntos.push(pos);
                 });
                 if (puntos.length > 1) mapa.fitBounds(puntos, { padding: [24, 24] });
@@ -158,16 +147,29 @@
                 document.querySelectorAll('.incoming-card').forEach(card => {
                     const visible = (!query || card.textContent.toLowerCase().includes(query))
                         && (!status || card.getAttribute('data-status') === status);
-                    card.style.display = visible ? 'flex' : 'none';
+                    card.hidden = !visible;
+                    const layer = camionesEnvios[Number(card.dataset.index)];
+                    if (layer && mapaEnvios) {
+                        if (visible && !mapaEnvios.hasLayer(layer)) layer.addTo(mapaEnvios);
+                        if (!visible && mapaEnvios.hasLayer(layer)) mapaEnvios.removeLayer(layer);
+                    }
                     if (visible) count++;
                 });
                 document.getElementById('incoming-count').textContent = count;
+                const panel = document.getElementById('incoming-map-panel');
+                if (panel) panel.hidden = count === 0;
+                const empty = document.getElementById('incoming-filter-empty');
+                if (empty) empty.hidden = count !== 0 || envios.length === 0;
+                if (mapaEnvios) {
+                    mapaEnvios.closePopup();
+                    if (count > 0) requestAnimationFrame(() => mapaEnvios.invalidateSize({pan:false}));
+                }
             }
 
             // Actualización cada 60 s (EXTRA): recarga la página salvo que el usuario esté buscando.
             setInterval(() => {
                 const busqueda = document.getElementById('incoming-search');
-                if (!busqueda || !busqueda.value) location.reload();
+                if ((!busqueda || !busqueda.value) && !document.getElementById('incoming-status-filter').value) location.reload();
             }, 60000);
 
             document.addEventListener('DOMContentLoaded', iniciarMapaEnvios);

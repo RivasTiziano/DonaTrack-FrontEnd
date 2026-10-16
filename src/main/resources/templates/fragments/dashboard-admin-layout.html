@@ -14,9 +14,6 @@
     <script th:src="@{/vendor/leaflet/leaflet.js}"></script>
 </head>
 <body class="dashboard-shell admin-shell">
-    <div class="admin-account-position">
-        <details th:replace="~{fragments/account-menu :: menu}"></details>
-    </div>
     <button type="button" class="dashboard-sidebar-toggle admin-mobile-toggle" aria-label="Abrir menú de navegación">
         <i data-lucide="menu" aria-hidden="true"></i>
     </button>
@@ -45,8 +42,8 @@
 
         <div class="dashboard-drawer-footer">
             <form th:action="@{/logout}" method="post">
-                <button type="submit" class="btn btn-outline">
-                    <i data-lucide="log-out"></i>
+                <button type="submit" class="sidebar-link sidebar-logout" aria-label="Cerrar sesión" title="Cerrar sesión">
+                    <i data-lucide="log-out" aria-hidden="true"></i>
                     <span>Cerrar sesión</span>
                 </button>
             </form>
@@ -69,7 +66,12 @@
             <nav th:replace="~{fragments/admin-nav :: menu(${activeTab}, false)}"></nav>
 
             <div class="sidebar-footer">
-
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="sidebar-link sidebar-logout" aria-label="Cerrar sesión" title="Cerrar sesión">
+                        <i data-lucide="log-out" aria-hidden="true"></i>
+                        <span>Cerrar sesión</span>
+                    </button>
+                </form>
             </div>
         </aside>
 

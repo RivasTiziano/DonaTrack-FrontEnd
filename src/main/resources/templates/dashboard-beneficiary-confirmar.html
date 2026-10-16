@@ -9,25 +9,10 @@
 
         <!-- Header -->
         <div style="margin-bottom: 1.5rem;">
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Confirmación de Recepción de Donaciones</h1>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-ink);">Confirmar recepción</h1>
         </div>
 
         <!-- Onboarding Hint -->
-        <div class="onboarding-hint hint-indigo" role="region" aria-label="Guía de confirmación">
-            <div class="onboarding-hint-icon">
-                <i data-lucide="camera" style="width: 20px; height: 20px; color: #4338ca;"></i>
-            </div>
-            <div class="onboarding-hint-content">
-                <div class="onboarding-hint-title">Verificación de la entrega</div>
-                <p class="onboarding-hint-text">
-                    Para confirmar una entrega recibida hace falta al menos una foto (una URL http o https por línea). Si no la recibiste, indicá la razón.
-                </p>
-            </div>
-            <button type="button" class="onboarding-hint-close" aria-label="Cerrar sugerencia">
-                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-            </button>
-        </div>
-
         <!-- Entregas en traslado: cada asignación tiene su propio formulario de Recibida o No recibida -->
         <div class="card" style="background: #ffffff; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -44,23 +29,27 @@
                         <span class="status-badge badge-traslado" th:text="${donation.status_label}">En traslado</span>
                     </div>
                     <p style="font-size: 0.8125rem; color: var(--color-muted);">
-                        <span th:text="${donation.items_count != null ? donation.items_count + ' ' + donation.unit : '—'}">50 unidades</span>
+                        <span th:text="${@unidades.formatear(donation.items_count, donation.unit)}">50 unidades</span>
                     </p>
 
                     <p th:if="${donation.entregaId == null}" class="form-hint">La entrega todavía no está disponible para confirmar.</p>
 
                     <div th:if="${donation.entregaId != null}">
-                        <!-- Recibida: exige al menos una foto (URL) -->
-                        <form method="post" th:action="@{/entidad/dashboard/confirmar}" class="form-group">
+                        <!-- Confirmación con una imagen guardada por el frontend. -->
+                        <form method="post" enctype="multipart/form-data" th:action="@{/entidad/dashboard/confirmar}" class="form-group receipt-photo-form" data-loading-text="Confirmando…">
                             <input type="hidden" name="asignacionId" th:value="${donation.id}" />
                             <input type="hidden" name="resultado" value="RECIBIDA" />
-                            <label class="form-label" th:for="'fotos-' + ${donation.id}">Fotos de los bienes recibidos (una URL http o https por línea)</label>
-                            <textarea th:id="'fotos-' + ${donation.id}" name="fotos" class="form-control" rows="3" placeholder="https://..." required></textarea>
+                            <label class="form-label" th:for="'foto-' + ${donation.id}">Imagen de la donación recibida</label>
+                            <input th:id="'foto-' + ${donation.id}" type="file" name="imagen" accept="image/jpeg,image/png" class="form-control" data-receipt-image required />
+                            <small class="form-hint">JPG o PNG, hasta 10 MB.</small>
+                            <img class="receipt-image-preview" alt="Vista previa de la donación recibida" hidden />
                             <div>
-                                <button type="submit" class="btn btn-primary">Recibida</button>
+                                <button type="submit" class="btn btn-primary">Confirmar recepción</button>
                             </div>
                         </form>
 
+                        <details class="receipt-not-received">
+                        <summary>No recibí la donación</summary>
                         <!-- No recibida: exige justificación; queda para revisión del admin -->
                         <form method="post" th:action="@{/entidad/dashboard/confirmar}" class="form-group">
                             <input type="hidden" name="asignacionId" th:value="${donation.id}" />
@@ -68,9 +57,10 @@
                             <label class="form-label" th:for="'justificacion-' + ${donation.id}">Justificación (por qué no fue recibida)</label>
                             <textarea th:id="'justificacion-' + ${donation.id}" name="justificacion" class="form-control" rows="2" required></textarea>
                             <div>
-                                <button type="submit" class="btn">No recibida</button>
+                                <button type="submit" class="btn">Enviar justificación</button>
                             </div>
                         </form>
+                        </details>
                     </div>
                 </div>
             </div>
