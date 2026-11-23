@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: donatrack-frontend
+    runtime: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: "-Xms128m -Xmx220m -XX:+UseContainerSupport -XX:MaxRAMPercentage=65.0 -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dspring.main.lazy-initialization=true"
+      - key: DONACIONES_API_URL
+        value: http://donatrack-donaciones:8080
+      - key: LOGISTICA_API_URL
+        value: http://donatrack-logistica:8083
+      - key: AUTENTICACION_API_URL
+        value: http://donatrack-autenticacion:8084
+      - key: INCENTIVOS_API_URL
+        value: http://donatrack-incentivos:8082
+      - key: NOTIFICACIONES_API_URL
+        value: http://donatrack-notificaciones:8081
