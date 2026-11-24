@@ -20,3 +20,4 @@ services:
         value: http://donatrack-incentivos:8082
       - key: NOTIFICACIONES_API_URL
         value: http://donatrack-notificaciones:8081
+
