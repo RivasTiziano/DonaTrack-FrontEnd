@@ -11,13 +11,13 @@ services:
       - key: JAVA_TOOL_OPTIONS
         value: "-Xms128m -Xmx220m -XX:+UseContainerSupport -XX:MaxRAMPercentage=65.0 -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dspring.main.lazy-initialization=true"
       - key: DONACIONES_API_URL
-        value: http://donatrack-donaciones:8080
+        value: https://donatrack-donaciones.onrender.com
       - key: LOGISTICA_API_URL
-        value: http://donatrack-logistica:8083
+        value: https://donatrack-logistica.onrender.com
       - key: AUTENTICACION_API_URL
-        value: http://donatrack-autenticacion:8084
+        value: https://donatrack-autenticacion.onrender.com
       - key: INCENTIVOS_API_URL
-        value: http://donatrack-incentivos:8082
+        value: https://donatrack-incentivos.onrender.com
       - key: NOTIFICACIONES_API_URL
-        value: http://donatrack-notificaciones:8081
+        value: https://donatrack-notificaciones.onrender.com
 
