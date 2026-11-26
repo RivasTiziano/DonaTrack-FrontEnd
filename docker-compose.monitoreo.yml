@@ -1,9 +1,20 @@
+# COMPLEMENTO Docker Compose: se combina con el compose principal, no se usa solo.
+# Activa herramientas y políticas en este motor Docker. Render no lee este archivo.
+# Los nombres de servicios son nombres DNS dentro de la red compartida de Compose.
+# Las notas de la primera aplicación también aplican a los bloques equivalentes siguientes.
 services:
   donatrack-frontend:
+    # Si el proceso termina, Docker lo reinicia; una parada manual se respeta.
+    # Esta política por sí sola NO reinicia por unhealthy. Para eso está supervisor.
     restart: unless-stopped
+    # Metadato que autoriza la recuperación por supervisor; no es una variable de Java.
     labels:
       donatrack.autorestart: 'true'
+    # Docker ejecuta el comando DENTRO de este contenedor y guarda healthy/unhealthy.
     healthcheck:
+      # CMD ejecuta directamente curl con estos argumentos; no abre un navegador.
+      # --fail devuelve un código de salida de error ante HTTP >=400; --silent reduce ruido.
+      # --max-time 5 limita la petición HTTP a 5s. localhost es este contenedor.
       test:
       - CMD
       - curl
@@ -12,10 +23,19 @@ services:
       - --max-time
       - '5'
       - http://localhost:8090/livez
+      # Separación normal entre ejecuciones de la sonda; no es su duración máxima.
       interval: 15s
+      # Docker cancela el comando si dura más de 6s. Tiene 1s de margen sobre curl.
       timeout: 6s
+      # Cuatro fallos CONSECUTIVOS marcan unhealthy. Una sonda exitosa corta la racha.
       retries: 4
+      # Durante la gracia inicial se hacen sondas, pero los fallos no consumen retries.
+      # Si una sonda tiene éxito antes, Docker considera que ya terminó el arranque.
       start_period: 180s
+    # Variables que recibe el proceso del contenedor al arrancar.
     environment:
+      # Escuchar en la red interna para que Prometheus alcance el puerto 9090.
+      # No hay ports de 9090 en las aplicaciones: no se publica a Windows/Internet.
       MANAGEMENT_SERVER_ADDRESS: 0.0.0.0
+      # Opciones de memoria de Java local. ${VARIABLE:-valor} permite sobrescribir el valor.
       JDK_JAVA_OPTIONS: ${MONITORING_JAVA_OPTIONS:--Xms32m -Xmx256m -XX:MaxMetaspaceSize=192m}
