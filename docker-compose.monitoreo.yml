@@ -1,0 +1,21 @@
+services:
+  donatrack-frontend:
+    restart: unless-stopped
+    labels:
+      donatrack.autorestart: 'true'
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - --fail
+      - --silent
+      - --max-time
+      - '5'
+      - http://localhost:8090/livez
+      interval: 15s
+      timeout: 6s
+      retries: 4
+      start_period: 180s
+    environment:
+      MANAGEMENT_SERVER_ADDRESS: 0.0.0.0
+      JDK_JAVA_OPTIONS: ${MONITORING_JAVA_OPTIONS:--Xms32m -Xmx256m -XX:MaxMetaspaceSize=192m}

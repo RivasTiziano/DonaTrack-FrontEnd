@@ -6,7 +6,7 @@ services:
     dockerContext: .
     plan: free
     region: oregon
-    healthCheckPath: /
+    healthCheckPath: /livez
     envVars:
       # Endpoint completo https://COLECTOR/v1/traces y cabecera authorization=Bearer TOKEN.
       # Define cómo activar y configurar el agente en Render.
