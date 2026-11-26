@@ -16,6 +16,10 @@ RUN mvn clean package -DskipTests
 # Etapa 2: Imagen de Producción / Run
 # ==========================
 FROM eclipse-temurin:21-jre
+# Agente disponible para activar trazas en Render mediante JAVA_TOOL_OPTIONS.
+# Ese agente observa automáticamente las peticiones que recibe Spring y las llamadas HTTP al backend. 
+# Permite registrar sus tiempos, errores y relaciones sin agregar código a cada controller o service.
+ADD https://repo.maven.apache.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/2.22.0/opentelemetry-javaagent-2.22.0.jar /opt/opentelemetry-javaagent.jar
 WORKDIR /app
 
 # Copiar el JAR generado

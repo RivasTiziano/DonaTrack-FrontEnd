@@ -1,0 +1,21 @@
+# Usa el agente compartido que prepara el backend, montado en /otel como solo lectura, 
+# y envía las trazas a http://jaeger:4318/v1/traces por la red interna de Docker.
+services:
+  donatrack-frontend:
+    environment:
+      JAVA_TOOL_OPTIONS: "${FRONTEND_JAVA_OPTIONS:-} -javaagent:/otel/opentelemetry-javaagent.jar"
+      OTEL_SERVICE_NAME: frontend
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://jaeger:4318/v1/traces
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_TRACES_SAMPLER: parentbased_always_on
+      LOGGING_PATTERN_LEVEL: "%5p [trace_id=%X{trace_id:-} span_id=%X{span_id:-}]"
+    volumes:
+      - otel-agent:/otel:ro
+
+volumes:
+  # Comparte el agente preparado por el Compose del backend.
+  otel-agent:
+    external: true
+    name: 2026-tpa-ma-ma-grupo-18_otel-agent
