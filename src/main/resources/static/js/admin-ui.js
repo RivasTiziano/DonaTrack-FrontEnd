@@ -49,24 +49,36 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-admin-message]').forEach(message => {
     window.showToast?.(message.dataset.kind === 'error' ? 'No se pudo completar' : 'Operación confirmada', message.dataset.adminMessage, message.dataset.kind);
   });
-  document.querySelectorAll('[data-filter-table]').forEach(control => control.addEventListener('input', () => {
-    const table=document.getElementById(control.dataset.filterTable);
-    if(!table) return;
-    const controls=[...document.querySelectorAll('[data-filter-table="'+control.dataset.filterTable+'"]')];
-    const rows=[...table.querySelectorAll('tbody tr[data-record]')];
-    rows.forEach(row => {
-      row.hidden=!controls.every(c => !c.value || (c.dataset.field ? row.dataset[c.dataset.field] === c.value : row.textContent.toLowerCase().includes(c.value.toLowerCase())));
-    });
-    const empty=document.querySelector('[data-filter-empty="'+control.dataset.filterTable+'"]');
-    if(empty) empty.hidden=rows.some(row=>!row.hidden);
-  }));
+  document.querySelectorAll('[data-filter-table]').forEach(control => {
+    const applyTableFilter = () => {
+      const table=document.getElementById(control.dataset.filterTable);
+      if(!table) return;
+      const controls=[...document.querySelectorAll('[data-filter-table="'+control.dataset.filterTable+'"]')];
+      const rows=[...table.querySelectorAll('tbody tr[data-record]')];
+      rows.forEach(row => {
+        const visible=controls.every(c => !c.value || (c.dataset.field ? row.dataset[c.dataset.field] === c.value : row.textContent.toLowerCase().includes(c.value.toLowerCase())));
+        row.dataset.filterOut=visible ? 'false' : 'true';
+        if(table.dataset.clientPaginated !== 'true') row.hidden=!visible;
+      });
+      const empty=document.querySelector('[data-filter-empty="'+control.dataset.filterTable+'"]');
+      if(empty) empty.hidden=rows.some(row=>row.dataset.filterOut !== 'true');
+      table.dispatchEvent(new CustomEvent('dt:filter-changed'));
+    };
+    control.addEventListener('input', applyTableFilter);
+    control.addEventListener('change', applyTableFilter);
+  });
   document.querySelectorAll('[data-navigate-select]').forEach(select=>select.addEventListener('change',()=>{
     if(select.value.startsWith('/admin/dashboard/')) location.assign(select.value);
   }));
   document.querySelectorAll('[data-filter-list]').forEach(control=>control.addEventListener('input',()=>{
-    document.getElementById(control.dataset.filterList)?.querySelectorAll('[data-record]').forEach(row=>{
-      row.hidden=!row.textContent.toLowerCase().includes(control.value.toLowerCase());
+    const list=document.getElementById(control.dataset.filterList);
+    if(!list) return;
+    list.querySelectorAll('[data-record]').forEach(row=>{
+      const visible=row.textContent.toLowerCase().includes(control.value.toLowerCase());
+      row.dataset.filterOut=visible ? 'false' : 'true';
+      if(list.dataset.clientPaginated !== 'true') row.hidden=!visible;
     });
+    list.dispatchEvent(new CustomEvent('dt:filter-changed'));
   }));
   document.querySelectorAll('.admin-shell form').forEach(form => form.addEventListener('submit', event => {
     if(event.defaultPrevented || !form.checkValidity() || form.method.toLowerCase() !== 'post') return;

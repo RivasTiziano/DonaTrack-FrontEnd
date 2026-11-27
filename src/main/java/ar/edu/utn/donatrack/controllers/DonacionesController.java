@@ -49,8 +49,16 @@ public class DonacionesController {
 
     @GetMapping("/admin/dashboard/donaciones")
     public String donaciones(Model model) {
-        load(model, () -> model.addAttribute("donaciones", service.donaciones()));
-        model.addAttribute("nombresDonantes", service.nombresDonantes());
+        load(model, () -> {
+            var lista = service.donaciones();
+            model.addAttribute("donaciones", lista);
+            List<Long> ids = lista.stream()
+                    .map(ar.edu.utn.donatrack.dto.ApiDtos.Donacion::donanteId)
+                    .filter(java.util.Objects::nonNull)
+                    .distinct()
+                    .toList();
+            model.addAttribute("nombresDonantes", service.nombresDonantes(ids));
+        });
         load(model, () -> model.addAttribute("categorias", service.categorias()));
         return page(model, "Donaciones", "donaciones", "donations");
     }
@@ -58,7 +66,6 @@ public class DonacionesController {
     @GetMapping("/admin/dashboard/donaciones/nueva")
     public String nuevaDonacion(Model model) {
         load(model, () -> model.addAttribute("categorias", service.categorias()));
-        load(model, () -> model.addAttribute("nombresDonantes", service.nombresDonantes()));
         return "admin-donacion-nueva";
     }
 
@@ -146,7 +153,12 @@ public class DonacionesController {
         } catch(FormularioInvalidoException e) { model.addAttribute("apiError", e.getMessage()); }
         catch(RestClientException e) { model.addAttribute("apiError", errors.describe(e)); }
         load(model, () -> model.addAttribute("categorias", service.categorias()));
-        load(model, () -> model.addAttribute("nombresDonantes", service.nombresDonantes()));
+        if (donanteId != null && !donanteId.isBlank()) {
+            try {
+                Long idValido = Long.valueOf(donanteId.trim());
+                model.addAttribute("donanteSeleccionadoNombre", service.nombresDonantes(List.of(idValido)).get(idValido));
+            } catch (NumberFormatException ignored) {}
+        }
         return "admin-donacion-nueva";
     }
 
@@ -265,15 +277,41 @@ public class DonacionesController {
     }
 
     @GetMapping("/admin/dashboard/donantes")
-    public String listar(Model model) {
-        model.addAttribute("donorsList",List.of());
+    public String listar(@RequestParam(defaultValue = "") String q,
+                         @RequestParam(defaultValue = "") String tipo,
+                         @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(defaultValue = "20") int size,
+                         Model model) {
+        model.addAttribute("donorsList", List.of());
+        model.addAttribute("q", q);
+        model.addAttribute("tipo", tipo);
+        model.addAttribute("page", Math.max(0, page));
+        model.addAttribute("size", Math.max(1, Math.min(size, 100)));
+        model.addAttribute("totalElements", 0L);
+        model.addAttribute("totalPages", 0);
         try {
-            model.addAttribute("donorsList", service.filasDonantes());
+            var pagina = service.listarDonantesPaginado(q, tipo, page, size);
+            model.addAttribute("donorsList", pagina.filas());
+            model.addAttribute("page", pagina.page());
+            model.addAttribute("size", pagina.size());
+            model.addAttribute("totalElements", pagina.totalElements());
+            model.addAttribute("totalPages", pagina.totalPages());
         }
         catch(RestClientException | IllegalStateException e) {
             model.addAttribute("errorDonantes","No se pudo obtener el listado de donantes. Verificá que el servicio de Donaciones esté disponible.");
         }
         return "dashboard-admin-donantes";
+    }
+
+    /** Búsqueda rápida JSON para el selector de donante al registrar donaciones sin cargar 20.000 filas. */
+    @GetMapping("/admin/dashboard/donantes/buscar")
+    @ResponseBody
+    public List<ar.edu.utn.donatrack.models.DonanteFila> buscarDonantesAjax(@RequestParam(defaultValue = "") String q) {
+        try {
+            return service.listarDonantesPaginado(q, "", 0, 15).filas();
+        } catch (RestClientException | IllegalStateException e) {
+            return List.of();
+        }
     }
 
     @GetMapping("/admin/dashboard/donantes/{tipo:humanos|juridicos}/{id}")

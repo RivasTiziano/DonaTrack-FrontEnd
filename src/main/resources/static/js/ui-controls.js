@@ -65,7 +65,7 @@
 window.initializeAnimatedSelects = () => {
   let activeClose;
   document.querySelectorAll('select:not([multiple])').forEach((select, serial) => {
-    if (select.closest('.animated-select')) return;
+    if (select.closest('.animated-select') || select.options.length > 60) return;
     serial = window.animatedSelectSerial = (window.animatedSelectSerial || 0) + 1;
     const wrapper = document.createElement('div');
     wrapper.className = 'animated-select';
@@ -158,4 +158,228 @@ window.initializeAnimatedSelects = () => {
     sync();
   });
 };
-window.initializeAnimatedSelects();
+
+window.initializeDonorPicker = () => {
+  document.querySelectorAll('[data-donor-picker]').forEach(picker => {
+    if (picker.dataset.pickerReady === 'true') return;
+    picker.dataset.pickerReady = 'true';
+    const search = picker.querySelector('#donor-picker-search');
+    const hiddenId = picker.querySelector('#donanteIdInput');
+    const selectedLabel = picker.querySelector('#donor-picker-selected');
+    const resultsBox = picker.querySelector('#donor-picker-results');
+    const form = picker.closest('form');
+    if (!search || !hiddenId || !resultsBox) return;
+
+    let currentSelectionName = hiddenId.value ? search.value.trim() : '';
+    let debounceTimer = null;
+    let activeController = null;
+
+    const setStatus = text => {
+      if (selectedLabel) selectedLabel.textContent = text;
+    };
+
+    const hideResults = () => {
+      resultsBox.hidden = true;
+      resultsBox.replaceChildren();
+    };
+
+    const renderEmpty = text => {
+      const p = document.createElement('p');
+      p.className = 'donor-picker-empty';
+      p.textContent = text;
+      resultsBox.replaceChildren(p);
+      resultsBox.hidden = false;
+    };
+
+    const chooseDonor = donor => {
+      hiddenId.value = String(donor.id);
+      currentSelectionName = donor.name || '';
+      search.value = currentSelectionName;
+      setStatus(`Donante seleccionado: ${currentSelectionName} (ID #${donor.id})`);
+      hideResults();
+    };
+
+    const renderResults = donors => {
+      if (!Array.isArray(donors) || !donors.length) {
+        renderEmpty('No encontramos donantes para esa búsqueda.');
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      donors.forEach(donor => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-outline donor-picker-item';
+        btn.setAttribute('role', 'option');
+
+        const title = document.createElement('strong');
+        title.textContent = donor.name || `Donante #${donor.id}`;
+
+        const meta = document.createElement('span');
+        const docText = donor.doc ? `${donor.docType ? donor.docType + ' ' : ''}${donor.doc}` : 'Sin documento';
+        const contactText = donor.email || donor.phone || '';
+        meta.textContent = [donor.type, docText, contactText].filter(Boolean).join(' · ');
+
+        btn.append(title, meta);
+        btn.addEventListener('click', () => chooseDonor(donor));
+        fragment.appendChild(btn);
+      });
+      resultsBox.replaceChildren(fragment);
+      resultsBox.hidden = false;
+    };
+
+    const runSearch = async query => {
+      if (activeController) activeController.abort();
+      activeController = new AbortController();
+      renderEmpty('Buscando donantes...');
+      try {
+        const resp = await fetch(`/admin/dashboard/donantes/buscar?q=${encodeURIComponent(query)}`, {
+          headers: { Accept: 'application/json' },
+          credentials: 'same-origin',
+          signal: activeController.signal
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        renderResults(data);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        renderEmpty('No se pudo buscar en este momento. Reintentá.');
+      }
+    };
+
+    search.addEventListener('input', () => {
+      const value = search.value.trim();
+      if (hiddenId.value && value !== currentSelectionName) {
+        hiddenId.value = '';
+        currentSelectionName = '';
+        setStatus('Buscá y seleccioná un donante de la lista.');
+      }
+      clearTimeout(debounceTimer);
+      if (!value) {
+        if (activeController) activeController.abort();
+        hideResults();
+        return;
+      }
+      debounceTimer = setTimeout(() => runSearch(value), 250);
+    });
+
+    search.addEventListener('keydown', event => {
+      if (event.key === 'Escape') hideResults();
+      if (event.key === 'ArrowDown' && !resultsBox.hidden) {
+        const first = resultsBox.querySelector('.donor-picker-item');
+        if (first) { event.preventDefault(); first.focus(); }
+      }
+    });
+
+    document.addEventListener('pointerdown', event => {
+      if (!picker.contains(event.target)) hideResults();
+    });
+
+    form?.addEventListener('submit', event => {
+      if (!hiddenId.value.trim()) {
+        event.preventDefault();
+        setStatus('Seleccioná un donante de la lista antes de registrar la donación.');
+        search.focus();
+      }
+    });
+  });
+};
+
+window.initializeClientPagination = () => {
+  const PAGE_SIZE = 15;
+  const setupContainer = (container, eventTarget, insertAfter, itemSelector) => {
+    if (!container || container.dataset.clientPaginated === 'true') return;
+    const allItems = [...container.querySelectorAll(itemSelector)].filter(el => el.parentElement === container);
+    if (allItems.length <= PAGE_SIZE) return;
+
+    container.dataset.clientPaginated = 'true';
+    eventTarget.dataset.clientPaginated = 'true';
+    let currentPage = 0;
+
+    const bar = document.createElement('nav');
+    bar.className = 'pagination-bar';
+    bar.setAttribute('aria-label', 'Paginación');
+
+    const info = document.createElement('span');
+    const controls = document.createElement('div');
+    controls.className = 'pagination-controls';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.className = 'btn btn-outline btn-sm';
+    prevBtn.textContent = 'Anterior';
+
+    const pageBadge = document.createElement('span');
+    pageBadge.className = 'pagination-page';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'btn btn-outline btn-sm';
+    nextBtn.textContent = 'Siguiente';
+
+    controls.append(prevBtn, pageBadge, nextBtn);
+    bar.append(info, controls);
+    insertAfter.after(bar);
+
+    const render = () => {
+      const visibleItems = allItems.filter(el => el.dataset.filterOut !== 'true');
+      const total = visibleItems.length;
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (currentPage >= totalPages) currentPage = totalPages - 1;
+      const start = currentPage * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      const visibleSet = new Set(visibleItems.slice(start, end));
+
+      allItems.forEach(el => { el.hidden = !visibleSet.has(el); });
+
+      if (total === 0) {
+        bar.hidden = true;
+        return;
+      }
+      bar.hidden = total <= PAGE_SIZE;
+      info.textContent = `Mostrando ${start + 1}–${Math.min(end, total)} de ${total}`;
+      pageBadge.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+      prevBtn.disabled = currentPage <= 0;
+      nextBtn.disabled = currentPage >= totalPages - 1;
+    };
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 0) {
+        currentPage--;
+        render();
+        insertAfter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    nextBtn.addEventListener('click', () => {
+      currentPage++;
+      render();
+      insertAfter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    eventTarget.addEventListener('dt:filter-changed', () => {
+      currentPage = 0;
+      render();
+    });
+    render();
+  };
+
+  document.querySelectorAll('.data-table:not([data-no-paginate])').forEach(table => {
+    const tbody = table.tBodies?.[0];
+    if (!tbody) return;
+    const hasRecord = tbody.querySelector(':scope > tr[data-record]');
+    const anchor = table.closest('.table-scroll') || table;
+    setupContainer(tbody, table, anchor, hasRecord ? 'tr[data-record]' : 'tr');
+  });
+
+  ['#donations-grid', '#entities-grid', '#needs-grid', '#incoming-grid', '#assigned-grid', '#notificaciones-list'].forEach(selector => {
+    const grid = document.querySelector(selector);
+    if (!grid) return;
+    setupContainer(grid, grid, grid, ':scope > *');
+  });
+};
+
+const runUiControls = () => {
+  window.initializeAnimatedSelects();
+  window.initializeDonorPicker();
+  window.initializeClientPagination();
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runUiControls);
+else runUiControls();

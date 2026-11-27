@@ -23,8 +23,7 @@ public class IncentivosController {
 
     @GetMapping("/admin/dashboard/rankings")
     public String rankings(Model model) {
-        var nombres = donaciones.nombresDonantes();
-        views.load(model, "ranking", () -> service.rankingConNombres(nombres));
+        views.load(model, "ranking", () -> service.rankingConNombres(donaciones::nombresDonantes));
         model.addAttribute("pageTitle", "Ranking de incentivos");
         model.addAttribute("section", "rankings");
         model.addAttribute("activeTab", "rankings");
@@ -63,9 +62,24 @@ public class IncentivosController {
     }
 
     @GetMapping("/admin/dashboard/incentivos/donantes")
-    public String seleccionar(Model model) {
-        views.load(model, "humanos", donaciones::listarHumanos);
-        views.load(model, "juridicos", donaciones::listarJuridicos);
+    public String seleccionar(@RequestParam(defaultValue = "") String q,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "20") int size,
+                              Model model) {
+        model.addAttribute("donorsList", java.util.List.of());
+        model.addAttribute("q", q);
+        model.addAttribute("page", Math.max(0, page));
+        model.addAttribute("size", Math.max(1, Math.min(size, 100)));
+        model.addAttribute("totalElements", 0L);
+        model.addAttribute("totalPages", 0);
+        views.load(model, () -> {
+            var pagina = donaciones.listarDonantesPaginado(q, "", page, size);
+            model.addAttribute("donorsList", pagina.filas());
+            model.addAttribute("page", pagina.page());
+            model.addAttribute("size", pagina.size());
+            model.addAttribute("totalElements", pagina.totalElements());
+            model.addAttribute("totalPages", pagina.totalPages());
+        });
         return views.page(model, "Consultar Incentivos de un donante", "seleccionarIncentivos");
     }
 
@@ -79,7 +93,7 @@ public class IncentivosController {
                 model.addAttribute("donanteSinIncentivos", true);
             }
         });
-        String nombre = donaciones.nombresDonantes().get(id);
+        String nombre = donaciones.nombresDonantes(java.util.List.of(id)).get(id);
         String titulo = nombre != null && !nombre.isBlank() ? "Incentivos de " + nombre : "Incentivos del donante";
         if (Boolean.TRUE.equals(model.getAttribute("donanteSinIncentivos")) || model.getAttribute("metricas") == null)
             return views.page(model, titulo, "donanteIncentivos");
@@ -92,8 +106,7 @@ public class IncentivosController {
 
     @GetMapping("/admin/dashboard/incentivos/historial")
     public String historial(Model model) {
-        var nombres = donaciones.nombresDonantes();
-        views.load(model, "historialRanking", () -> service.historialConNombres(nombres));
+        views.load(model, "historialRanking", () -> service.historialConNombres(donaciones::nombresDonantes));
         return views.page(model, "Historial de rankings", "historialRanking");
     }
 

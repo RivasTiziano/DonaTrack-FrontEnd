@@ -96,28 +96,33 @@
 </section>
 <section th:if="${section == 'seleccionarIncentivos'}" class="card api-panel">
     <p>Consulta administrativa por un donante seleccionado. No representa al usuario conectado.</p>
-    <label>Seleccionar donante<select class="form-control" data-navigate-select>
-        <option value="">Elegir un donante para ver su ficha</option>
-        <option th:each="d : ${humanos}" th:value="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre + ' ' + d.apellido}">
-        </option>
-        <option th:each="d : ${juridicos}" th:value="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial}">
-        </option>
-    </select>
-</label>
-<div class="toolbar">
-    <label>Buscar donante<input type="search" class="form-control" data-filter-list="lista-incentivos"/>
-</label>
-</div>
-<ul id="lista-incentivos" class="attention-list">
-    <li data-record th:each="d : ${humanos}">
-        <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.nombre} + ' ' + ${d.apellido}">
-        </a>
-    </li>
-    <li data-record th:each="d : ${juridicos}">
-        <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.razonSocial}">
-        </a>
-    </li>
-</ul>
+    <form method="get" th:action="@{/admin/dashboard/incentivos/donantes}" class="toolbar donor-search-toolbar">
+        <label>Buscar donante<input type="search" name="q" class="form-control" th:value="${q}" placeholder="Nombre, razón social, DNI o email"/>
+        </label>
+        <input type="hidden" name="page" value="0"/>
+        <input type="hidden" name="size" th:value="${size ?: 20}"/>
+        <div class="donor-search-actions">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a th:if="${q != null and !q.isEmpty()}" class="btn btn-outline" th:href="@{/admin/dashboard/incentivos/donantes}">Limpiar</a>
+        </div>
+    </form>
+    <p th:if="${#lists.isEmpty(donorsList) and apiError == null}" role="status">No se encontraron donantes para mostrar.</p>
+    <ul id="lista-incentivos" class="attention-list" th:if="${!#lists.isEmpty(donorsList)}">
+        <li data-record th:each="d : ${donorsList}" th:data-row-url="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" tabindex="0">
+            <a th:href="@{/admin/dashboard/incentivos/donantes/{id}(id=${d.id})}" th:text="${d.name}"></a>
+            <small class="muted" th:text="${d.type + ' · ' + d.docType + ' ' + d.doc + (d.email != null ? ' · ' + d.email : '')}"></small>
+        </li>
+    </ul>
+    <nav class="pagination-bar" th:if="${totalElements != null and totalElements > 0}" aria-label="Paginación de donantes">
+        <span class="pagination-summary" th:text="'Mostrando ' + ${page * size + 1} + '–' + ${page * size + donorsList.size()} + ' de ' + ${totalElements} + ' donantes'"></span>
+        <div class="pagination-controls" th:if="${totalPages > 1}">
+            <a class="btn btn-outline btn-sm" th:if="${page > 0}" th:href="@{/admin/dashboard/incentivos/donantes(q=${q}, page=${page - 1}, size=${size})}">Anterior</a>
+            <span class="btn btn-outline btn-sm is-disabled" aria-disabled="true" th:if="${page <= 0}">Anterior</span>
+            <span class="pagination-page" th:text="'Página ' + ${page + 1} + ' de ' + ${totalPages}"></span>
+            <a class="btn btn-outline btn-sm" th:if="${page + 1 < totalPages}" th:href="@{/admin/dashboard/incentivos/donantes(q=${q}, page=${page + 1}, size=${size})}">Siguiente</a>
+            <span class="btn btn-outline btn-sm is-disabled" aria-disabled="true" th:if="${page + 1 >= totalPages}">Siguiente</span>
+        </div>
+    </nav>
 </section>
 <p th:if="${section == 'donanteIncentivos' and donanteSinIncentivos == true}" role="status">Este donante todavía no tiene datos de incentivos registrados. Aún no hay métricas, misiones ni insignias para mostrar.</p>
 <section th:if="${section == 'donanteIncentivos' and metricas != null}" class="card api-panel donor-incentives-detail">

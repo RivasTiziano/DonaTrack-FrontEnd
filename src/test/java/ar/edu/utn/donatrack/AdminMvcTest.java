@@ -400,4 +400,44 @@ class AdminMvcTest {
                 .andExpect(content().string(containsString("value=\"extra@example.com\"")));
         verify(donaciones,never()).crearJuridico(any());
     }
+
+    @Test void listadoDeDonantesUsaPaginacionDelServidorYFiltros() throws Exception {
+        var pagina = new DonantePaginadoDtos.PaginaDonantes(
+                List.of(new DonantePaginadoDtos.DonanteResumen(42L, "HUMANO", "Ana Gómez", "DNI", "40111222", "ana@test.org", null, "ACTIVO")),
+                1, 20, 45, 3);
+        when(donaciones.listarDonantesPaginado("Ana", "HUMANO", 1, 20)).thenReturn(pagina);
+
+        mvc.perform(get("/admin/dashboard/donantes").session(TestSesiones.admin())
+                        .param("q", "Ana").param("tipo", "HUMANO").param("page", "1").param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Ana Gómez")))
+                .andExpect(content().string(containsString("Página 2 de 3")))
+                .andExpect(content().string(containsString("de 45 donantes")));
+        verify(donaciones, never()).listarHumanos();
+        verify(donaciones, never()).listarJuridicos();
+    }
+
+    @Test void buscadorDeDonantesParaNuevaDonacionDevuelveJsonAcotado() throws Exception {
+        var pagina = new DonantePaginadoDtos.PaginaDonantes(
+                List.of(new DonantePaginadoDtos.DonanteResumen(77L, "HUMANO", "Tester E6", "DNI", "30111222", "tester@test.org", null, "ACTIVO")),
+                0, 15, 1, 1);
+        when(donaciones.listarDonantesPaginado("Tester", "", 0, 15)).thenReturn(pagina);
+
+        mvc.perform(get("/admin/dashboard/donantes/buscar").session(TestSesiones.admin()).param("q", "Tester"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Tester E6")))
+                .andExpect(content().string(containsString("\"id\":77")));
+    }
+
+    @Test void consultaIncentivosPorDonantePaginaSinDescargarTodoElPadron() throws Exception {
+        var pagina = new DonantePaginadoDtos.PaginaDonantes(
+                List.of(new DonantePaginadoDtos.DonanteResumen(12L, "JURIDICO", "Empresa Sur", "CUIT", "30111222334", "sur@test.org", null, "PENDIENTE")),
+                0, 20, 30, 2);
+        when(donaciones.listarDonantesPaginado("Sur", "", 0, 20)).thenReturn(pagina);
+
+        mvc.perform(get("/admin/dashboard/incentivos/donantes").session(TestSesiones.admin()).param("q", "Sur"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Empresa Sur")))
+                .andExpect(content().string(containsString("Página 1 de 2")));
+    }
 }

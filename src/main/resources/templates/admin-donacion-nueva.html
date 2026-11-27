@@ -1,7 +1,16 @@
 <!DOCTYPE html><html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/dashboard-admin-layout :: layout(~{::title}, ~{::main}, 'donations')}"><head><title>Registrar donación - DonaTrack</title></head><body><section th:fragment="main" class="api-view"><h1>Registrar donación</h1><a class="btn btn-outline" th:href="@{/admin/dashboard/donaciones}">Volver a donaciones</a><div th:replace="~{fragments/admin-ui :: mensajes}"></div><section class="card api-panel">
         
         <form method="post" th:action="@{/admin/dashboard/donaciones}">
-            <label>Donante<select class="form-control" name="donanteId" required><option value="">Seleccionar donante</option><option th:each="donante : ${nombresDonantes}" th:value="${donante.key}" th:text="${donante.value}" th:selected="${campos != null and campos.getFirst('donanteId') == #strings.toString(donante.key)}"></option></select></label>
+            <div class="donor-picker" data-donor-picker>
+                <label>Donante
+                    <input type="search" class="form-control" id="donor-picker-search" placeholder="Buscá por nombre, razón social, DNI/CUIT o email..." autocomplete="off"
+                           th:value="${donanteSeleccionadoNombre != null ? donanteSeleccionadoNombre : ''}" />
+                </label>
+                <input type="hidden" name="donanteId" id="donanteIdInput" th:value="${campos != null ? campos.getFirst('donanteId') : ''}" />
+                <p class="form-hint donor-picker-selected" id="donor-picker-selected" role="status"
+                   th:text="${donanteSeleccionadoNombre != null ? 'Donante seleccionado: ' + donanteSeleccionadoNombre + ' (ID #' + campos.getFirst('donanteId') + ')' : 'Buscá y seleccioná un donante de la lista.'}"></p>
+                <div id="donor-picker-results" class="donor-picker-results" role="listbox" aria-label="Resultados de donantes" hidden></div>
+            </div>
         <label>Descripción general<input class="form-control" name="descripcionGeneral" th:value="${campos != null ? campos.getFirst('descripcionGeneral') : ''}" required />
     </label>
     <fieldset th:replace="~{fragments/api-bien-form :: campos}">

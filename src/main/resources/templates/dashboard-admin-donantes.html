@@ -17,24 +17,35 @@
             <p th:if="${errorDonantes != null}" class="api-error" role="alert" th:text="${errorDonantes}">
             </p>
             <section class="card api-panel">
-                <div class="toolbar">
-                    <label>Buscar donante<input class="form-control" type="search" data-filter-table="donors-table" placeholder="Nombre, documento o contacto"/>
-                </label>
-                <label>Tipo<select class="form-control" data-filter-table="donors-table" data-field="type">
-                    <option value="">Todos</option>
-                    <option value="Humana">Donantes</option>
-                    <option value="Jurídica">Donantes jurídicos</option>
-                </select>
-            </label>
-        </div>
+                <form method="get" th:action="@{/admin/dashboard/donantes}" class="toolbar donor-search-toolbar">
+                    <label>Buscar donante<input class="form-control" type="search" name="q" th:value="${q}" placeholder="Nombre, documento, email o teléfono"/>
+                    </label>
+                    <label>Tipo<select class="form-control" name="tipo" onchange="this.form.submit()">
+                        <option value="" th:selected="${tipo == null or tipo == ''}">Todos</option>
+                        <option value="HUMANA" th:selected="${tipo == 'HUMANA' or tipo == 'Humana'}">Donantes</option>
+                        <option value="JURIDICA" th:selected="${tipo == 'JURIDICA' or tipo == 'Jurídica' or tipo == 'Juridica'}">Donantes jurídicos</option>
+                    </select>
+                    </label>
+                    <label>Por página<select class="form-control" name="size" onchange="this.form.submit()">
+                        <option value="20" th:selected="${size == 20}">20</option>
+                        <option value="50" th:selected="${size == 50}">50</option>
+                        <option value="100" th:selected="${size == 100}">100</option>
+                    </select>
+                    </label>
+                    <input type="hidden" name="page" value="0"/>
+                    <div class="donor-search-actions">
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                        <a th:if="${(q != null and !q.isEmpty()) or (tipo != null and !tipo.isEmpty())}" class="btn btn-outline" th:href="@{/admin/dashboard/donantes(size=${size})}">Limpiar</a>
+                    </div>
+                </form>
         <div class="empty-state" th:if="${#lists.isEmpty(donorsList) and errorDonantes == null and apiError == null}">
             <i data-lucide="users" aria-hidden="true">
             </i>
-            <p>Todavía no hay donantes registrados.</p>
-            <a class="btn btn-primary" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Registrar un donante</a>
+            <p th:text="${(q != null and !q.isEmpty()) or (tipo != null and !tipo.isEmpty()) ? 'No se encontraron donantes con esos filtros.' : 'Todavía no hay donantes registrados.'}">Todavía no hay donantes registrados.</p>
+            <a class="btn btn-primary" th:if="${(q == null or q.isEmpty()) and (tipo == null or tipo.isEmpty())}" th:href="@{/admin/dashboard/donantes/nuevo/humanos}">Registrar un donante</a>
         </div>
-        <div class="api-table">
-            <table id="donors-table" class="data-table">
+        <div class="api-table" th:if="${!#lists.isEmpty(donorsList)}">
+            <table id="donors-table" class="data-table" data-no-paginate>
                 <thead>
                     <tr>
                         <th scope="col">Nombre / Razón social</th>
@@ -56,9 +67,9 @@
                         <td data-label="Documento" th:text="${donor.docType + ': ' + donor.doc}">
                         </td>
                         <td data-label="Contacto">
-                            <span th:text="${donor.email}">
+                            <span class="donor-email" th:text="${donor.email != null and !donor.email.isBlank() ? donor.email : 'Sin email'}">
                             </span>
-                            <small class="muted" th:text="${donor.phone}">
+                            <small class="muted" th:if="${donor.phone != null and !donor.phone.isBlank()}" th:text="${donor.phone}">
                             </small>
                         </td>
                         <td data-label="Registro">
@@ -77,7 +88,16 @@
                 </tbody>
             </table>
         </div>
-        <p data-filter-empty="donors-table" hidden role="status">No se encontraron donantes con esos filtros.</p>
+        <nav class="pagination-bar" th:if="${totalElements != null and totalElements > 0}" aria-label="Paginación de donantes">
+            <span class="pagination-summary" th:text="'Mostrando ' + ${page * size + 1} + '–' + ${page * size + donorsList.size()} + ' de ' + ${totalElements} + ' donantes'"></span>
+            <div class="pagination-controls" th:if="${totalPages > 1}">
+                <a class="btn btn-outline btn-sm" th:if="${page > 0}" th:href="@{/admin/dashboard/donantes(q=${q}, tipo=${tipo}, page=${page - 1}, size=${size})}">Anterior</a>
+                <span class="btn btn-outline btn-sm is-disabled" aria-disabled="true" th:if="${page <= 0}">Anterior</span>
+                <span class="pagination-page" th:text="'Página ' + ${page + 1} + ' de ' + ${totalPages}"></span>
+                <a class="btn btn-outline btn-sm" th:if="${page + 1 < totalPages}" th:href="@{/admin/dashboard/donantes(q=${q}, tipo=${tipo}, page=${page + 1}, size=${size})}">Siguiente</a>
+                <span class="btn btn-outline btn-sm is-disabled" aria-disabled="true" th:if="${page + 1 >= totalPages}">Siguiente</span>
+            </div>
+        </nav>
     </section>
 </section>
 </body>

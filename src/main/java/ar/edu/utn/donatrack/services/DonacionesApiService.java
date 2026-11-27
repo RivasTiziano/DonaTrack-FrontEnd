@@ -7,6 +7,7 @@ import ar.edu.utn.donatrack.dto.DonanteRequests;
 import ar.edu.utn.donatrack.dto.DonacionesDetalles;
 import ar.edu.utn.donatrack.dto.donante.DonanteHumanoResponse;
 import ar.edu.utn.donatrack.dto.donante.DonanteJuridicoResponse;
+import ar.edu.utn.donatrack.dto.donante.DonantePaginadoDtos;
 import ar.edu.utn.donatrack.exceptions.PerfilNoEncontradoException;
 import ar.edu.utn.donatrack.services.internal.WebApiCallerService;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,8 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /** Cliente de toda la API del microservicio de Donaciones, organizado por recurso. */
@@ -40,6 +44,35 @@ public class DonacionesApiService {
 
     public List<DonanteJuridicoResponse> listarJuridicos() {
         return http.getList(url + "/donantes/juridicos", DonanteJuridicoResponse.class);
+    }
+
+    /** Consulta paginada y filtrada en backend para evitar cargar decenas de miles de filas en memoria. */
+    public DonantePaginadoDtos.PaginaDonantes listarDonantesPaginado(String q, String tipo, int page, int size) {
+        var uri = UriComponentsBuilder.fromUriString(url + "/donantes/paginado")
+                .queryParam("page", Math.max(0, page))
+                .queryParam("size", Math.max(1, Math.min(size, 100)));
+        if (q != null && !q.isBlank()) uri.queryParam("q", q.trim());
+        if (tipo != null && !tipo.isBlank()) uri.queryParam("tipo", tipo.trim());
+        return http.get(uri.build().encode().toUri(), DonantePaginadoDtos.PaginaDonantes.class);
+    }
+
+    /** Resuelve únicamente los nombres de los donantes solicitados sin descargar todo el padrón. */
+    @SuppressWarnings("unchecked")
+    public DonantePaginadoDtos.NombresMap buscarNombresPorIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) return new DonantePaginadoDtos.NombresMap(Map.of());
+        List<Long> unicos = ids.stream().filter(Objects::nonNull).distinct().toList();
+        if (unicos.isEmpty()) return new DonantePaginadoDtos.NombresMap(Map.of());
+        var uri = UriComponentsBuilder.fromUriString(url + "/donantes/nombres")
+                .queryParam("ids", unicos.toArray());
+        Map<?, ?> raw = http.get(uri.build().encode().toUri(), Map.class);
+        Map<Long, String> nombres = new LinkedHashMap<>();
+        raw.forEach((k, v) -> {
+            if (k != null && v != null) {
+                try { nombres.put(Long.valueOf(String.valueOf(k)), String.valueOf(v)); }
+                catch (NumberFormatException ignored) {}
+            }
+        });
+        return new DonantePaginadoDtos.NombresMap(nombres);
     }
 
     /** Devuelve el acceso del alta (ENVIADO, SIN_EMAIL, ... o null). */

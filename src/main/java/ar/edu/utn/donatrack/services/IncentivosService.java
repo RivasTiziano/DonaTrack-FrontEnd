@@ -3,8 +3,11 @@ import ar.edu.utn.donatrack.dto.*;
 import ar.edu.utn.donatrack.mappers.IncentivosMapper;
 import ar.edu.utn.donatrack.validators.IncentivosValidator;
 import org.springframework.stereotype.Service;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 @Service
 public class IncentivosService {
     private final IncentivosApiService api;
@@ -25,8 +28,29 @@ public class IncentivosService {
         return mapper.ranking(ranking, nombres);
     }
 
+    public List<IncentivosDtos.FilaRanking> rankingConNombres(Function<Collection<Long>, Map<Long, String>> nombresPorIds) {
+        var ranking = api.ranking();
+        if (ranking == null) throw new IllegalStateException("Ranking no disponible");
+        if (ranking.isEmpty()) return List.of();
+        List<Long> ids = ranking.stream().map(ApiDtos.Ranking::idDonante).filter(Objects::nonNull).distinct().toList();
+        return mapper.ranking(ranking, nombresPorIds.apply(ids));
+    }
+
     public List<IncentivosDtos.FilaHistorial> historialConNombres(Map<Long,String> nombres) {
         return mapper.historial(api.historialRankings(), nombres);
+    }
+
+    public List<IncentivosDtos.FilaHistorial> historialConNombres(Function<Collection<Long>, Map<Long, String>> nombresPorIds) {
+        var historial = api.historialRankings();
+        if (historial == null || historial.isEmpty()) return List.of();
+        List<Long> ids = historial.stream()
+                .filter(h -> h.posiciones() != null)
+                .flatMap(h -> h.posiciones().stream())
+                .map(IncentivosDtos.Posicion::donanteId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        return mapper.historial(historial, ids.isEmpty() ? Map.of() : nombresPorIds.apply(ids));
     }
 
     public IncentivosDtos.Metricas metricas(Long id) {

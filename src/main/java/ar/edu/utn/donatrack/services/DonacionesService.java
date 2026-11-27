@@ -41,7 +41,54 @@ public class DonacionesService {
         if ("humanos".equals(tipo)) api.eliminarHumano(id); else api.eliminarJuridico(id);
     }
 
+    public record PaginaDonantesVista(List<DonanteFila> filas, int page, int size, long totalElements, int totalPages) {}
+
     public List<DonanteFila> filasDonantes() { return mapper.filas(api.listarHumanos(),api.listarJuridicos()); }
+
+    /** Lista donantes paginados usando el endpoint optimizado; conserva fallback en memoria para mocks sin stub nuevo. */
+    public PaginaDonantesVista listarDonantesPaginado(String query, String tipo, int page, int size) {
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, Math.min(size, 100));
+        var paginaApi = api.listarDonantesPaginado(query, tipo, safePage, safeSize);
+        if (paginaApi != null) {
+            List<DonanteFila> filas = paginaApi.content().stream()
+                    .map(r -> new DonanteFila(
+                            r.id(),
+                            "JURIDICA".equalsIgnoreCase(r.tipoPersona()) ? "Jurídica" : "Humana",
+                            r.nombreVisible(),
+                            r.tipoDocumento(),
+                            r.numeroDocumento(),
+                            r.email(),
+                            r.telefono(),
+                            r.estadoRegistro()))
+                    .toList();
+            return new PaginaDonantesVista(filas, paginaApi.page(), paginaApi.size(), paginaApi.totalElements(), paginaApi.totalPages());
+        }
+        String qNorm = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        String tipoFiltro = normalizarTipoUi(tipo);
+        List<DonanteFila> filtradas = filasDonantes().stream()
+                .filter(f -> tipoFiltro == null || tipoFiltro.equals(f.type()))
+                .filter(f -> qNorm.isEmpty() || contiene(f.name(), qNorm) || contiene(f.doc(), qNorm)
+                        || contiene(f.email(), qNorm) || contiene(f.phone(), qNorm))
+                .toList();
+        long total = filtradas.size();
+        int totalPages = total == 0 ? 0 : (int) Math.ceil((double) total / safeSize);
+        if (totalPages > 0 && safePage >= totalPages) safePage = totalPages - 1;
+        int from = Math.min(safePage * safeSize, filtradas.size());
+        int to = Math.min(from + safeSize, filtradas.size());
+        return new PaginaDonantesVista(filtradas.subList(from, to), safePage, safeSize, total, totalPages);
+    }
+
+    private static String normalizarTipoUi(String tipo) {
+        if (tipo == null || tipo.isBlank()) return null;
+        if ("Humana".equalsIgnoreCase(tipo) || "HUMANA".equalsIgnoreCase(tipo)) return "Humana";
+        if ("Jurídica".equalsIgnoreCase(tipo) || "Juridica".equalsIgnoreCase(tipo) || "JURIDICA".equalsIgnoreCase(tipo)) return "Jurídica";
+        return null;
+    }
+
+    private static boolean contiene(String valor, String termino) {
+        return valor != null && valor.toLowerCase(Locale.ROOT).contains(termino);
+    }
 
     public record Perfil(PerfilForm form, List<MedioDeContactoDto> contactos, List<?> representantes) {}
     public Perfil perfilDonante(String tipo,Long id) {
@@ -155,6 +202,18 @@ public class DonacionesService {
             return Map.of();
         }
         return nombres;
+    }
+
+    /** Resuelve únicamente los nombres de los IDs visibles en pantalla para no descargar todo el padrón. */
+    public Map<Long, String> nombresDonantes(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) return Map.of();
+        try {
+            var respuesta = api.buscarNombresPorIds(ids);
+            if (respuesta != null && respuesta.nombres() != null) return respuesta.nombres();
+            return nombresDonantes();
+        } catch (org.springframework.web.client.RestClientException | IllegalStateException e) {
+            return Map.of();
+        }
     }
 
     public void eliminarHumano(Long id) {

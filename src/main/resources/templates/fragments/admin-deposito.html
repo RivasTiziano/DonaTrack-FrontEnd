@@ -50,7 +50,7 @@
                                 </span>
                             </td>
                             <td data-label="Fecha">
-                                <span th:text="${item.fechaRecepcion}">
+                                <span th:text="${item.fechaRecepcion != null ? #temporals.format(item.fechaRecepcion, 'dd/MM/yyyy HH:mm') : '—'}">
                                 </span>
                             </td>
                             <td data-label="Acciones">
