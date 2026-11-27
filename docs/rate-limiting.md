@@ -13,8 +13,10 @@ minuto de la landing entre todos.
 
 ## Qué hace
 
-`IpDelNavegadorInterceptor` (`services/internal`) se agrega al `RestClient` de `WebApiCallerService` y,
-en cada llamada a los servicios, manda:
+`IpDelNavegadorInterceptor` (`services/internal`) se agrega a **todos** los `RestClient` del front:
+`WebApiCallerService` (paneles), `AutenticacionApiService` (login, refresh, logout y primer acceso),
+`RegistroApiService` (registro público) y `PublicoService` (landing y mapa). Los tres últimos son
+justamente los anónimos, que el backend limita por IP. En cada llamada a los servicios manda:
 
 | Header | Valor |
 |---|---|
@@ -51,5 +53,6 @@ funciona igual, pero los visitantes anónimos vuelven a compartir el cupo de la 
 
 - `RateLimitIpDelNavegadorTest`: un servidor HTTP local comprueba los headers enviados (clave e IP, última IP
   de `X-Forwarded-For` detrás del proxy, sin clave, sin request, IP inválida).
+- `RateLimitClientesAnonimosTest`: login, logout, registro, landing y mapa también mandan la IP del navegador.
 - `RateLimitMvcTest`: el login bloqueado muestra cuánto esperar y una página sin manejo propio responde 429
   con `Retry-After` y la vista `error/429`.

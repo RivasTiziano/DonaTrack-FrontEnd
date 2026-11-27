@@ -1,6 +1,8 @@
 package ar.edu.utn.donatrack.services;
 
 import ar.edu.utn.donatrack.dto.RegistroDtos;
+import ar.edu.utn.donatrack.services.internal.IpDelNavegadorInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -16,11 +18,20 @@ public class RegistroApiService {
     private final RestClient client;
     private final String url;
 
-    public RegistroApiService(@Value("${apis.donaciones.url}") String url) {
+    /** Sin IP del navegador: lo usan los tests que llaman a un servidor local. */
+    public RegistroApiService(String url) {
+        this(url, null);
+    }
+
+    // La IP del navegador hace que el límite de registros del backend sea por visitante y no por la IP del front
+    @Autowired
+    public RegistroApiService(@Value("${apis.donaciones.url}") String url, IpDelNavegadorInterceptor ipDelNavegador) {
         this.url = url.replaceAll("/+$", "");
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build());
         factory.setReadTimeout(Duration.ofSeconds(35));
-        this.client = RestClient.builder().requestFactory(factory).build();
+        var builder = RestClient.builder().requestFactory(factory);
+        if (ipDelNavegador != null) builder.requestInterceptor(ipDelNavegador);
+        this.client = builder.build();
     }
 
     public RegistroDtos.Registrado registrarHumano(RegistroDtos.RegistroHumano request) {

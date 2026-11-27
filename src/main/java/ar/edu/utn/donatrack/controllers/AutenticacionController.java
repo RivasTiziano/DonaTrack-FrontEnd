@@ -145,6 +145,8 @@ public class AutenticacionController {
 
     @PostMapping("/logout")
     public String logout(HttpServletRequest request) {
+        // Primero se revocan los refresh tokens en el servidor (necesita el token de la sesión) y después se cierra
+        sesiones.obtener().ifPresent(sesion -> service.logout(sesion.getRefreshToken()));
         sesiones.cerrar(request);
         return "redirect:/";
     }

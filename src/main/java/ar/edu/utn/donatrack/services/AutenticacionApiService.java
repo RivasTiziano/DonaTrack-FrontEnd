@@ -1,6 +1,8 @@
 package ar.edu.utn.donatrack.services;
 
 import ar.edu.utn.donatrack.dto.AuthDtos;
+import ar.edu.utn.donatrack.services.internal.IpDelNavegadorInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -11,15 +13,25 @@ import org.springframework.web.client.RestClient;
 
 /**
  * Cliente del servicio de autenticación (puerto 8084).
- * Login, refresh y primer acceso usan un RestClient propio, sin el interceptor de token: así el refresco no se llama a sí mismo.
+ * Login, refresh, logout y primer acceso usan un RestClient propio, sin el interceptor de token: así el refresco
+ * no se llama a sí mismo. Sí lleva el de la IP del navegador, para que el backend limite el login por visitante.
  */
 @Service
 public class AutenticacionApiService {
-    private final RestClient client = RestClient.builder().requestFactory(fabrica()).build();
+    private final RestClient client;
     private final String url;
 
-    public AutenticacionApiService(@Value("${apis.autenticacion.url}") String url) {
+    /** Sin IP del navegador: lo usan los tests que llaman a un servidor local. */
+    public AutenticacionApiService(String url) {
+        this(url, null);
+    }
+
+    @Autowired
+    public AutenticacionApiService(@Value("${apis.autenticacion.url}") String url, IpDelNavegadorInterceptor ipDelNavegador) {
         this.url = url.replaceAll("/+$", "");
+        var builder = RestClient.builder().requestFactory(fabrica());
+        if (ipDelNavegador != null) builder.requestInterceptor(ipDelNavegador);
+        this.client = builder.build();
     }
 
     public AuthDtos.Token login(String email, String password) {
@@ -30,6 +42,12 @@ public class AutenticacionApiService {
     public AuthDtos.Token refrescar(String refreshToken) {
         return client.post().uri(url + "/auth/refresh").contentType(MediaType.APPLICATION_JSON)
                 .body(new AuthDtos.Refresh(refreshToken)).retrieve().body(AuthDtos.Token.class);
+    }
+
+    /** Revoca en el servidor los refresh tokens de la cuenta (todas sus sesiones). El back responde 204. */
+    public void logout(String refreshToken) {
+        client.post().uri(url + "/auth/logout").contentType(MediaType.APPLICATION_JSON)
+                .body(new AuthDtos.Refresh(refreshToken)).retrieve().toBodilessEntity();
     }
 
     /** Guarda la contraseña inicial con el enlace del correo de bienvenida. El back responde 204. */

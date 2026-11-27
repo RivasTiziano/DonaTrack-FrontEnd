@@ -161,4 +161,21 @@ class AutenticacionMvcTest {
         mvc.perform(post("/logout").session(session)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/"));
         assertThat(session.isInvalid()).isTrue();
     }
+
+    @Test void logoutRevocaElRefreshTokenEnElServicioDeAutenticacion() throws Exception {
+        mvc.perform(post("/logout").session(TestSesiones.donante(1L))).andExpect(redirectedUrl("/"));
+        verify(auth).logout("refresh-de-prueba");
+    }
+
+    @Test void siElServicioNoRespondeElLogoutCierraLaSesionIgual() throws Exception {
+        doThrow(new ResourceAccessException("servicio caído")).when(auth).logout(anyString());
+        var session = TestSesiones.admin();
+        mvc.perform(post("/logout").session(session)).andExpect(redirectedUrl("/"));
+        assertThat(session.isInvalid()).isTrue();
+    }
+
+    @Test void logoutSinSesionNoLlamaAlServicio() throws Exception {
+        mvc.perform(post("/logout")).andExpect(redirectedUrl("/"));
+        verify(auth, never()).logout(anyString());
+    }
 }

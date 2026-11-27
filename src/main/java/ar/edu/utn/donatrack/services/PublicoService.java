@@ -1,7 +1,9 @@
 package ar.edu.utn.donatrack.services;
 import ar.edu.utn.donatrack.dto.EntregaMapaDto;
 import ar.edu.utn.donatrack.dto.EntregaPublicaDto;
+import ar.edu.utn.donatrack.services.internal.IpDelNavegadorInterceptor;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -18,11 +20,17 @@ public class PublicoService {
  private static final ZoneId ZONA_PUBLICA = ZoneId.of("America/Argentina/Buenos_Aires");
  private final RestClient client;
  private final String url;
- public PublicoService(@Value("${apis.donaciones.url}") String url) {
+ /** Sin IP del navegador: lo usan los tests que llaman a un servidor local. */
+ public PublicoService(String url) { this(url, null); }
+ // La IP del navegador hace que el límite de la landing y el mapa sea por visitante y no por la IP del front
+ @Autowired
+ public PublicoService(@Value("${apis.donaciones.url}") String url, IpDelNavegadorInterceptor ipDelNavegador) {
    this.url=url.replaceAll("/+$","");
    var factory=new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build());
    factory.setReadTimeout(Duration.ofSeconds(35));
-   this.client=RestClient.builder().requestFactory(factory).build();
+   var builder=RestClient.builder().requestFactory(factory);
+   if(ipDelNavegador!=null)builder.requestInterceptor(ipDelNavegador);
+   this.client=builder.build();
  }
  /** Destacadas de la landing: entregadas en los últimos 30 días (desde = hoy − 30, hora de Buenos Aires). */
  public List<EntregaPublicaDto> donacionesDestacadas() {

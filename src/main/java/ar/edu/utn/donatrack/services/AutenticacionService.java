@@ -29,6 +29,20 @@ public class AutenticacionService {
         return token;
     }
 
+    /**
+     * Revoca en el servicio de autenticación los refresh tokens de la cuenta (POST /auth/logout).
+     * Si el servicio no responde, no se propaga el error: cerrar la sesión del front no debe depender del backend,
+     * y el refresh token vive solo en esa sesión, que se invalida igual.
+     */
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) return;
+        try {
+            authApi.logout(refreshToken);
+        } catch (RestClientException exception) {
+            // Servicio caído, dormido o con límite de solicitudes: la sesión local se cierra de todos modos.
+        }
+    }
+
     /** Primer acceso: guarda la contraseña inicial con el enlace del correo. Los errores llegan como RestClientException. */
     public void definirContrasenia(String token, String contrasenia) {
         authApi.definirContrasenia(token, contrasenia);
