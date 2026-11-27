@@ -46,7 +46,7 @@
     </option>
 </select>
 </label>
-<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" th:value="${campos.get('bienFechaDeVencimiento') != null and campos.get('bienFechaDeVencimiento').size() > fila.index ? campos.get('bienFechaDeVencimiento')[fila.index] : ''}">
+<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" th:attr="min=${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}" th:value="${campos != null ? campos.get('bienFechaDeVencimiento') != null and campos.get('bienFechaDeVencimiento').size() > fila.index ? campos.get('bienFechaDeVencimiento')[fila.index] : '' : ''}">
 </label>
 <label>Condición (durables)<select class="form-control" name="bienFueUsado">
     <option value="">No corresponde</option>
@@ -94,7 +94,7 @@
     </option>
 </select>
 </label>
-<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" />
+<label>Vencimiento (perecederos)<input class="form-control" name="bienFechaDeVencimiento" type="date" th:attr="min=${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}" />
 </label>
 <label>Condición (durables)<select class="form-control" name="bienFueUsado">
     <option value="">No corresponde</option>

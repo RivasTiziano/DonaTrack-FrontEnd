@@ -18,7 +18,7 @@
     <label>Tipo de bien<select class="form-control" name="tipoBien" required>
         <option th:each="t : ${ {'PERECEDERO','DURABLE'} }" th:value="${t}" th:text="${t}" th:selected="${editableBien != null and editableBien.tipoBien == t}"></option>
     </select></label>
-    <label>Vencimiento (perecederos)<input class="form-control" name="fechaDeVencimiento" th:value="${campos != null ? campos.getFirst('fechaDeVencimiento') : (editableBien != null ? editableBien.fechaDeVencimiento : '')}" type="date" /></label>
+    <label>Vencimiento (perecederos)<input class="form-control" name="fechaDeVencimiento" th:attr="min=${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}" th:value="${campos != null ? campos.getFirst('fechaDeVencimiento') : (editableBien != null ? editableBien.fechaDeVencimiento : '')}" type="date" /></label>
     <label>Condición (durables)<select class="form-control" name="fueUsado">
         <option value="">No corresponde</option><option value="false" th:selected="${editableBien != null and editableBien.fueUsado == false}">Nuevo</option><option value="true" th:selected="${editableBien != null and editableBien.fueUsado == true}">Usado</option>
     </select></label>

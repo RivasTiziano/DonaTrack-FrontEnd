@@ -18,7 +18,12 @@ public final class NotificacionDtos {
     /** Notificación del historial de una persona (GET /notificaciones). */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Recibida(Long id, String asunto, String cuerpo, Medio medio, LocalDateTime fecha,
-                           boolean leida, LocalDateTime fechaLectura, String referencia) {}
+                           boolean leida, LocalDateTime fechaLectura, String referencia, Estado estado) {
+        public Recibida(Long id, String asunto, String cuerpo, Medio medio, LocalDateTime fecha,
+                        boolean leida, LocalDateTime fechaLectura, String referencia) {
+            this(id, asunto, cuerpo, medio, fecha, leida, fechaLectura, referencia, null);
+        }
+    }
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record RespuestaLista(String retorno, List<Recibida> datos, String mensajeError) {}
     @JsonIgnoreProperties(ignoreUnknown = true)

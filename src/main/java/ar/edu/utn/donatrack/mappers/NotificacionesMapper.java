@@ -17,7 +17,13 @@ public class NotificacionesMapper {
     }
 
     public Vista vista(Recibida n) {
-        return new Vista(n.id(), n.asunto(), n.cuerpo(), canal(n.medio()),
+        String canalTexto = canal(n.medio());
+        if (n.estado() == Estado.COMPLETADA) {
+            canalTexto = canalTexto + " · Enviada";
+        } else if (n.estado() == Estado.FALLIDA) {
+            canalTexto = canalTexto + " · En bandeja web (envío externo no disponible)";
+        }
+        return new Vista(n.id(), n.asunto(), n.cuerpo(), canalTexto,
                 n.fecha() == null ? "" : FECHA.format(n.fecha()), n.leida());
     }
 
