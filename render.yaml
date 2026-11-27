@@ -1,6 +1,7 @@
 services:
   - type: web
     name: donatrack-frontend
+    branch: ENTREGA-6
     runtime: docker
     dockerfilePath: Dockerfile
     dockerContext: .
