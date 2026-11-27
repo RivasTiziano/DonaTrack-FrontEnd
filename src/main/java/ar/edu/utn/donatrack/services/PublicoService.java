@@ -20,8 +20,8 @@ public class PublicoService {
  private final String url;
  public PublicoService(@Value("${apis.donaciones.url}") String url) {
    this.url=url.replaceAll("/+$","");
-   var factory=new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build());
-   factory.setReadTimeout(Duration.ofSeconds(5));
+   var factory=new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build());
+   factory.setReadTimeout(Duration.ofSeconds(35));
    this.client=RestClient.builder().requestFactory(factory).build();
  }
  /** Destacadas de la landing: entregadas en los últimos 30 días (desde = hoy − 30, hora de Buenos Aires). */

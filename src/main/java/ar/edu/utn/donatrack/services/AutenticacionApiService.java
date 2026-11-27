@@ -40,8 +40,8 @@ public class AutenticacionApiService {
 
     // Sin timeouts, un servicio de autenticación caído dejaría colgado el login.
     private static JdkClientHttpRequestFactory fabrica() {
-        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build());
-        factory.setReadTimeout(Duration.ofSeconds(10));
+        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build());
+        factory.setReadTimeout(Duration.ofSeconds(35));
         return factory;
     }
 }

@@ -41,7 +41,7 @@ public class WebApiCallerService {
     @Autowired
     public WebApiCallerService(RestClient.Builder builder, ObjectProvider<SesionActual> sesiones,
                                ObjectProvider<AutenticacionApiService> autenticacion) {
-        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build());
+        var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build());
         // CSV puede procesar más de 10.000 registros; no se reintentan escrituras.
         factory.setReadTimeout(Duration.ofSeconds(120));
         if (sesiones != null) builder.requestInterceptor(new TokenInterceptor(sesiones, autenticacion));
