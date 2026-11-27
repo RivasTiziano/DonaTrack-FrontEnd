@@ -51,3 +51,12 @@ services:
         value: https://donatrack-incentivos-cqnn.onrender.com
       - key: NOTIFICACIONES_API_URL
         value: https://donatrack-notificaciones-6sh2.onrender.com
+
+        # Rate limiting del backend (E6, req. 4): copiar el AUTH_FRONT_KEY que Render generó en el grupo
+        # donatrack-shared-env del backend. Con ella el backend le cree a la IP del navegador (X-Client-IP).
+      - key: AUTH_FRONT_KEY
+        sync: false
+
+        # Render pone un proxy delante: la IP del navegador es la última de X-Forwarded-For.
+      - key: RATELIMIT_TRUST_FORWARDED_FOR
+        value: "true"

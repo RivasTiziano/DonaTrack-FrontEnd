@@ -4,6 +4,8 @@
 
 Este repositorio contiene la implementación del **Cliente Liviano** desarrollado bajo arquitectura **Server-Side Rendering (SSR)** con **Spring Boot 3.2.4**, **Java 21/17** y el motor de plantillas **Thymeleaf**, acompañado de un sistema de diseño propio construido en **Vanilla CSS**, garantizando rendimiento, accesibilidad y máxima compatibilidad cross-device.
 
+> **Entrega 6 — Rate limiting:** el front avisa al backend la IP real del navegador y muestra un mensaje propio ante un 429. Ver [docs/rate-limiting.md](docs/rate-limiting.md) (requiere `AUTH_FRONT_KEY`, igual que en los servicios).
+
 ---
 
 ## 🏛️ Cumplimiento de Consideraciones para el Maquetado

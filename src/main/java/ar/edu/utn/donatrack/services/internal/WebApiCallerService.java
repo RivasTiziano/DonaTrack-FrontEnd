@@ -35,16 +35,24 @@ public class WebApiCallerService {
 
     /** Sin sesión: lo usan los tests que llaman a un servidor local sin token. */
     public WebApiCallerService(RestClient.Builder builder) {
-        this(builder, null, null);
+        this(builder, null, null, null);
+    }
+
+    public WebApiCallerService(RestClient.Builder builder, ObjectProvider<SesionActual> sesiones,
+                               ObjectProvider<AutenticacionApiService> autenticacion) {
+        this(builder, sesiones, autenticacion, null);
     }
 
     @Autowired
     public WebApiCallerService(RestClient.Builder builder, ObjectProvider<SesionActual> sesiones,
-                               ObjectProvider<AutenticacionApiService> autenticacion) {
+                               ObjectProvider<AutenticacionApiService> autenticacion,
+                               IpDelNavegadorInterceptor ipDelNavegador) {
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build());
         // CSV puede procesar más de 10.000 registros; no se reintentan escrituras.
         factory.setReadTimeout(Duration.ofSeconds(120));
         if (sesiones != null) builder.requestInterceptor(new TokenInterceptor(sesiones, autenticacion));
+        // Rate limiting del backend: avisa la IP real del navegador para que cada visitante tenga su propio cupo
+        if (ipDelNavegador != null) builder.requestInterceptor(ipDelNavegador);
         client = builder.requestFactory(factory).build();
     }
 
