@@ -1,0 +1,11 @@
+# Override para despliegue en AWS EC2 t3.medium detrás de Nginx (puerto 80).
+# Se combina sobre:
+#   docker compose -f docker-compose.yml -f docker-compose.observabilidad.yml -f docker-compose.monitoreo.yml -f docker-compose.aws.yml up -d
+
+services:
+  donatrack-frontend:
+    ports: !override []
+    environment:
+      JDK_JAVA_OPTIONS: ${AWS_FRONTEND_JAVA_OPTIONS:--Xms32m -Xmx192m -XX:MaxMetaspaceSize=144m -XX:ReservedCodeCacheSize=48m -Xss256k -XX:+TieredCompilation -XX:TieredStopAtLevel=1}
+      RATELIMIT_TRUST_FORWARDED_FOR: "true"
+    mem_limit: 400m
