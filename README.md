@@ -12,19 +12,14 @@ Este repositorio implementa el **Cliente Liviano web** bajo arquitectura **Serve
 
 ---
 
-## 1. Producción y URLs en la Nube (Render Cloud)
+## 1. Producción y URLs en la Nube (AWS EC2 + Caddy HTTPS)
 
-| Servicio | URL pública en producción |
+| Componente | Dirección en Producción |
 | :--- | :--- |
-| **Frontend SSR (esta app)** | `https://donatrack-frontend-kkfk.onrender.com` |
-| **Autenticación** | `https://donatrack-autenticacion.onrender.com` |
-| **Donaciones** | `https://donatrack-donaciones-mtqa.onrender.com` |
-| **Logística** | `https://donatrack-logistica-qogh.onrender.com` |
-| **Incentivos** | `https://donatrack-incentivos-cqnn.onrender.com` |
-| **Notificaciones** | `https://donatrack-notificaciones-6sh2.onrender.com` |
-| **Observabilidad (Jaeger)** | `https://donatrack-observabilidad.onrender.com` |
-
-> **Importante — Render Free (spin-down cada 15 min):** Si la plataforma estuvo inactiva >15 min, la primera petición demora ~40–90 s mientras despiertan los contenedores. Para demos o presentaciones, mantené los servicios despiertos corriendo un pinger cada 5 minutos contra `/login` y los `/livez` de los backends únicamente durante la ventana de uso (para no agotar las **750 h/mes** compartidas del plan gratuito).
+| **Web Pública / Frontend SSR** | `https://15-229-30-7.sslip.io` (y `http://15.229.30.7`) |
+| **API Gateway (REST / GraphQL / Auth)** | `https://15-229-30-7.sslip.io/api/...`, `/graphql`, `/auth/login` |
+| **Webhook Planificador de Rutas** | `https://15-229-30-7.sslip.io/webhooks/routing` |
+| **Observabilidad y Monitoreo** | Solo `127.0.0.1` en la EC2 (`Jaeger :16686`, `Grafana :3000`, `Prometheus :9091`) vía Túnel SSH |
 
 ---
 
@@ -32,7 +27,7 @@ Este repositorio implementa el **Cliente Liviano web** bajo arquitectura **Serve
 
 El inicio de sesión es **100% real** contra `autenticacion-service` (`JWT HS256`), manteniendo los tokens en la sesión HTTP del servidor y entregando al navegador únicamente una cookie `HttpOnly`.
 
-### Cuentas listas para usar en Producción (`https://donatrack-frontend-kkfk.onrender.com/login`)
+### Cuentas listas para usar en Producción (`https://15-229-30-7.sslip.io/login`)
 
 | Rol | Email | Contraseña | Panel / Uso |
 | :--- | :--- | :--- | :--- |
@@ -42,12 +37,13 @@ El inicio de sesión es **100% real** contra `autenticacion-service` (`JWT HS256
 | **Entidad Beneficiaria 1** | `esperanza.demo@donatrack.org` | `DonaTrackDemo2026!` | `/entidad/dashboard` (necesidades, mapa GPS, confirmar con foto) |
 | **Entidad Beneficiaria 2** | `hogarsol.demo@donatrack.org` | `DonaTrackDemo2026!` | `/entidad/dashboard` (matchmaking multi-entidad y Error 3 `NO_RECIBIDA`) |
 
-### Datos de prueba ya cargados en la nube
-- **20.088+ donantes** en el padrón con **paginación server-side** (`/admin/dashboard/donantes`) y **buscador asíncrono JSON** (`/admin/dashboard/donantes/buscar`) en el alta de donaciones.
-- **3 donaciones de respaldo `EN_DEPOSITO`** (`30002`, `30003`, `30004`) listas para ejecutar matchmaking en `/admin/dashboard/sugerencias`.
-- **Necesidades activas** (`EXTRAORDINARIA` y `RECURRENTE`) en *Comedor Esperanza* y *Hogar del Sol*.
-- **3 camiones** (`E6T217`, `DTK501`, `DTK802`) y **1 entrega en camino (`EN_TRASLADO`, `id=10`, camión `DTK802`)** con coordenadas GPS ya cargadas para mostrar el mapa en tiempo real desde `/donante/dashboard/entregas` y `/entidad/dashboard/entregas` y confirmar recepción con fotografía en `/entidad/dashboard/confirmar`.
-- **Centro de notificaciones en `/donante/dashboard/notificaciones` y `/entidad/dashboard/notificaciones`:** muestra las notificaciones persistidas diferenciando envíos externos completados (`Enviada`) de avisos registrados en plataforma cuando Render Free bloquea SMTP (`En bandeja web (envío externo no disponible)`).
+### Datos de prueba ya cargados en AWS
+- **20.000+ donantes** en el padrón con **paginación server-side** (`/admin/dashboard/donantes`) y **buscador asíncrono JSON** (`/admin/dashboard/donantes/buscar`) en el alta de donaciones.
+- **13 entregas públicas** en la landing (`/`) con fotos `.webp` y ubicaciones en el mapa Leaflet (CABA + GBA).
+- **3 donaciones de respaldo `EN_DEPOSITO`** (`Fideos secos tallarines`, `Sillas escolares usadas`, `Leche larga vida entera`) listas para ejecutar matchmaking en `/admin/dashboard/sugerencias`.
+- **Necesidades activas** (`EXTRAORDINARIA` y `RECURRENTE` `P7D`) en *Comedor Esperanza* y *Hogar del Sol* (incluyendo `6/30` parcial y `100/100` satisfecha).
+- **3 camiones** (`DTK802` `EN_RUTA`, `DTK501` `DISPONIBLE`, `E6T217` `DISPONIBLE`) y **1 entrega en camino (`EN_TRASLADO`)** con coordenadas GPS activas para ver el mapa en tiempo real en `/admin/dashboard/seguimiento`, `/donante/dashboard/entregas` y `/entidad/dashboard/entregas`, y confirmar recepción con fotografía en `/entidad/dashboard/confirmar`.
+- **Centro de notificaciones:** muestra las notificaciones reales enviadas por Gmail SMTP (`COMPLETADA`) y registradas en plataforma.
 
 ---
 
@@ -129,8 +125,8 @@ mvn test
 ```text
 DonaTrack-FrontEnd/
 ├── pom.xml                                  # Spring Boot 3.2.4, Thymeleaf, Actuator/Prometheus
-├── Dockerfile / render.yaml                 # Despliegue en Render con agente OTel
-├── docker-compose*.yml                      # Perfiles locales y de observabilidad/monitoreo
+├── Dockerfile                               # Imagen multi-stage Java 21 + agente OTel
+├── docker-compose*.yml                      # Perfiles local, observabilidad, monitoreo y AWS
 ├── docs/                                    # Documentación MVC, Rate Limiting, Monitoreo y OTel
 └── src/
     ├── main/
