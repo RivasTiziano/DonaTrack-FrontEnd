@@ -8,4 +8,5 @@ services:
     environment:
       JDK_JAVA_OPTIONS: ${AWS_FRONTEND_JAVA_OPTIONS:--Xms32m -Xmx192m -XX:MaxMetaspaceSize=144m -XX:ReservedCodeCacheSize=48m -Xss256k -XX:+TieredCompilation -XX:TieredStopAtLevel=1}
       RATELIMIT_TRUST_FORWARDED_FOR: "true"
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
     mem_limit: 400m
